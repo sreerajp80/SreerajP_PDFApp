@@ -84,42 +84,51 @@ class NormalizedText {
     if (queryKey.isEmpty || clusters.isEmpty) return const [];
 
     final matches = <TextMatch>[];
-    var i = 0;
-    while (i < clusters.length) {
-      final start = clusters[i].keyStart;
-      if (!key.startsWith(queryKey, start)) {
-        i++;
+    var startPos = 0;
+    while (true) {
+      final matchStart = key.indexOf(queryKey, startPos);
+      if (matchStart == -1) break;
+      final matchEnd = matchStart + queryKey.length;
+
+      // The matchEnd MUST align exactly with a cluster boundary.
+      int? endClusterIndex;
+      for (var idx = 0; idx < clusters.length; idx++) {
+        if (clusters[idx].keyEnd == matchEnd) {
+          endClusterIndex = idx;
+          break;
+        }
+      }
+
+      if (endClusterIndex == null) {
+        // Ends mid-cluster — not a real match (e.g. slices a vowel sign).
+        startPos = matchStart + 1;
         continue;
       }
-      final endCluster = _clusterEndingAt(start + queryKey.length, i);
-      if (endCluster == null) {
-        // Ends mid-cluster — not a real match for a reader.
-        i++;
-        continue;
+
+      // Find the cluster containing matchStart.
+      int? startClusterIndex;
+      for (var idx = 0; idx <= endClusterIndex; idx++) {
+        if (clusters[idx].keyStart <= matchStart && matchStart < clusters[idx].keyEnd) {
+          startClusterIndex = idx;
+          break;
+        }
       }
-      matches.add(
-        TextMatch(
-          sourceStart: clusters[i].sourceStart,
-          sourceEnd: clusters[endCluster].sourceEnd,
-          clusterStart: i,
-          clusterEnd: endCluster + 1,
-        ),
-      );
-      // Non-overlapping: carry on after this match.
-      i = endCluster + 1;
+
+      if (startClusterIndex != null) {
+        matches.add(
+          TextMatch(
+            sourceStart: clusters[startClusterIndex].sourceStart,
+            sourceEnd: clusters[endClusterIndex].sourceEnd,
+            clusterStart: startClusterIndex,
+            clusterEnd: endClusterIndex + 1,
+          ),
+        );
+        startPos = clusters[endClusterIndex].keyEnd;
+      } else {
+        startPos = matchStart + 1;
+      }
     }
     return matches;
-  }
-
-  /// Index of the cluster whose key range ends exactly at [keyEnd], searching
-  /// forward from [from]. Null when [keyEnd] falls inside a cluster.
-  int? _clusterEndingAt(int keyEnd, int from) {
-    for (var i = from; i < clusters.length; i++) {
-      final end = clusters[i].keyEnd;
-      if (end == keyEnd) return i;
-      if (end > keyEnd) return null;
-    }
-    return null;
   }
 }
 

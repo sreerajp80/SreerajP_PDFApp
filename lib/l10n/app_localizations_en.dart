@@ -101,6 +101,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get zoomOut => 'Zoom out';
 
   @override
+  String get resetZoom => 'Reset zoom';
+
+  @override
   String get invertColors => 'Night colors';
 
   @override

@@ -260,6 +260,12 @@ abstract class AppLocalizations {
   /// **'Zoom out'**
   String get zoomOut;
 
+  /// Reset zoom to original scale
+  ///
+  /// In en, this message translates to:
+  /// **'Reset zoom'**
+  String get resetZoom;
+
   /// Toggle to invert page colors for night reading
   ///
   /// In en, this message translates to:

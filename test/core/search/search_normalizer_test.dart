@@ -224,4 +224,23 @@ void main() {
       expect(sut.normalize('ab').findAll(sut.queryKey('abc')), isEmpty);
     });
   });
+
+  group('Malayalam Sandhi conjoined search', () {
+    test('finds conjoined words (Sandhi) conjoined in a single cluster', () {
+      const text = 'തുലക്ഷീപരിവാഹചലന്മീനാദലോചനാ';
+      final page = sut.normalize(text);
+      final matches = page.findAll(sut.queryKey('മീനാദ'));
+
+      expect(matches, hasLength(1));
+      final match = matches.single;
+      expect(text.substring(match.sourceStart, match.sourceEnd), 'ന്മീനാദ');
+    });
+
+    test('refuses to match when ending mid-cluster (slicing vowel)', () {
+      final ka = 'ക';
+      final aaSign = String.fromCharCode(0x0D3E);
+      final page = sut.normalize('$ka$aaSign'); // കാ
+      expect(page.findAll(sut.queryKey(ka)), isEmpty);
+    });
+  });
 }

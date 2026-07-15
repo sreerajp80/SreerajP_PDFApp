@@ -57,6 +57,8 @@
   "@zoomIn": { "description": "Zoom in control" },
   "zoomOut": "Zoom out",
   "@zoomOut": { "description": "Zoom out control" },
+  "resetZoom": "Reset zoom",
+  "@resetZoom": { "description": "Reset zoom to original scale" },
   "invertColors": "Night colors",
   "@invertColors": { "description": "Toggle to invert page colors for night reading" },
   "contentsTitle": "Contents",

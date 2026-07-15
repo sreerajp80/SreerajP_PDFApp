@@ -101,6 +101,9 @@ class AppLocalizationsMl extends AppLocalizations {
   String get zoomOut => 'ചെറുതാക്കുക';
 
   @override
+  String get resetZoom => 'സൂം പുനഃക്രമീകരിക്കുക';
+
+  @override
   String get invertColors => 'രാത്രി നിറങ്ങൾ';
 
   @override

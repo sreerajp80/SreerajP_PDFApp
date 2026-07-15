@@ -230,6 +230,12 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     }
   }
 
+  void _resetZoom() {
+    if (_controller.isReady) {
+      _controller.setZoom(_controller.centerPosition, 1.0);
+    }
+  }
+
   Future<void> _jumpToPage() async {
     if (_document == null) return;
     final target = await showPageJumpSheet(
@@ -349,6 +355,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
 
     return Scaffold(
       key: _scaffoldKey,
+      resizeToAvoidBottomInset: false,
       appBar: _searching
           ? _buildSearchAppBar()
           : AppBar(
@@ -394,6 +401,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     return AppBar(
       automaticallyImplyLeading: false,
       titleSpacing: 0,
+      toolbarHeight: 104.0,
       title: ListenableBuilder(
         // Rebuilds as results stream in, so the counter keeps up.
         listenable: search!,
@@ -569,24 +577,24 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         ? ''
         : l10n.pageOfPages(_currentPage, _pageCount);
     return BottomAppBar(
+      height: 56.0,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            icon: const Icon(Icons.zoom_out),
-            tooltip: l10n.zoomOut,
-            onPressed: () =>
-                _controller.isReady ? _controller.zoomDown() : null,
+            icon: const Icon(Icons.zoom_out_map),
+            tooltip: l10n.resetZoom,
+            onPressed: _document == null ? null : _resetZoom,
           ),
-          TextButton(
-            onPressed: _document == null ? null : _jumpToPage,
-            child: Text(indicator),
+          Expanded(
+            child: Center(
+              child: TextButton(
+                onPressed: _document == null ? null : _jumpToPage,
+                child: Text(indicator),
+              ),
+            ),
           ),
-          IconButton(
-            icon: const Icon(Icons.zoom_in),
-            tooltip: l10n.zoomIn,
-            onPressed: () => _controller.isReady ? _controller.zoomUp() : null,
-          ),
+          const SizedBox(width: 48), // spacer matching IconButton size to balance centering
         ],
       ),
     );
@@ -640,6 +648,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     final speakingPage = status.speakingPage;
 
     return BottomAppBar(
+      height: 56.0,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
         children: [
           IconButton(

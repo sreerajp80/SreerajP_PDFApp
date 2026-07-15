@@ -79,54 +79,67 @@ class _ReaderSearchBarState extends State<ReaderSearchBar> {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    return Row(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(
-          icon: const Icon(Icons.arrow_back),
-          tooltip: l10n.searchClose,
-          onPressed: widget.onClose,
-        ),
-        Expanded(
-          child: TextField(
-            controller: _field,
-            focusNode: _focus,
-            autofocus: true,
-            textInputAction: TextInputAction.search,
-            onChanged: _onChanged,
-            // Enter searches at once, without waiting for the pause.
-            onSubmitted: (value) {
-              _debounce?.cancel();
-              widget.onQueryChanged(value);
-            },
-            decoration: InputDecoration(
-              hintText: l10n.searchHint,
-              border: InputBorder.none,
-              isDense: true,
+        Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back),
+              tooltip: l10n.searchClose,
+              onPressed: widget.onClose,
             ),
-            style: theme.textTheme.titleMedium,
-          ),
+            Expanded(
+              child: TextField(
+                controller: _field,
+                focusNode: _focus,
+                autofocus: true,
+                textInputAction: TextInputAction.search,
+                onChanged: _onChanged,
+                // Enter searches at once, without waiting for the pause.
+                onSubmitted: (value) {
+                  _debounce?.cancel();
+                  widget.onQueryChanged(value);
+                },
+                decoration: InputDecoration(
+                  hintText: l10n.searchHint,
+                  border: InputBorder.none,
+                  isDense: true,
+                ),
+                style: theme.textTheme.titleMedium,
+              ),
+            ),
+            if (_field.text.isNotEmpty)
+              IconButton(
+                icon: const Icon(Icons.close),
+                tooltip: l10n.searchClear,
+                onPressed: _clear,
+              ),
+          ],
         ),
-        if (_field.text.isNotEmpty)
-          IconButton(
-            icon: const Icon(Icons.close),
-            tooltip: l10n.searchClear,
-            onPressed: _clear,
-          ),
-        _Status(state: widget.state),
-        _OptionsMenu(
-          options: widget.options,
-          onChanged: widget.onOptionsChanged,
-        ),
-        IconButton(
-          icon: const Icon(Icons.keyboard_arrow_up),
-          tooltip: l10n.searchPreviousMatch,
-          // Never a dead button: greyed out with an obvious reason (no results).
-          onPressed: widget.state.hits.isEmpty ? null : widget.onPrevious,
-        ),
-        IconButton(
-          icon: const Icon(Icons.keyboard_arrow_down),
-          tooltip: l10n.searchNextMatch,
-          onPressed: widget.state.hits.isEmpty ? null : widget.onNext,
+        const Divider(height: 1, thickness: 0.5),
+        Row(
+          children: [
+            const SizedBox(width: 16),
+            Expanded(
+              child: _Status(state: widget.state),
+            ),
+            _OptionsMenu(
+              options: widget.options,
+              onChanged: widget.onOptionsChanged,
+            ),
+            IconButton(
+              icon: const Icon(Icons.keyboard_arrow_up),
+              tooltip: l10n.searchPreviousMatch,
+              // Never a dead button: greyed out with an obvious reason (no results).
+              onPressed: widget.state.hits.isEmpty ? null : widget.onPrevious,
+            ),
+            IconButton(
+              icon: const Icon(Icons.keyboard_arrow_down),
+              tooltip: l10n.searchNextMatch,
+              onPressed: widget.state.hits.isEmpty ? null : widget.onNext,
+            ),
+          ],
         ),
       ],
     );
