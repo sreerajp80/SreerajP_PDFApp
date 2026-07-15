@@ -1,0 +1,285 @@
+import 'package:characters/characters.dart';
+import 'package:unorm_dart/unorm_dart.dart' as unorm;
+
+/// How search compares text.
+class SearchOptions {
+  const SearchOptions({this.strict = false, this.ignoreAccents = false});
+
+  /// Keep ZWJ / ZWNJ significant, and keep the two chillu spellings apart.
+  ///
+  /// For readers who must tell a joiner spelling from a non-joiner one. Off by
+  /// default, because normally a reader should not have to type an invisible
+  /// character to find a word.
+  final bool strict;
+
+  /// Fold away Devanagari and Vedic accent marks (Sanskrit chant accents), so a
+  /// query without accents still finds accented text.
+  final bool ignoreAccents;
+
+  /// The plain default: joiners ignorable, accents significant.
+  static const SearchOptions normal = SearchOptions();
+}
+
+/// Where one grapheme cluster sits in both the comparison key and the original
+/// text.
+///
+/// Key ranges are contiguous across the kept clusters, so a match found in the
+/// key can be walked back to exact character positions in the original text —
+/// and from there to pdfium's per-character rectangles.
+class ClusterSpan {
+  const ClusterSpan({
+    required this.keyStart,
+    required this.keyEnd,
+    required this.sourceStart,
+    required this.sourceEnd,
+  });
+
+  /// Range in [NormalizedText.key] (UTF-16 code units).
+  final int keyStart;
+  final int keyEnd;
+
+  /// Range in the original, untouched text (UTF-16 code units).
+  final int sourceStart;
+  final int sourceEnd;
+}
+
+/// A match, reported in positions of the *original* text.
+class TextMatch {
+  const TextMatch({
+    required this.sourceStart,
+    required this.sourceEnd,
+    required this.clusterStart,
+    required this.clusterEnd,
+  });
+
+  /// Range in the original text — what gets highlighted.
+  final int sourceStart;
+  final int sourceEnd;
+
+  /// Range in [NormalizedText.clusters] (inclusive start, exclusive end).
+  final int clusterStart;
+  final int clusterEnd;
+}
+
+/// Text plus its throwaway comparison key and the map between them.
+class NormalizedText {
+  const NormalizedText({required this.key, required this.clusters});
+
+  /// The folded key. Never shown to anyone — comparison only.
+  final String key;
+
+  /// One entry per kept grapheme cluster, in reading order.
+  final List<ClusterSpan> clusters;
+
+  static const NormalizedText empty = NormalizedText(key: '', clusters: []);
+
+  /// Finds every non-overlapping occurrence of [queryKey] in [key].
+  ///
+  /// [queryKey] must come from the same [SearchNormalizer] (via
+  /// [SearchNormalizer.queryKey]), or the two sides will not be comparable.
+  ///
+  /// Matches must begin and end on grapheme-cluster boundaries, so a match can
+  /// never cut a letter away from its vowel sign.
+  List<TextMatch> findAll(String queryKey) {
+    if (queryKey.isEmpty || clusters.isEmpty) return const [];
+
+    final matches = <TextMatch>[];
+    var i = 0;
+    while (i < clusters.length) {
+      final start = clusters[i].keyStart;
+      if (!key.startsWith(queryKey, start)) {
+        i++;
+        continue;
+      }
+      final endCluster = _clusterEndingAt(start + queryKey.length, i);
+      if (endCluster == null) {
+        // Ends mid-cluster — not a real match for a reader.
+        i++;
+        continue;
+      }
+      matches.add(
+        TextMatch(
+          sourceStart: clusters[i].sourceStart,
+          sourceEnd: clusters[endCluster].sourceEnd,
+          clusterStart: i,
+          clusterEnd: endCluster + 1,
+        ),
+      );
+      // Non-overlapping: carry on after this match.
+      i = endCluster + 1;
+    }
+    return matches;
+  }
+
+  /// Index of the cluster whose key range ends exactly at [keyEnd], searching
+  /// forward from [from]. Null when [keyEnd] falls inside a cluster.
+  int? _clusterEndingAt(int keyEnd, int from) {
+    for (var i = from; i < clusters.length; i++) {
+      final end = clusters[i].keyEnd;
+      if (end == keyEnd) return i;
+      if (end > keyEnd) return null;
+    }
+    return null;
+  }
+}
+
+/// Builds a canonical comparison key so the same word matches however it was
+/// typed or stored.
+///
+/// The problem: in Malayalam and Sanskrit the same visible word can be stored in
+/// several different Unicode forms, so plain substring search fails. See
+/// `docs/architecture.md §6.1`.
+///
+/// The rule: **the original text is never changed.** The fold produces a
+/// throwaway key used only for comparing, plus an index map back to the original
+/// characters so highlights land in the right place.
+///
+/// Work happens per **grapheme cluster**, which is both the unit a reader thinks
+/// in and the unit that survives normalization. That is what makes the chillu
+/// fold exact: `ന` + virama + ZWJ and the atomic `ൻ` are each one cluster, so
+/// they fold one-to-one.
+class SearchNormalizer {
+  const SearchNormalizer([this.options = SearchOptions.normal]);
+
+  final SearchOptions options;
+
+  static const int _zwnj = 0x200C;
+  static const int _zwj = 0x200D;
+  static const int _malayalamVirama = 0x0D4D;
+
+  // Built from their code points: these characters are invisible, so a
+  // literal in the source would be unreadable and easy to break by accident.
+  static final String _zwnjChar = String.fromCharCode(_zwnj);
+  static final String _zwjChar = String.fromCharCode(_zwj);
+
+  /// Malayalam consonants that have an atomic chillu form. The old spelling is
+  /// `consonant + virama + ZWJ`; the modern one is a single code point. Both look
+  /// identical on the page, so search must treat them as one.
+  static const Map<int, int> _chillu = {
+    0x0D23: 0x0D7A, // ണ -> ൺ
+    0x0D28: 0x0D7B, // ന -> ൻ
+    0x0D30: 0x0D7C, // ര -> ർ
+    0x0D32: 0x0D7D, // ല -> ൽ
+    0x0D33: 0x0D7E, // ള -> ൾ
+    0x0D15: 0x0D7F, // ക -> ൿ
+  };
+
+  /// Builds the key for [text] and the map back to it.
+  NormalizedText normalize(String text) {
+    if (text.isEmpty) return NormalizedText.empty;
+
+    final buffer = StringBuffer();
+    final spans = <ClusterSpan>[];
+    var source = 0;
+
+    for (final cluster in text.characters) {
+      final sourceStart = source;
+      source += cluster.length;
+
+      final folded = _fold(cluster);
+      // A cluster that folds to nothing (a lone joiner) simply carries no key
+      // of its own. It still sits inside any match that spans it, because a
+      // match takes its source range from the first and last cluster.
+      if (folded.isEmpty) continue;
+
+      final keyStart = buffer.length;
+      buffer.write(folded);
+      spans.add(
+        ClusterSpan(
+          keyStart: keyStart,
+          keyEnd: keyStart + folded.length,
+          sourceStart: sourceStart,
+          sourceEnd: source,
+        ),
+      );
+    }
+    return NormalizedText(key: buffer.toString(), clusters: spans);
+  }
+
+  /// The key for a query the reader typed. Same fold as [normalize], so the two
+  /// sides compare.
+  String queryKey(String query) => normalize(query).key;
+
+  /// Folds one grapheme cluster into its comparison form.
+  String _fold(String cluster) {
+    // Any run of spaces, tabs, or line breaks compares as one plain space, so a
+    // phrase still matches across a line break in the PDF.
+    if (_isBlank(cluster)) return ' ';
+
+    // Plain ASCII is already normalized; skip the expensive path.
+    var text = _isAscii(cluster) ? cluster : unorm.nfc(cluster);
+
+    if (!options.strict) {
+      // Chillu first — the fold needs the ZWJ that the next step removes.
+      text = _unifyChillu(text);
+      text = _stripJoiners(text);
+    }
+    if (options.ignoreAccents) text = _stripAccents(text);
+
+    return text.toLowerCase();
+  }
+
+  static bool _isBlank(String s) => s.trim().isEmpty;
+
+  static bool _isAscii(String s) {
+    for (final unit in s.codeUnits) {
+      if (unit >= 0x80) return false;
+    }
+    return true;
+  }
+
+  /// Rewrites `consonant + virama + ZWJ` as the atomic chillu letter.
+  static String _unifyChillu(String s) {
+    if (!s.contains(_zwjChar)) return s;
+
+    final runes = s.runes.toList();
+    final out = <int>[];
+    var i = 0;
+    while (i < runes.length) {
+      final atomic =
+          i + 2 < runes.length &&
+              runes[i + 1] == _malayalamVirama &&
+              runes[i + 2] == _zwj
+          ? _chillu[runes[i]]
+          : null;
+      if (atomic != null) {
+        out.add(atomic);
+        i += 3;
+      } else {
+        out.add(runes[i]);
+        i++;
+      }
+    }
+    return String.fromCharCodes(out);
+  }
+
+  /// Drops ZWJ / ZWNJ from the key.
+  ///
+  /// Standards-backed: both are Unicode `Default_Ignorable_Code_Point`, and the
+  /// Unicode Collation Algorithm gives them no weight. They stay in the stored
+  /// and displayed text, so shaping is unaffected — a reader just does not have
+  /// to type an invisible character to find a word.
+  static String _stripJoiners(String s) =>
+      s.replaceAll(_zwnjChar, '').replaceAll(_zwjChar, '');
+
+  /// Drops Sanskrit / Vedic accent marks (accent-insensitive mode only).
+  ///
+  /// These are tone marks written above and below the letters. Nukta is *not*
+  /// touched: it changes which letter a character is, not how it is intoned.
+  static String _stripAccents(String s) {
+    final out = <int>[];
+    for (final rune in s.runes) {
+      if (!_isAccentMark(rune)) out.add(rune);
+    }
+    return String.fromCharCodes(out);
+  }
+
+  static bool _isAccentMark(int r) =>
+      (r >= 0x0951 && r <= 0x0954) || // Devanagari stress and accent marks
+      (r >= 0xA8E0 && r <= 0xA8F1) || // Devanagari Extended cantillation
+      (r >= 0x1CD0 && r <= 0x1CE8) || // Vedic tone marks
+      r == 0x1CED ||
+      r == 0x1CF4 ||
+      r == 0x1CF8 ||
+      r == 0x1CF9;
+}

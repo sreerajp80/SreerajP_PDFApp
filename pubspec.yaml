@@ -1,0 +1,60 @@
+name: pdfapp
+description: "SreerajP PDF App — an offline Android app for everything PDF."
+publish_to: 'none'
+
+# version/build. Keep in sync with assets/config/app_config.json (ConfigService checks this).
+version: 2.0.0+2
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # State management (one pattern for the whole app).
+  flutter_riverpod: ^2.6.1
+  # Navigation (centralized routes).
+  go_router: ^14.6.2
+  # Local database.
+  sqflite: ^2.4.1
+  path: ^1.9.0
+  path_provider: ^2.1.5
+  # Non-secret settings.
+  shared_preferences: ^2.3.4
+  # Logging behind AppLogger.
+  logger: ^2.5.0
+  # Reads app version/build for ConfigService.loadAndVerify.
+  package_info_plus: ^8.1.2
+  # Locale-sensitive formatting + l10n.
+  intl: ^0.20.2
+  # PDF rendering (pdfium). BSD — open-source rule.
+  pdfrx: ^1.0.98
+  # SHA-256 for the content fingerprint (file identity = size + hash).
+  crypto: ^3.0.6
+  # Grapheme-cluster splitting for complex-script search (Malayalam/Sanskrit).
+  characters: ^1.4.0
+  # Unicode NFC normalization for complex-script search. MIT — open-source rule.
+  # architecture.md §6.1 named this the fallback to native ICU; we take it so the
+  # fold and its index map stay in one testable pure-Dart pass (see the plan).
+  unorm_dart: ^0.3.2
+  # Text-to-speech (English + Malayalam). MIT — open-source rule.
+  flutter_tts: ^4.2.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  # Runs sqflite on the test host (Windows/CI) for database tests.
+  sqflite_common_ffi: ^2.3.4
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/config/

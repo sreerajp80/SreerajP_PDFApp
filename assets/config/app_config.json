@@ -1,0 +1,13 @@
+{
+  "appName": "SreerajP PDF App",
+  "description": "An offline Android app for everything PDF — read, search, listen, annotate, extract, reorganize, print, and verify signatures.",
+  "version": "2.0.0",
+  "build": "2",
+  "details": {
+    "Author": "Sreeraj P",
+    "Email": "sreerajp@zohomail.in",
+    "License": "All libraries used are open source.",
+    "AI used": "Anthropic Claude",
+    "IDE used": "Visual Studio Code"
+  }
+}
