@@ -24,6 +24,8 @@ import 'package:pdfapp/features/viewer/presentation/widgets/password_prompt.dart
 import 'package:pdfapp/features/viewer/presentation/widgets/thumbnail_grid.dart';
 import 'package:pdfapp/features/viewer/presentation/widgets/viewer_error_view.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
+import 'package:pdfapp/features/extraction/presentation/widgets/extraction_dialog.dart';
+import 'package:pdfapp/features/page_ops/presentation/page_ops_sheet.dart';
 
 /// Inverts page colors for night reading (project rule: comfortable dark read).
 const ColorFilter _invertFilter = ColorFilter.matrix(<double>[
@@ -267,6 +269,29 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   }
 
   void _showDetails() => unawaited(showMetadataSheet(context, widget.docRef));
+
+  void _showExtractionDialog() {
+    showDialog<void>(
+      context: context,
+      builder: (context) => ExtractionDialog(
+        path: widget.docRef.cachePath,
+        currentPage: _currentPage,
+        totalPages: _pageCount,
+      ),
+    );
+  }
+
+  void _showPageOps() {
+    final document = _document;
+    if (document == null) return;
+    unawaited(
+      showPageOpsSheet(
+        context,
+        path: widget.docRef.cachePath,
+        document: document,
+      ),
+    );
+  }
 
   // --- Search (Phase 2) ---
 
@@ -516,6 +541,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           _ViewerMenu.fitWidth => _fitWidth(),
           _ViewerMenu.fitPage => _fitPage(),
           _ViewerMenu.details => _showDetails(),
+          _ViewerMenu.extract => _showExtractionDialog(),
+          _ViewerMenu.pageOps => _showPageOps(),
         },
         itemBuilder: (context) => [
           _checked(
@@ -543,6 +570,15 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           PopupMenuItem(
             value: _ViewerMenu.details,
             child: Text(l10n.metadataAction),
+          ),
+          const PopupMenuDivider(),
+          PopupMenuItem(
+            value: _ViewerMenu.extract,
+            child: Text(l10n.extractAndConvert),
+          ),
+          PopupMenuItem(
+            value: _ViewerMenu.pageOps,
+            child: Text(l10n.pageToolsTitle),
           ),
         ],
       ),
@@ -594,7 +630,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               ),
             ),
           ),
-          const SizedBox(width: 48), // spacer matching IconButton size to balance centering
+          const SizedBox(
+            width: 48,
+          ), // spacer matching IconButton size to balance centering
         ],
       ),
     );
@@ -686,4 +724,13 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   }
 }
 
-enum _ViewerMenu { continuous, single, book, fitWidth, fitPage, details }
+enum _ViewerMenu {
+  continuous,
+  single,
+  book,
+  fitWidth,
+  fitPage,
+  details,
+  extract,
+  pageOps,
+}

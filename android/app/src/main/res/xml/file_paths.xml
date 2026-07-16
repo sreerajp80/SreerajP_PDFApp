@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Grants access to the app's cache directory (which contains temporary copies of opened PDFs and extraction outputs) -->
+    <cache-path name="app_cache" path="." />
+</paths>

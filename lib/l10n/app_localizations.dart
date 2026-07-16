@@ -338,10 +338,10 @@ abstract class AppLocalizations {
   /// **'Password'**
   String get passwordHint;
 
-  /// Confirm the password
+  /// Action to remove a PDF password
   ///
   /// In en, this message translates to:
-  /// **'Unlock'**
+  /// **'Remove password'**
   String get unlockAction;
 
   /// Retry opening the file
@@ -793,6 +793,414 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The Malayalam voice is no longer installed, so the setting was turned off.'**
   String get ttsVoiceLostNotice;
+
+  /// Title/action for extracting and converting PDF contents
+  ///
+  /// In en, this message translates to:
+  /// **'Extract & Convert'**
+  String get extractAndConvert;
+
+  /// Action to extract plain text
+  ///
+  /// In en, this message translates to:
+  /// **'Extract text'**
+  String get extractTextAction;
+
+  /// Action to extract embedded images
+  ///
+  /// In en, this message translates to:
+  /// **'Extract images'**
+  String get extractImagesAction;
+
+  /// Action to convert PDF pages to images
+  ///
+  /// In en, this message translates to:
+  /// **'Convert to images'**
+  String get convertPdfAction;
+
+  /// Action to read AcroForm fields
+  ///
+  /// In en, this message translates to:
+  /// **'Form fields'**
+  String get formFieldsAction;
+
+  /// Message when extraction completes successfully
+  ///
+  /// In en, this message translates to:
+  /// **'Extraction successful'**
+  String get extractionSuccess;
+
+  /// Message when extraction fails
+  ///
+  /// In en, this message translates to:
+  /// **'Extraction failed'**
+  String get extractionFailed;
+
+  /// Message shown during extraction process
+  ///
+  /// In en, this message translates to:
+  /// **'Extracting content…'**
+  String get extractingProgress;
+
+  /// Page range option for all pages
+  ///
+  /// In en, this message translates to:
+  /// **'All pages'**
+  String get rangeAll;
+
+  /// Page range option for the current page
+  ///
+  /// In en, this message translates to:
+  /// **'Current page (Page {page})'**
+  String rangeCurrent(int page);
+
+  /// Page range option for a custom range
+  ///
+  /// In en, this message translates to:
+  /// **'Custom range'**
+  String get rangeCustom;
+
+  /// Label for the start page input field
+  ///
+  /// In en, this message translates to:
+  /// **'Start page'**
+  String get startPageLabel;
+
+  /// Label for the end page input field
+  ///
+  /// In en, this message translates to:
+  /// **'End page'**
+  String get endPageLabel;
+
+  /// Error shown on invalid page range
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid page range'**
+  String get invalidPageRange;
+
+  /// Label for image format selector
+  ///
+  /// In en, this message translates to:
+  /// **'Image format'**
+  String get imageFormatLabel;
+
+  /// Label for resolution in DPI
+  ///
+  /// In en, this message translates to:
+  /// **'Resolution: {dpi} DPI'**
+  String resolutionLabel(int dpi);
+
+  /// Column header for field names
+  ///
+  /// In en, this message translates to:
+  /// **'Field Name'**
+  String get fieldsNameHeader;
+
+  /// Column header for field values
+  ///
+  /// In en, this message translates to:
+  /// **'Value'**
+  String get fieldsValueHeader;
+
+  /// Message shown when PDF has no AcroForm fields
+  ///
+  /// In en, this message translates to:
+  /// **'No interactive form fields found in this PDF.'**
+  String get noFormFieldsFound;
+
+  /// Message when no embedded images are found in page range
+  ///
+  /// In en, this message translates to:
+  /// **'No images were found in the selected range.'**
+  String get noImagesFound;
+
+  /// Generic share action button
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get shareAction;
+
+  /// Action to share text/form as a file
+  ///
+  /// In en, this message translates to:
+  /// **'Share as file'**
+  String get shareFileAction;
+
+  /// Action to copy text/fields to clipboard
+  ///
+  /// In en, this message translates to:
+  /// **'Copy to clipboard'**
+  String get copyClipboardAction;
+
+  /// Toast message on successful copy
+  ///
+  /// In en, this message translates to:
+  /// **'Copied to clipboard'**
+  String get copySuccess;
+
+  /// Title of text preview dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Extracted Text Preview'**
+  String get previewTextTitle;
+
+  /// Title of form fields display dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Interactive Form Fields'**
+  String get formFieldsTitle;
+
+  /// Menu entry and sheet title for page operations
+  ///
+  /// In en, this message translates to:
+  /// **'Page tools'**
+  String get pageToolsTitle;
+
+  /// Action to merge several PDFs into one
+  ///
+  /// In en, this message translates to:
+  /// **'Merge PDFs'**
+  String get mergeAction;
+
+  /// Subtitle for the merge action
+  ///
+  /// In en, this message translates to:
+  /// **'Join this PDF with others into one new file'**
+  String get mergeDescription;
+
+  /// Success title after merging
+  ///
+  /// In en, this message translates to:
+  /// **'PDFs merged'**
+  String get mergeDoneTitle;
+
+  /// Action to split a PDF into one file per page
+  ///
+  /// In en, this message translates to:
+  /// **'Split into pages'**
+  String get splitAction;
+
+  /// Subtitle for the split action
+  ///
+  /// In en, this message translates to:
+  /// **'Make one new file for each page'**
+  String get splitDescription;
+
+  /// Success title after splitting
+  ///
+  /// In en, this message translates to:
+  /// **'PDF split'**
+  String get splitDoneTitle;
+
+  /// Action to reorder, rotate, and delete pages
+  ///
+  /// In en, this message translates to:
+  /// **'Organize pages'**
+  String get organizeAction;
+
+  /// Subtitle for the organize action
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder, rotate, or delete pages'**
+  String get organizeDescription;
+
+  /// App bar title of the organizer screen
+  ///
+  /// In en, this message translates to:
+  /// **'Organize pages'**
+  String get organizeTitle;
+
+  /// Help text on the organizer screen
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to reorder. Use the buttons to rotate or delete a page. Save writes a new file.'**
+  String get organizeHint;
+
+  /// Success title after organizing pages
+  ///
+  /// In en, this message translates to:
+  /// **'Pages organized'**
+  String get organizeDoneTitle;
+
+  /// Action to compress a PDF
+  ///
+  /// In en, this message translates to:
+  /// **'Compress'**
+  String get compressAction;
+
+  /// Subtitle for the compress action
+  ///
+  /// In en, this message translates to:
+  /// **'Make a smaller copy (best-effort)'**
+  String get compressDescription;
+
+  /// Success title after compressing
+  ///
+  /// In en, this message translates to:
+  /// **'PDF compressed'**
+  String get compressDoneTitle;
+
+  /// Note explaining that compression is weak
+  ///
+  /// In en, this message translates to:
+  /// **'Compression is best-effort. Already-optimized files may not shrink much.'**
+  String get compressBestEffortNote;
+
+  /// Action to add a password to a PDF
+  ///
+  /// In en, this message translates to:
+  /// **'Protect with password'**
+  String get protectAction;
+
+  /// Subtitle for the protect action
+  ///
+  /// In en, this message translates to:
+  /// **'Add a password to a new copy'**
+  String get protectDescription;
+
+  /// Title of the protect dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Protect PDF'**
+  String get protectTitle;
+
+  /// Success title after protecting
+  ///
+  /// In en, this message translates to:
+  /// **'PDF protected'**
+  String get protectDoneTitle;
+
+  /// Subtitle for the unlock action
+  ///
+  /// In en, this message translates to:
+  /// **'Make an unlocked copy (needs the current password)'**
+  String get unlockDescription;
+
+  /// Title of the unlock dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Remove password'**
+  String get unlockTitle;
+
+  /// Success title after unlocking
+  ///
+  /// In en, this message translates to:
+  /// **'Password removed'**
+  String get unlockDoneTitle;
+
+  /// Label for the open password field
+  ///
+  /// In en, this message translates to:
+  /// **'Password (to open the file)'**
+  String get userPasswordLabel;
+
+  /// Label for the optional owner password field
+  ///
+  /// In en, this message translates to:
+  /// **'Owner password (optional)'**
+  String get ownerPasswordLabel;
+
+  /// Helper text for the owner password field
+  ///
+  /// In en, this message translates to:
+  /// **'Controls printing and editing. Leave blank to match the open password.'**
+  String get ownerPasswordHelp;
+
+  /// Label for the current password field when unlocking
+  ///
+  /// In en, this message translates to:
+  /// **'Current password'**
+  String get currentPasswordLabel;
+
+  /// Validation error when no password is entered
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a password.'**
+  String get passwordRequiredError;
+
+  /// Progress text shown while an operation runs
+  ///
+  /// In en, this message translates to:
+  /// **'Working…'**
+  String get workingProgress;
+
+  /// Generic failure message for a page operation
+  ///
+  /// In en, this message translates to:
+  /// **'Operation failed'**
+  String get opFailed;
+
+  /// Action to save a file to a chosen location
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveAction;
+
+  /// Message shown when saving fails
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the file'**
+  String get saveFailed;
+
+  /// Toast after a file is saved to a chosen location
+  ///
+  /// In en, this message translates to:
+  /// **'Saved {name}'**
+  String savedFileMessage(String name);
+
+  /// Result dialog line for a single output file
+  ///
+  /// In en, this message translates to:
+  /// **'New file: {name}'**
+  String resultOneFile(String name);
+
+  /// Result dialog line for many output files
+  ///
+  /// In en, this message translates to:
+  /// **'{count} new files were created.'**
+  String resultManyFiles(int count);
+
+  /// Label for a page row in the organizer
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page}'**
+  String pageLabel(int page);
+
+  /// Shows how much a page is rotated
+  ///
+  /// In en, this message translates to:
+  /// **'Rotated {degrees}°'**
+  String rotatedBy(int degrees);
+
+  /// Snackbar after a page is deleted in the organizer
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page} removed'**
+  String pageDeletedMessage(int page);
+
+  /// Undo a deletion
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undoAction;
+
+  /// Rotate a page
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate'**
+  String get rotateAction;
+
+  /// Delete a page
+  ///
+  /// In en, this message translates to:
+  /// **'Delete page'**
+  String get deletePageAction;
+
+  /// Error when the user deletes every page
+  ///
+  /// In en, this message translates to:
+  /// **'Keep at least one page.'**
+  String get noPagesLeftError;
 }
 
 class _AppLocalizationsDelegate

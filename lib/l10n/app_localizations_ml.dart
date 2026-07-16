@@ -143,7 +143,7 @@ class AppLocalizationsMl extends AppLocalizations {
   String get passwordHint => 'പാസ്‌വേഡ്';
 
   @override
-  String get unlockAction => 'തുറക്കുക';
+  String get unlockAction => 'പാസ്‌വേഡ് നീക്കുക';
 
   @override
   String get tryAgainAction => 'വീണ്ടും ശ്രമിക്കുക';
@@ -392,4 +392,232 @@ class AppLocalizationsMl extends AppLocalizations {
   @override
   String get ttsVoiceLostNotice =>
       'മലയാളം ശബ്ദം ഇനി ഇൻസ്റ്റാൾ ചെയ്തിട്ടില്ല, അതിനാൽ ക്രമീകരണം ഓഫാക്കി.';
+
+  @override
+  String get extractAndConvert => 'എക്‌സ്‌ട്രാക്റ്റും കൺവേർട്ടും';
+
+  @override
+  String get extractTextAction => 'എഴുത്ത് വേർതിരിക്കുക';
+
+  @override
+  String get extractImagesAction => 'ചിത്രങ്ങൾ വേർതിരിക്കുക';
+
+  @override
+  String get convertPdfAction => 'ചിത്രങ്ങളാക്കി മാറ്റുക';
+
+  @override
+  String get formFieldsAction => 'ഫോം ഫീൽഡുകൾ';
+
+  @override
+  String get extractionSuccess => 'വേർതിരിക്കൽ വിജയിച്ചു';
+
+  @override
+  String get extractionFailed => 'വേർതിരിക്കൽ പരാജയപ്പെട്ടു';
+
+  @override
+  String get extractingProgress => 'വേർതിരിക്കുന്നു…';
+
+  @override
+  String get rangeAll => 'എല്ലാ പേജുകളും';
+
+  @override
+  String rangeCurrent(int page) {
+    return 'ഈ പേജ് മാത്രം (പേജ് $page)';
+  }
+
+  @override
+  String get rangeCustom => 'നിശ്ചിത പേജുകൾ';
+
+  @override
+  String get startPageLabel => 'ആരംഭ പേജ്';
+
+  @override
+  String get endPageLabel => 'അവസാന പേജ്';
+
+  @override
+  String get invalidPageRange => 'തെറ്റായ പേജ് പരിധി';
+
+  @override
+  String get imageFormatLabel => 'ചിത്രത്തിന്റെ ഫോർമാറ്റ്';
+
+  @override
+  String resolutionLabel(int dpi) {
+    return 'റെസലൂഷൻ: $dpi DPI';
+  }
+
+  @override
+  String get fieldsNameHeader => 'ഫീൽഡിന്റെ പേര്';
+
+  @override
+  String get fieldsValueHeader => 'മൂല്യം';
+
+  @override
+  String get noFormFieldsFound =>
+      'ഈ പി.ഡി.എഫ്.-ൽ ഫോം ഫീൽഡുകൾ ഒന്നും കണ്ടെത്തിയില്ല.';
+
+  @override
+  String get noImagesFound => 'ഈ പേജുകളിൽ ചിത്രങ്ങൾ ഒന്നും കണ്ടെത്തിയില്ല.';
+
+  @override
+  String get shareAction => 'പങ്കുവെക്കുക';
+
+  @override
+  String get shareFileAction => 'ഫയലായി പങ്കുവെക്കുക';
+
+  @override
+  String get copyClipboardAction => 'പകർപ്പെടുക്കുക';
+
+  @override
+  String get copySuccess => 'പകർപ്പ് എടുത്തു കഴിഞ്ഞു';
+
+  @override
+  String get previewTextTitle => 'എഴുത്തിന്റെ പ്രിവ്യൂ';
+
+  @override
+  String get formFieldsTitle => 'ഫോം ഫീൽഡുകൾ കാണുക';
+
+  @override
+  String get pageToolsTitle => 'പേജ് ഉപകരണങ്ങൾ';
+
+  @override
+  String get mergeAction => 'PDF-കൾ ഒന്നാക്കുക';
+
+  @override
+  String get mergeDescription =>
+      'ഈ PDF മറ്റുള്ളവയുമായി ചേർത്ത് ഒരു പുതിയ ഫയൽ ഉണ്ടാക്കുക';
+
+  @override
+  String get mergeDoneTitle => 'PDF-കൾ ചേർത്തു';
+
+  @override
+  String get splitAction => 'പേജുകളായി വേർതിരിക്കുക';
+
+  @override
+  String get splitDescription => 'ഓരോ പേജിനും ഒരു പുതിയ ഫയൽ ഉണ്ടാക്കുക';
+
+  @override
+  String get splitDoneTitle => 'PDF വേർതിരിച്ചു';
+
+  @override
+  String get organizeAction => 'പേജുകൾ ക്രമീകരിക്കുക';
+
+  @override
+  String get organizeDescription =>
+      'പേജുകൾ വീണ്ടും ക്രമീകരിക്കുക, തിരിക്കുക അല്ലെങ്കിൽ നീക്കം ചെയ്യുക';
+
+  @override
+  String get organizeTitle => 'പേജുകൾ ക്രമീകരിക്കുക';
+
+  @override
+  String get organizeHint =>
+      'വീണ്ടും ക്രമീകരിക്കാൻ വലിച്ചിടുക. തിരിക്കാനോ നീക്കാനോ ബട്ടണുകൾ ഉപയോഗിക്കുക. സേവ് ചെയ്യുമ്പോൾ പുതിയ ഫയൽ ഉണ്ടാകും.';
+
+  @override
+  String get organizeDoneTitle => 'പേജുകൾ ക്രമീകരിച്ചു';
+
+  @override
+  String get compressAction => 'ചെറുതാക്കുക';
+
+  @override
+  String get compressDescription =>
+      'ചെറിയ ഒരു പകർപ്പ് ഉണ്ടാക്കുക (കഴിയുന്നത്ര)';
+
+  @override
+  String get compressDoneTitle => 'PDF ചെറുതാക്കി';
+
+  @override
+  String get compressBestEffortNote =>
+      'ചെറുതാക്കൽ കഴിയുന്നത്ര മാത്രമാണ്. നേരത്തെ ഒപ്റ്റിമൈസ് ചെയ്ത ഫയലുകൾ അധികം ചെറുതാകില്ല.';
+
+  @override
+  String get protectAction => 'പാസ്‌വേഡ് ഇടുക';
+
+  @override
+  String get protectDescription => 'പുതിയ പകർപ്പിന് ഒരു പാസ്‌വേഡ് ചേർക്കുക';
+
+  @override
+  String get protectTitle => 'PDF-ന് പാസ്‌വേഡ് ഇടുക';
+
+  @override
+  String get protectDoneTitle => 'PDF-ന് പാസ്‌വേഡ് ഇട്ടു';
+
+  @override
+  String get unlockDescription =>
+      'പാസ്‌വേഡ് ഇല്ലാത്ത പകർപ്പ് ഉണ്ടാക്കുക (ഇപ്പോഴത്തെ പാസ്‌വേഡ് വേണം)';
+
+  @override
+  String get unlockTitle => 'പാസ്‌വേഡ് നീക്കുക';
+
+  @override
+  String get unlockDoneTitle => 'പാസ്‌വേഡ് നീക്കി';
+
+  @override
+  String get userPasswordLabel => 'പാസ്‌വേഡ് (ഫയൽ തുറക്കാൻ)';
+
+  @override
+  String get ownerPasswordLabel => 'ഉടമ പാസ്‌വേഡ് (നിർബന്ധമല്ല)';
+
+  @override
+  String get ownerPasswordHelp =>
+      'പ്രിന്റും എഡിറ്റും നിയന്ത്രിക്കുന്നു. ഒഴിച്ചിട്ടാൽ തുറക്കൽ പാസ്‌വേഡ് തന്നെ ഉപയോഗിക്കും.';
+
+  @override
+  String get currentPasswordLabel => 'ഇപ്പോഴത്തെ പാസ്‌വേഡ്';
+
+  @override
+  String get passwordRequiredError => 'ദയവായി ഒരു പാസ്‌വേഡ് നൽകുക.';
+
+  @override
+  String get workingProgress => 'ചെയ്യുന്നു…';
+
+  @override
+  String get opFailed => 'പ്രവർത്തനം പരാജയപ്പെട്ടു';
+
+  @override
+  String get saveAction => 'സേവ് ചെയ്യുക';
+
+  @override
+  String get saveFailed => 'ഫയൽ സേവ് ചെയ്യാൻ കഴിഞ്ഞില്ല';
+
+  @override
+  String savedFileMessage(String name) {
+    return '$name സേവ് ചെയ്തു';
+  }
+
+  @override
+  String resultOneFile(String name) {
+    return 'പുതിയ ഫയൽ: $name';
+  }
+
+  @override
+  String resultManyFiles(int count) {
+    return '$count പുതിയ ഫയലുകൾ ഉണ്ടാക്കി.';
+  }
+
+  @override
+  String pageLabel(int page) {
+    return 'പേജ് $page';
+  }
+
+  @override
+  String rotatedBy(int degrees) {
+    return '$degrees° തിരിച്ചു';
+  }
+
+  @override
+  String pageDeletedMessage(int page) {
+    return 'പേജ് $page നീക്കി';
+  }
+
+  @override
+  String get undoAction => 'പഴയപടിയാക്കുക';
+
+  @override
+  String get rotateAction => 'തിരിക്കുക';
+
+  @override
+  String get deletePageAction => 'പേജ് നീക്കുക';
+
+  @override
+  String get noPagesLeftError => 'കുറഞ്ഞത് ഒരു പേജെങ്കിലും വേണം.';
 }

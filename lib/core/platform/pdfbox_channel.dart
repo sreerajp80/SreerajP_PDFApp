@@ -107,4 +107,261 @@ class PdfBoxChannel {
       throw PdfOpenException('PDF details are not available here.', cause: e);
     }
   }
+
+  /// Extracts text from the PDF at [cachePath] for the given page range.
+  Future<String> extractText(
+    String cachePath, {
+    String? password,
+    int? startPage,
+    int? endPage,
+  }) async {
+    try {
+      final result = await _method.invokeMethod<String>('extractText', {
+        'path': cachePath,
+        'password': password,
+        'startPage': startPage,
+        'endPage': endPage,
+      });
+      return result ?? '';
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException(
+        'Text extraction is not available here.',
+        cause: e,
+      );
+    }
+  }
+
+  /// Extracts embedded images from the PDF at [cachePath] for the given page range
+  /// and saves them into [outputDir]. Returns the list of absolute image paths.
+  Future<List<String>> extractImages(
+    String cachePath,
+    String outputDir, {
+    String? password,
+    int? startPage,
+    int? endPage,
+  }) async {
+    try {
+      final result = await _method.invokeListMethod<String>('extractImages', {
+        'path': cachePath,
+        'password': password,
+        'startPage': startPage,
+        'endPage': endPage,
+        'outputDir': outputDir,
+      });
+      return result ?? const [];
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException(
+        'Image extraction is not available here.',
+        cause: e,
+      );
+    }
+  }
+
+  /// Reads AcroForm fields from the PDF at [cachePath].
+  Future<List<Map<String, dynamic>>> readFormFields(
+    String cachePath, {
+    String? password,
+  }) async {
+    try {
+      final result = await _method.invokeListMethod<dynamic>('readFormFields', {
+        'path': cachePath,
+        'password': password,
+      });
+      if (result == null) return const [];
+      return result.map((item) {
+        final map = item as Map<Object?, Object?>;
+        return {
+          'name': map['name'] as String? ?? '',
+          'value': map['value'] as String? ?? '',
+          'type': map['type'] as String? ?? '',
+          'readOnly': map['readOnly'] as bool? ?? false,
+        };
+      }).toList();
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException(
+        'Form fields reading is not available here.',
+        cause: e,
+      );
+    }
+  }
+
+  /// Renders PDF pages to raster images (PNG/JPEG) saved in [outputDir].
+  Future<List<String>> renderPagesToImages(
+    String cachePath,
+    String outputDir, {
+    String? password,
+    int? startPage,
+    int? endPage,
+    String format = 'png',
+    int dpi = 150,
+  }) async {
+    try {
+      final result = await _method
+          .invokeListMethod<String>('renderPagesToImages', {
+            'path': cachePath,
+            'password': password,
+            'startPage': startPage,
+            'endPage': endPage,
+            'outputDir': outputDir,
+            'format': format,
+            'dpi': dpi,
+          });
+      return result ?? const [];
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException('Page rendering is not available here.', cause: e);
+    }
+  }
+
+  // --- Page operations (Phase 4). Each returns the new file path(s). ---
+
+  /// Merges the PDFs at [paths] (in order) into one new PDF at [outputPath].
+  Future<String> mergePdfs(List<String> paths, String outputPath) async {
+    try {
+      final result = await _method.invokeMethod<String>('mergePdfs', {
+        'paths': paths,
+        'outputPath': outputPath,
+      });
+      return result ?? outputPath;
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException('Merging is not available here.', cause: e);
+    }
+  }
+
+  /// Splits the PDF at [cachePath] into one file per page inside [outputDir].
+  Future<List<String>> splitPdf(
+    String cachePath,
+    String outputDir, {
+    String? password,
+  }) async {
+    try {
+      final result = await _method.invokeListMethod<String>('splitPdf', {
+        'path': cachePath,
+        'password': password,
+        'outputDir': outputDir,
+      });
+      return result ?? const [];
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException('Splitting is not available here.', cause: e);
+    }
+  }
+
+  /// Writes a new PDF at [outputPath] from selected pages.
+  ///
+  /// [pages] is an ordered list of `{'page': 1-based original, 'rotation': 0/90/180/270}`.
+  /// Pages left out are dropped, so this one call covers reorder, rotate, and delete.
+  Future<String> organizePages(
+    String cachePath,
+    String outputPath,
+    List<Map<String, int>> pages, {
+    String? password,
+  }) async {
+    try {
+      final result = await _method.invokeMethod<String>('organizePages', {
+        'path': cachePath,
+        'password': password,
+        'outputPath': outputPath,
+        'pages': pages,
+      });
+      return result ?? outputPath;
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException(
+        'Page organizing is not available here.',
+        cause: e,
+      );
+    }
+  }
+
+  /// Writes a best-effort compressed copy of [cachePath] at [outputPath].
+  Future<String> compressPdf(
+    String cachePath,
+    String outputPath, {
+    String? password,
+  }) async {
+    try {
+      final result = await _method.invokeMethod<String>('compressPdf', {
+        'path': cachePath,
+        'password': password,
+        'outputPath': outputPath,
+      });
+      return result ?? outputPath;
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException('Compression is not available here.', cause: e);
+    }
+  }
+
+  /// Writes a password-protected copy of [cachePath] at [outputPath].
+  ///
+  /// [userPassword] is required to open the file; [ownerPassword] (optional)
+  /// controls permissions. Passwords are never logged or stored (§11).
+  Future<String> encryptPdf(
+    String cachePath,
+    String outputPath, {
+    String? password,
+    required String userPassword,
+    String? ownerPassword,
+  }) async {
+    try {
+      final result = await _method.invokeMethod<String>('encryptPdf', {
+        'path': cachePath,
+        'password': password,
+        'outputPath': outputPath,
+        'userPassword': userPassword,
+        'ownerPassword': ownerPassword,
+      });
+      return result ?? outputPath;
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException('Protection is not available here.', cause: e);
+    }
+  }
+
+  /// Writes an unprotected copy of [cachePath] at [outputPath] using [password].
+  Future<String> decryptPdf(
+    String cachePath,
+    String outputPath, {
+    required String password,
+  }) async {
+    try {
+      final result = await _method.invokeMethod<String>('decryptPdf', {
+        'path': cachePath,
+        'password': password,
+        'outputPath': outputPath,
+      });
+      return result ?? outputPath;
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException('Unlocking is not available here.', cause: e);
+    }
+  }
+
+  AppException _mapException(PlatformException e) {
+    return switch (e.code) {
+      'password_required' => PdfPasswordRequiredException(
+        'This PDF is locked, so its content cannot be read.',
+        cause: e,
+      ),
+      _ => PdfOpenException(
+        e.message ?? 'This PDF could not be read.',
+        cause: e,
+      ),
+    };
+  }
 }

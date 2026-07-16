@@ -56,6 +56,39 @@ class OpenDocumentChannel {
     }
   }
 
+  /// Opens the system picker in multi-select mode (for merge). Returns the chosen
+  /// PDFs, or an empty list if the user cancelled.
+  Future<List<OpenedDocument>> pickPdfs() async {
+    try {
+      final result = await _method.invokeListMethod<Object?>('pickPdfs');
+      if (result == null) return const [];
+      return result
+          .map((item) => OpenedDocument.fromMap(item as Map<Object?, Object?>))
+          .toList();
+    } on PlatformException catch (e) {
+      throw StorageException('Could not open the file picker.', cause: e);
+    }
+  }
+
+  /// Saves the cache file at [sourcePath] to a user-chosen location through the
+  /// Android "create document" dialog. Returns the saved file name, or null if
+  /// the user cancelled.
+  Future<String?> saveToDevice(
+    String sourcePath,
+    String suggestedName, {
+    String mimeType = 'application/pdf',
+  }) async {
+    try {
+      return await _method.invokeMethod<String>('saveToDevice', {
+        'sourcePath': sourcePath,
+        'suggestedName': suggestedName,
+        'mimeType': mimeType,
+      });
+    } on PlatformException catch (e) {
+      throw StorageException('Could not save the file.', cause: e);
+    }
+  }
+
   /// Re-copies a previously opened [uri] (from recents) into a fresh cache file.
   /// Throws [StorageException] if the file is gone or access was revoked.
   Future<OpenedDocument> resolveToCache(String uri) async {
@@ -91,4 +124,26 @@ class OpenDocumentChannel {
   Stream<OpenedDocument> get incoming => _events.receiveBroadcastStream().map(
     (event) => OpenedDocument.fromMap(event as Map<Object?, Object?>),
   );
+
+  /// Shares one or more files in [paths] via Android's native share sheet.
+  /// [mimeType] is the type of content being shared (e.g. "image/png", "text/plain").
+  Future<void> shareFiles(List<String> paths, {String? mimeType}) async {
+    try {
+      await _method.invokeMethod<void>('shareFiles', {
+        'paths': paths,
+        'mimeType': mimeType,
+      });
+    } on PlatformException catch (e) {
+      throw StorageException('Could not share files.', cause: e);
+    }
+  }
+
+  /// Shares a text string using Android's native share sheet.
+  Future<void> shareText(String text) async {
+    try {
+      await _method.invokeMethod<void>('shareText', {'text': text});
+    } on PlatformException catch (e) {
+      throw StorageException('Could not share text.', cause: e);
+    }
+  }
 }

@@ -14,7 +14,7 @@ mark a task done only when it is really done (analyze clean, tests pass, verifie
 - `[!]` blocked (write the reason in Notes)
 - `[-]` dropped / deferred (write why in Notes)
 
-**Last updated:** 2026-07-15 15:10 (Phase 2 done; analyze/test/format clean, 159 tests pass, settings toggle and read-aloud controls wired, native TTS intents registered)
+**Last updated:** 2026-07-16 22:20 (Phase 4 done; analyze/format clean, 186 tests pass, dev debug APK builds. Merge/split/organize/compress/protect/unlock wired copy-on-write, with SAF save-to-location and multi-select merge picker)
 
 ---
 
@@ -25,8 +25,8 @@ mark a task done only when it is really done (analyze clean, tests pass, verifie
 | 0 | Scaffolding & foundation | [x] | 100% | Done — app shell builds; analyze/test/format clean |
 | 1 | Core viewing & navigation (MVP) | [x] | 100% | Done — analyze/test/format clean, dev APK, verified on device (open→render). Device-only DB WAL bug fixed |
 | 2 | Reading: search, copy, metadata, TTS | [x] | 100% | Done — all checklist items implemented, settings toggle and reader controls wired, 159 tests pass |
-| 3 | Extraction & conversion | [ ] | 0% | |
-| 4 | Page operations (copy-on-write) | [ ] | 0% | |
+| 3 | Extraction & conversion | [x] | 100% | Done — text, image, form fields extraction, page images, native sharing, 172 tests pass |
+| 4 | Page operations (copy-on-write) | [x] | 100% | Done — merge/split/organize/compress/protect/unlock, all copy-on-write; 186 tests pass, dev APK builds. On-device pass pending |
 | 5 | Annotation overlay layer | [ ] | 0% | |
 | 6 | PDF printer ("print to PDF") | [ ] | 0% | |
 | 7 | Digital signature verification | [ ] | 0% | Highest risk |
@@ -116,12 +116,12 @@ full install/guide/auto-disable behavior.
 
 ## Phase 3 — Extraction & conversion
 
-- [ ] Extract plain text (page / range)
-- [ ] Extract embedded images
-- [ ] Read form field values
-- [ ] Conversion service: PDF → text, PDF → images (PNG/JPEG), page/range as image
-- [ ] Share via Android share sheet (file + exported output)
-- [ ] Heavy work off UI isolate (`compute`)
+- [x] Extract plain text (page / range)
+- [x] Extract embedded images
+- [x] Read form field values
+- [x] Conversion service: PDF → text, PDF → images (PNG/JPEG), page/range as image
+- [x] Share via Android share sheet (file + exported output)
+- [x] Heavy work off UI isolate (`compute`)
 
 **Exit check:** extraction correct; conversions valid; share works.
 
@@ -129,12 +129,12 @@ full install/guide/auto-disable behavior.
 
 ## Phase 4 — Page operations (copy-on-write)
 
-- [ ] Merge multiple PDFs
-- [ ] Split into separate files
-- [ ] Reorder / rotate / delete pages
-- [ ] Compress (best-effort, clearly labelled)
-- [ ] Password protect / unlock (encrypt / decrypt)
-- [ ] Verify original never modified; passwords never logged
+- [x] Merge multiple PDFs
+- [x] Split into separate files
+- [x] Reorder / rotate / delete pages
+- [x] Compress (best-effort, clearly labelled)
+- [x] Password protect / unlock (encrypt / decrypt)
+- [x] Verify original never modified; passwords never logged
 
 **Exit check:** each op produces correct new file; original unchanged; encrypt/decrypt round-trips.
 
@@ -200,6 +200,8 @@ Add a link here after each phase's change-log entry is written in `change_log/`.
 
 - Phase 0 — `change_log/20260714_142000_phase0-scaffolding.md`
 - Phase 1 — `change_log/20260714_150000_phase1-core-viewing.md`
+- Phase 3 — `change_log/20260715_174000_phase3_extraction_completed.md`
+- Phase 4 — `change_log/20260716_222042_phase4_page_operations.md`
 
 ---
 

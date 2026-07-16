@@ -143,7 +143,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordHint => 'Password';
 
   @override
-  String get unlockAction => 'Unlock';
+  String get unlockAction => 'Remove password';
 
   @override
   String get tryAgainAction => 'Try again';
@@ -392,4 +392,229 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get ttsVoiceLostNotice =>
       'The Malayalam voice is no longer installed, so the setting was turned off.';
+
+  @override
+  String get extractAndConvert => 'Extract & Convert';
+
+  @override
+  String get extractTextAction => 'Extract text';
+
+  @override
+  String get extractImagesAction => 'Extract images';
+
+  @override
+  String get convertPdfAction => 'Convert to images';
+
+  @override
+  String get formFieldsAction => 'Form fields';
+
+  @override
+  String get extractionSuccess => 'Extraction successful';
+
+  @override
+  String get extractionFailed => 'Extraction failed';
+
+  @override
+  String get extractingProgress => 'Extracting content…';
+
+  @override
+  String get rangeAll => 'All pages';
+
+  @override
+  String rangeCurrent(int page) {
+    return 'Current page (Page $page)';
+  }
+
+  @override
+  String get rangeCustom => 'Custom range';
+
+  @override
+  String get startPageLabel => 'Start page';
+
+  @override
+  String get endPageLabel => 'End page';
+
+  @override
+  String get invalidPageRange => 'Invalid page range';
+
+  @override
+  String get imageFormatLabel => 'Image format';
+
+  @override
+  String resolutionLabel(int dpi) {
+    return 'Resolution: $dpi DPI';
+  }
+
+  @override
+  String get fieldsNameHeader => 'Field Name';
+
+  @override
+  String get fieldsValueHeader => 'Value';
+
+  @override
+  String get noFormFieldsFound =>
+      'No interactive form fields found in this PDF.';
+
+  @override
+  String get noImagesFound => 'No images were found in the selected range.';
+
+  @override
+  String get shareAction => 'Share';
+
+  @override
+  String get shareFileAction => 'Share as file';
+
+  @override
+  String get copyClipboardAction => 'Copy to clipboard';
+
+  @override
+  String get copySuccess => 'Copied to clipboard';
+
+  @override
+  String get previewTextTitle => 'Extracted Text Preview';
+
+  @override
+  String get formFieldsTitle => 'Interactive Form Fields';
+
+  @override
+  String get pageToolsTitle => 'Page tools';
+
+  @override
+  String get mergeAction => 'Merge PDFs';
+
+  @override
+  String get mergeDescription => 'Join this PDF with others into one new file';
+
+  @override
+  String get mergeDoneTitle => 'PDFs merged';
+
+  @override
+  String get splitAction => 'Split into pages';
+
+  @override
+  String get splitDescription => 'Make one new file for each page';
+
+  @override
+  String get splitDoneTitle => 'PDF split';
+
+  @override
+  String get organizeAction => 'Organize pages';
+
+  @override
+  String get organizeDescription => 'Reorder, rotate, or delete pages';
+
+  @override
+  String get organizeTitle => 'Organize pages';
+
+  @override
+  String get organizeHint =>
+      'Drag to reorder. Use the buttons to rotate or delete a page. Save writes a new file.';
+
+  @override
+  String get organizeDoneTitle => 'Pages organized';
+
+  @override
+  String get compressAction => 'Compress';
+
+  @override
+  String get compressDescription => 'Make a smaller copy (best-effort)';
+
+  @override
+  String get compressDoneTitle => 'PDF compressed';
+
+  @override
+  String get compressBestEffortNote =>
+      'Compression is best-effort. Already-optimized files may not shrink much.';
+
+  @override
+  String get protectAction => 'Protect with password';
+
+  @override
+  String get protectDescription => 'Add a password to a new copy';
+
+  @override
+  String get protectTitle => 'Protect PDF';
+
+  @override
+  String get protectDoneTitle => 'PDF protected';
+
+  @override
+  String get unlockDescription =>
+      'Make an unlocked copy (needs the current password)';
+
+  @override
+  String get unlockTitle => 'Remove password';
+
+  @override
+  String get unlockDoneTitle => 'Password removed';
+
+  @override
+  String get userPasswordLabel => 'Password (to open the file)';
+
+  @override
+  String get ownerPasswordLabel => 'Owner password (optional)';
+
+  @override
+  String get ownerPasswordHelp =>
+      'Controls printing and editing. Leave blank to match the open password.';
+
+  @override
+  String get currentPasswordLabel => 'Current password';
+
+  @override
+  String get passwordRequiredError => 'Please enter a password.';
+
+  @override
+  String get workingProgress => 'Working…';
+
+  @override
+  String get opFailed => 'Operation failed';
+
+  @override
+  String get saveAction => 'Save';
+
+  @override
+  String get saveFailed => 'Could not save the file';
+
+  @override
+  String savedFileMessage(String name) {
+    return 'Saved $name';
+  }
+
+  @override
+  String resultOneFile(String name) {
+    return 'New file: $name';
+  }
+
+  @override
+  String resultManyFiles(int count) {
+    return '$count new files were created.';
+  }
+
+  @override
+  String pageLabel(int page) {
+    return 'Page $page';
+  }
+
+  @override
+  String rotatedBy(int degrees) {
+    return 'Rotated $degrees°';
+  }
+
+  @override
+  String pageDeletedMessage(int page) {
+    return 'Page $page removed';
+  }
+
+  @override
+  String get undoAction => 'Undo';
+
+  @override
+  String get rotateAction => 'Rotate';
+
+  @override
+  String get deletePageAction => 'Delete page';
+
+  @override
+  String get noPagesLeftError => 'Keep at least one page.';
 }

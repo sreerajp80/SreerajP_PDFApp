@@ -237,7 +237,7 @@ void main() {
     });
 
     test('refuses to match when ending mid-cluster (slicing vowel)', () {
-      final ka = 'ക';
+      const ka = 'ക';
       final aaSign = String.fromCharCode(0x0D3E);
       final page = sut.normalize('$ka$aaSign'); // കാ
       expect(page.findAll(sut.queryKey(ka)), isEmpty);

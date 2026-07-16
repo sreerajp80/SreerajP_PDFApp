@@ -31,6 +31,9 @@ class MainActivity : FlutterActivity() {
     private val eventChannelName = "in.sreerajp.pdfapp/open_events"
 
     private var pendingPick: MethodChannel.Result? = null
+    private var pendingPickMulti: MethodChannel.Result? = null
+    private var pendingSave: MethodChannel.Result? = null
+    private var pendingSaveSource: String? = null
     private var eventSink: EventChannel.EventSink? = null
 
     // PDF data bridge (Phase 2). Owns its own channel; see PdfBoxHandler.
@@ -46,6 +49,17 @@ class MainActivity : FlutterActivity() {
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "pickPdf" -> startPickPdf(result)
+                    "pickPdfs" -> startPickPdfs(result)
+                    "saveToDevice" -> {
+                        val sourcePath = call.argument<String>("sourcePath")
+                        val suggestedName = call.argument<String>("suggestedName")
+                        val mimeType = call.argument<String>("mimeType") ?: "application/pdf"
+                        if (sourcePath.isNullOrEmpty() || suggestedName.isNullOrEmpty()) {
+                            result.error("bad_args", "Missing sourcePath or suggestedName.", null)
+                        } else {
+                            startSaveToDevice(sourcePath, suggestedName, mimeType, result)
+                        }
+                    }
                     "resolveToCache" -> {
                         val uri = call.argument<String>("uri")
                         if (uri == null) {
@@ -55,6 +69,23 @@ class MainActivity : FlutterActivity() {
                         }
                     }
                     "getInitialIntent" -> result.success(consumeInitialIntent())
+                    "shareFiles" -> {
+                        val paths = call.argument<List<String>>("paths")
+                        val mimeType = call.argument<String>("mimeType")
+                        if (paths.isNullOrEmpty()) {
+                            result.error("bad_args", "Missing paths.", null)
+                        } else {
+                            shareFiles(paths, mimeType, result)
+                        }
+                    }
+                    "shareText" -> {
+                        val text = call.argument<String>("text")
+                        if (text == null) {
+                            result.error("bad_args", "Missing text.", null)
+                        } else {
+                            shareText(text, result)
+                        }
+                    }
                     else -> result.notImplemented()
                 }
             }
@@ -109,7 +140,14 @@ class MainActivity : FlutterActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode != REQUEST_PICK_PDF) return
+        when (requestCode) {
+            REQUEST_PICK_PDF -> handlePickResult(resultCode, data)
+            REQUEST_PICK_PDFS -> handlePickMultiResult(resultCode, data)
+            REQUEST_SAVE_DOC -> handleSaveResult(resultCode, data)
+        }
+    }
+
+    private fun handlePickResult(resultCode: Int, data: Intent?) {
         val result = pendingPick ?: return
         pendingPick = null
 
@@ -129,6 +167,118 @@ class MainActivity : FlutterActivity() {
             // to reopen later, which Dart handles gracefully.
         }
         deliverCopy(uri, result)
+    }
+
+    private fun handlePickMultiResult(resultCode: Int, data: Intent?) {
+        val result = pendingPickMulti ?: return
+        pendingPickMulti = null
+
+        if (resultCode != Activity.RESULT_OK || data == null) {
+            result.success(emptyList<Map<String, Any?>>()) // user cancelled
+            return
+        }
+        // Gather one or many picked items (clipData for multi-select, data for single).
+        val uris = arrayListOf<Uri>()
+        val clip = data.clipData
+        if (clip != null) {
+            for (i in 0 until clip.itemCount) {
+                clip.getItemAt(i).uri?.let { uris.add(it) }
+            }
+        } else {
+            data.data?.let { uris.add(it) }
+        }
+        try {
+            val payloads = uris.map { uri ->
+                val name = queryDisplayName(uri) ?: "document.pdf"
+                val cacheFile = copyToCache(uri, name)
+                mapOf(
+                    "uri" to uri.toString(),
+                    "name" to name,
+                    "size" to cacheFile.length(),
+                    "path" to cacheFile.absolutePath,
+                )
+            }
+            result.success(payloads)
+        } catch (e: Exception) {
+            result.error("copy_failed", "Could not read a selected file.", e.message)
+        }
+    }
+
+    private fun handleSaveResult(resultCode: Int, data: Intent?) {
+        val result = pendingSave ?: return
+        val sourcePath = pendingSaveSource
+        pendingSave = null
+        pendingSaveSource = null
+
+        if (resultCode != Activity.RESULT_OK || data?.data == null || sourcePath == null) {
+            result.success(null) // user cancelled
+            return
+        }
+        val target = data.data!!
+        try {
+            val source = File(sourcePath)
+            if (!source.exists()) {
+                result.error("file_not_found", "The file to save is gone.", null)
+                return
+            }
+            contentResolver.openOutputStream(target).use { output ->
+                requireNotNull(output) { "Could not open the chosen location." }
+                source.inputStream().use { input -> input.copyTo(output) }
+            }
+            result.success(queryDisplayName(target) ?: source.name)
+        } catch (e: Exception) {
+            result.error("save_failed", "Could not save the file.", e.message)
+        }
+    }
+
+    // --- Multi-select picker for merge (ACTION_OPEN_DOCUMENT + ALLOW_MULTIPLE) ---
+
+    private fun startPickPdfs(result: MethodChannel.Result) {
+        if (pendingPickMulti != null) {
+            result.error("busy", "A pick is already in progress.", null)
+            return
+        }
+        pendingPickMulti = result
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "application/pdf"
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            startActivityForResult(intent, REQUEST_PICK_PDFS)
+        } catch (e: Exception) {
+            pendingPickMulti = null
+            result.error("no_picker", "No file picker is available.", e.message)
+        }
+    }
+
+    // --- Save a cache file to a user-chosen location (ACTION_CREATE_DOCUMENT) ---
+
+    private fun startSaveToDevice(
+        sourcePath: String,
+        suggestedName: String,
+        mimeType: String,
+        result: MethodChannel.Result
+    ) {
+        if (pendingSave != null) {
+            result.error("busy", "A save is already in progress.", null)
+            return
+        }
+        pendingSave = result
+        pendingSaveSource = sourcePath
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = mimeType
+            putExtra(Intent.EXTRA_TITLE, suggestedName)
+        }
+        try {
+            startActivityForResult(intent, REQUEST_SAVE_DOC)
+        } catch (e: Exception) {
+            pendingSave = null
+            pendingSaveSource = null
+            result.error("no_saver", "No place to save is available.", e.message)
+        }
     }
 
     // --- Resolve a stored URI back to a fresh cache copy (reopen from recents) ---
@@ -231,7 +381,65 @@ class MainActivity : FlutterActivity() {
         return outFile
     }
 
+    private fun shareFiles(paths: List<String>, mimeType: String?, result: MethodChannel.Result) {
+        try {
+            val uris = arrayListOf<Uri>()
+            for (path in paths) {
+                val file = File(path)
+                if (!file.exists()) {
+                    result.error("file_not_found", "File not found: $path", null)
+                    return
+                }
+                val uri = androidx.core.content.FileProvider.getUriForFile(
+                    this,
+                    "${packageName}.fileprovider",
+                    file
+                )
+                uris.add(uri)
+            }
+
+            val intent = if (uris.size == 1) {
+                Intent(Intent.ACTION_SEND).apply {
+                    type = mimeType ?: "*/*"
+                    putExtra(Intent.EXTRA_STREAM, uris[0])
+                }
+            } else {
+                Intent(Intent.ACTION_SEND_MULTIPLE).apply {
+                    type = mimeType ?: "*/*"
+                    putParcelableArrayListExtra(Intent.EXTRA_STREAM, uris)
+                }
+            }
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+            val chooser = Intent.createChooser(intent, "Share via").apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(chooser)
+            result.success(null)
+        } catch (e: Exception) {
+            result.error("share_failed", "Could not share files.", e.message)
+        }
+    }
+
+    private fun shareText(text: String, result: MethodChannel.Result) {
+        try {
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, text)
+            }
+            val chooser = Intent.createChooser(intent, "Share via").apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(chooser)
+            result.success(null)
+        } catch (e: Exception) {
+            result.error("share_failed", "Could not share text.", e.message)
+        }
+    }
+
     private companion object {
         const val REQUEST_PICK_PDF = 4201
+        const val REQUEST_PICK_PDFS = 4202
+        const val REQUEST_SAVE_DOC = 4203
     }
 }
