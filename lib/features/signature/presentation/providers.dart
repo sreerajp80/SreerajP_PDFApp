@@ -45,8 +45,12 @@ final signatureVerdictsProvider =
 class SignatureVerdictsNotifier
     extends FamilyAsyncNotifier<List<SignatureVerdict>, String> {
   @override
-  Future<List<SignatureVerdict>> build(String path) =>
-      ref.watch(signatureRepositoryProvider).verify(path);
+  Future<List<SignatureVerdict>> build(String path) async {
+    // Watch trusted certificates so this provider automatically rebuilds/recomputes
+    // whenever the trust store changes (certificates are added or removed).
+    ref.watch(trustedCertificatesProvider);
+    return ref.watch(signatureRepositoryProvider).verify(path);
+  }
 
   /// Re-checks the document. Called after the user trusts a certificate: the
   /// facts are unchanged, but the *answer* may now be different, and it must be

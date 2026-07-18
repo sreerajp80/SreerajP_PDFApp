@@ -248,6 +248,12 @@ abstract class AppLocalizations {
   /// **'Fit page'**
   String get fitPage;
 
+  /// Label for page fit options dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Page fit'**
+  String get pageFit;
+
   /// Zoom in control
   ///
   /// In en, this message translates to:

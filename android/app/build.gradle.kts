@@ -40,11 +40,11 @@ android {
             dimension = "environment"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
-            manifestPlaceholders["appLabel"] = "PDF App Dev"
+            manifestPlaceholders["appLabel"] = "SreerajP PDF App Dev"
         }
         create("prod") {
             dimension = "environment"
-            manifestPlaceholders["appLabel"] = "PDF App"
+            manifestPlaceholders["appLabel"] = "SreerajP PDF App"
         }
     }
 

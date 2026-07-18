@@ -43,7 +43,10 @@ class PdfSignature {
     this.revocationChecked = false,
     this.revoked = false,
     this.detail,
+    this.position,
   });
+
+  final SignaturePosition? position;
 
   final SignatureIntegrity integrity;
 
@@ -135,7 +138,35 @@ class PdfSignature {
     revocationChecked: map['revocationChecked'] as bool? ?? false,
     revoked: map['revoked'] as bool? ?? false,
     detail: map['detail'] as String?,
+    position: map['position'] == null
+        ? null
+        : SignaturePosition.fromMap(map['position'] as Map<Object?, Object?>),
   );
+}
+
+/// The page index and visual coordinates of a signature field (Phase 7).
+class SignaturePosition {
+  const SignaturePosition({
+    required this.pageIndex,
+    required this.x,
+    required this.y,
+    required this.width,
+    required this.height,
+  });
+
+  final int pageIndex;
+  final double x;
+  final double y;
+  final double width;
+  final double height;
+
+  factory SignaturePosition.fromMap(Map<Object?, Object?> map) => SignaturePosition(
+        pageIndex: map['pageIndex'] as int,
+        x: (map['x'] as num).toDouble(),
+        y: (map['y'] as num).toDouble(),
+        width: (map['width'] as num).toDouble(),
+        height: (map['height'] as num).toDouble(),
+      );
 }
 
 /// A signature plus the app's honest verdict on it.

@@ -17,6 +17,7 @@ Future<void> showPrintSheet(
 }) {
   return showModalBottomSheet<void>(
     context: context,
+    isScrollControlled: true,
     showDragHandle: true,
     builder: (context) =>
         _PrintSheet(path: path, jobName: jobName, pageCount: pageCount),
@@ -40,34 +41,36 @@ class _PrintSheet extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-            child: Text(l10n.printTitle, style: theme.textTheme.titleLarge),
-          ),
-          ListTile(
-            leading: const Icon(Icons.print),
-            title: Text(l10n.printWholeAction),
-            subtitle: Text(l10n.printWholeDescription),
-            onTap: () => _printWhole(context, ref),
-          ),
-          ListTile(
-            leading: const Icon(Icons.filter_none),
-            title: Text(l10n.printRangeAction),
-            subtitle: Text(l10n.printRangeDescription),
-            onTap: () => _printRange(context, ref),
-          ),
-          ListTile(
-            leading: const Icon(Icons.subject),
-            title: Text(l10n.printTextAction),
-            subtitle: Text(l10n.printTextDescription),
-            onTap: () => _printText(context, ref),
-          ),
-          const SizedBox(height: 8),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+              child: Text(l10n.printTitle, style: theme.textTheme.titleLarge),
+            ),
+            ListTile(
+              leading: const Icon(Icons.print),
+              title: Text(l10n.printWholeAction),
+              subtitle: Text(l10n.printWholeDescription),
+              onTap: () => _printWhole(context, ref),
+            ),
+            ListTile(
+              leading: const Icon(Icons.filter_none),
+              title: Text(l10n.printRangeAction),
+              subtitle: Text(l10n.printRangeDescription),
+              onTap: () => _printRange(context, ref),
+            ),
+            ListTile(
+              leading: const Icon(Icons.subject),
+              title: Text(l10n.printTextAction),
+              subtitle: Text(l10n.printTextDescription),
+              onTap: () => _printText(context, ref),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }

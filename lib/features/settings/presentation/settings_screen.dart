@@ -42,6 +42,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       AppThemeMode.sepia => l10n.themeSepia,
     };
 
+    final currentThemeLabel = label(mode);
+
     final String ttsSubtitle;
     if (!ttsStatus.malayalamEnabled) {
       ttsSubtitle = l10n.settingsMalayalamVoiceOff;
@@ -56,56 +58,57 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsTitle)),
-      body: RadioGroup<AppThemeMode>(
-        groupValue: mode,
-        onChanged: (value) {
-          if (value != null) {
-            ref.read(themeModeProvider.notifier).set(value);
-          }
-        },
-        child: ListView(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                l10n.settingsThemeLabel,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-            for (final m in AppThemeMode.values)
-              RadioListTile<AppThemeMode>(title: Text(label(m)), value: m),
-            const Divider(),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-              child: Text(
-                l10n.settingsReadAloudLabel,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-            SwitchListTile(
-              title: Text(l10n.settingsMalayalamVoice),
-              subtitle: Text(ttsSubtitle),
-              value: ttsStatus.malayalamEnabled,
-              onChanged: (enabled) async {
-                final state = await ref
-                    .read(ttsServiceProvider)
-                    .setMalayalamEnabled(enabled: enabled);
-                if (!context.mounted) return;
-                if (enabled && state == TtsVoiceState.needsInstall) {
-                  await showTtsInstallSheet(context);
-                  await ref.read(ttsServiceProvider).refreshVoices();
-                }
-              },
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.verified_user_outlined),
-              title: Text(l10n.trustStoreTitle),
+      body: ListView(
+        children: [
+          Card(
+            margin: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: ListTile(
+              leading: const Icon(Icons.palette_outlined),
+              title: Text(l10n.settingsThemeLabel),
+              subtitle: Text(currentThemeLabel),
               trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.pushNamed(AppRoute.trustStore.name),
+              onTap: () => context.pushNamed(AppRoute.theme.name),
             ),
-          ],
-        ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Text(
+              l10n.settingsReadAloudLabel,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
+          SwitchListTile(
+            title: Text(l10n.settingsMalayalamVoice),
+            subtitle: Text(ttsSubtitle),
+            value: ttsStatus.malayalamEnabled,
+            onChanged: (enabled) async {
+              final state = await ref
+                  .read(ttsServiceProvider)
+                  .setMalayalamEnabled(enabled: enabled);
+              if (!context.mounted) return;
+              if (enabled && state == TtsVoiceState.needsInstall) {
+                await showTtsInstallSheet(context);
+                await ref.read(ttsServiceProvider).refreshVoices();
+              }
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.verified_user_outlined),
+            title: Text(l10n.trustStoreTitle),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => context.pushNamed(AppRoute.trustStore.name),
+          ),
+          Card(
+            margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: Text(l10n.aboutTitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoute.about.name),
+            ),
+          ),
+        ],
       ),
     );
   }

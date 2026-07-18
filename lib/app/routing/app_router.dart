@@ -3,6 +3,7 @@ import 'package:pdfapp/core/platform/open_document_channel.dart';
 import 'package:pdfapp/features/about/presentation/about_screen.dart';
 import 'package:pdfapp/features/printer/presentation/import_screen.dart';
 import 'package:pdfapp/features/settings/presentation/settings_screen.dart';
+import 'package:pdfapp/features/settings/presentation/theme_screen.dart';
 import 'package:pdfapp/features/signature/presentation/signatures_screen.dart';
 import 'package:pdfapp/features/signature/presentation/trust_store_screen.dart';
 import 'package:pdfapp/features/viewer/domain/pdf_document_ref.dart';
@@ -11,13 +12,23 @@ import 'package:pdfapp/features/viewer/presentation/viewer_screen.dart';
 
 /// Centralized route names (engineering standard §6.9). Use the enum name with
 /// `context.goNamed` / `context.pushNamed` so paths stay in one place.
-enum AppRoute { home, viewer, settings, about, import, signatures, trustStore }
+enum AppRoute {
+  home,
+  viewer,
+  settings,
+  theme,
+  about,
+  import,
+  signatures,
+  trustStore,
+}
 
 extension AppRoutePath on AppRoute {
   String get path => switch (this) {
     AppRoute.home => '/',
     AppRoute.viewer => '/viewer',
     AppRoute.settings => '/settings',
+    AppRoute.theme => '/theme',
     AppRoute.about => '/about',
     AppRoute.import => '/import',
     AppRoute.signatures => '/signatures',
@@ -46,6 +57,11 @@ final GoRouter appRouter = GoRouter(
       name: AppRoute.settings.name,
       path: AppRoute.settings.path,
       builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      name: AppRoute.theme.name,
+      path: AppRoute.theme.path,
+      builder: (context, state) => const ThemeScreen(),
     ),
     GoRoute(
       name: AppRoute.about.name,

@@ -16,6 +16,7 @@ Future<void> showPageOpsSheet(
 }) {
   return showModalBottomSheet<void>(
     context: context,
+    isScrollControlled: true,
     showDragHandle: true,
     builder: (context) => _PageOpsSheet(path: path, document: document),
   );
@@ -33,78 +34,80 @@ class _PageOpsSheet extends ConsumerWidget {
     final theme = Theme.of(context);
 
     return SafeArea(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-            child: Text(l10n.pageToolsTitle, style: theme.textTheme.titleLarge),
-          ),
-          _tile(
-            context,
-            icon: Icons.merge_type,
-            title: l10n.mergeAction,
-            subtitle: l10n.mergeDescription,
-            onTap: () => _merge(context, ref),
-          ),
-          _tile(
-            context,
-            icon: Icons.call_split,
-            title: l10n.splitAction,
-            subtitle: l10n.splitDescription,
-            onTap: () => _split(context, ref),
-          ),
-          _tile(
-            context,
-            icon: Icons.reorder,
-            title: l10n.organizeAction,
-            subtitle: l10n.organizeDescription,
-            onTap: () {
-              Navigator.of(context).pop();
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) =>
-                      OrganizePagesScreen(document: document, path: path),
-                ),
-              );
-            },
-          ),
-          _tile(
-            context,
-            icon: Icons.compress,
-            title: l10n.compressAction,
-            subtitle: l10n.compressDescription,
-            onTap: () => _compress(context, ref),
-          ),
-          _tile(
-            context,
-            icon: Icons.lock_outline,
-            title: l10n.protectAction,
-            subtitle: l10n.protectDescription,
-            onTap: () {
-              Navigator.of(context).pop();
-              showDialog<void>(
-                context: context,
-                builder: (_) => ProtectDialog(path: path),
-              );
-            },
-          ),
-          _tile(
-            context,
-            icon: Icons.lock_open,
-            title: l10n.unlockAction,
-            subtitle: l10n.unlockDescription,
-            onTap: () {
-              Navigator.of(context).pop();
-              showDialog<void>(
-                context: context,
-                builder: (_) => UnlockDialog(path: path),
-              );
-            },
-          ),
-          const SizedBox(height: 8),
-        ],
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+              child: Text(l10n.pageToolsTitle, style: theme.textTheme.titleLarge),
+            ),
+            _tile(
+              context,
+              icon: Icons.merge_type,
+              title: l10n.mergeAction,
+              subtitle: l10n.mergeDescription,
+              onTap: () => _merge(context, ref),
+            ),
+            _tile(
+              context,
+              icon: Icons.call_split,
+              title: l10n.splitAction,
+              subtitle: l10n.splitDescription,
+              onTap: () => _split(context, ref),
+            ),
+            _tile(
+              context,
+              icon: Icons.reorder,
+              title: l10n.organizeAction,
+              subtitle: l10n.organizeDescription,
+              onTap: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) =>
+                        OrganizePagesScreen(document: document, path: path),
+                  ),
+                );
+              },
+            ),
+            _tile(
+              context,
+              icon: Icons.compress,
+              title: l10n.compressAction,
+              subtitle: l10n.compressDescription,
+              onTap: () => _compress(context, ref),
+            ),
+            _tile(
+              context,
+              icon: Icons.lock_outline,
+              title: l10n.protectAction,
+              subtitle: l10n.protectDescription,
+              onTap: () {
+                Navigator.of(context).pop();
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => ProtectDialog(path: path),
+                );
+              },
+            ),
+            _tile(
+              context,
+              icon: Icons.lock_open,
+              title: l10n.unlockAction,
+              subtitle: l10n.unlockDescription,
+              onTap: () {
+                Navigator.of(context).pop();
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => UnlockDialog(path: path),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }

@@ -25,6 +25,7 @@ import 'package:pdfapp/features/viewer/presentation/widgets/page_jump_sheet.dart
 import 'package:pdfapp/features/viewer/presentation/widgets/page_layouts.dart';
 import 'package:pdfapp/features/viewer/presentation/widgets/password_prompt.dart';
 import 'package:pdfapp/features/viewer/presentation/widgets/thumbnail_grid.dart';
+import 'package:pdfapp/features/viewer/presentation/widgets/pinch_zoom_wrapper.dart';
 import 'package:pdfapp/features/viewer/presentation/widgets/viewer_error_view.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 import 'package:pdfapp/features/extraction/presentation/widgets/extraction_dialog.dart';
@@ -37,12 +38,22 @@ import 'package:pdfapp/features/annotation/presentation/widgets/annotation_overl
 import 'package:pdfapp/features/annotation/presentation/widgets/annotation_toolbar.dart';
 import 'package:pdfapp/features/annotation/presentation/widgets/bookmarks_panel.dart';
 import 'package:pdfapp/features/annotation/presentation/widgets/page_annotation_layer.dart';
+import 'package:pdfapp/features/signature/domain/pdf_signature.dart';
+import 'package:pdfapp/features/signature/domain/signature_status.dart';
 
 /// Inverts page colors for night reading (project rule: comfortable dark read).
 const ColorFilter _invertFilter = ColorFilter.matrix(<double>[
   -1, 0, 0, 0, 255, //
   0, -1, 0, 0, 255, //
   0, 0, -1, 0, 255, //
+  0, 0, 0, 1, 0, //
+]);
+
+/// Identity color matrix (does nothing, keeps colors original).
+const ColorFilter _identityFilter = ColorFilter.matrix(<double>[
+  1, 0, 0, 0, 0, //
+  0, 1, 0, 0, 0, //
+  0, 0, 1, 0, 0, //
   0, 0, 0, 1, 0, //
 ]);
 
@@ -62,6 +73,7 @@ class ViewerScreen extends ConsumerStatefulWidget {
 class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   final _controller = PdfViewerController();
+  final _viewerKey = GlobalKey();
 
   // Captured once so dispose() can save without touching a disposed ref.
   late final PdfRepository _repo = ref.read(pdfRepositoryProvider);
@@ -79,6 +91,11 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   int _reloadKey = 0; // bump to force a fresh PdfViewer (retry).
   Timer? _saveTimer;
   bool _largeWarningShown = false;
+
+  // --- Zoom Preservation ---
+  Matrix4? _lastMatrix;
+  Size? _lastMatrixViewSize;
+  bool _restoringMatrix = false;
 
   // --- Reading (Phase 2) ---
 
@@ -105,6 +122,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   /// Dismissed for this session once the "in-app only" banner is closed.
   bool _annotationNoticeDismissed = false;
 
+  /// Cached signature verdicts (Phase 7).
+  List<SignatureVerdict>? _currentVerdicts;
+
   /// True when search / copy can honestly be offered.
   bool get _textUsable => _textQuality == TextQuality.good;
 
@@ -119,6 +139,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       return;
     }
     _loadPosition();
+    _controller.addListener(_onMatrixChanged);
   }
 
   Future<void> _loadPosition() async {
@@ -145,6 +166,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     _annotate
       ?..removeListener(_onAnnotationsChanged)
       ..dispose();
+    _controller.removeListener(_onMatrixChanged);
     // Stop speaking when leaving the viewer screen.
     ref.read(ttsServiceProvider).stop();
     super.dispose();
@@ -356,6 +378,25 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     if (_controller.isReady) _controller.invalidate();
   }
 
+  void _onMatrixChanged() {
+    if (!_controller.isReady) return;
+    if (_restoringMatrix) return;
+
+    final currentSize = _controller.viewSize;
+    if (_lastMatrix != null &&
+        _lastMatrixViewSize != null &&
+        _lastMatrixViewSize != currentSize) {
+      _restoringMatrix = true;
+      _controller.goTo(_lastMatrix!, duration: Duration.zero);
+      _restoringMatrix = false;
+      _lastMatrixViewSize = currentSize;
+      return;
+    }
+
+    _lastMatrix = _controller.value;
+    _lastMatrixViewSize = currentSize;
+  }
+
   // --- Annotation (Phase 5) ---
 
   /// Repaints the pages when marks change and, the first time a mark is added,
@@ -468,6 +509,218 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     ).paint(canvas, pageRect, page);
   }
 
+  /// Draws validation overlays on top of signature fields to override their static
+  /// pre-signed status appearances.
+  void _paintSignatureOverlays(Canvas canvas, Rect pageRect, PdfPage page) {
+    final list = _currentVerdicts;
+    if (list == null || list.isEmpty) return;
+
+    for (final verdict in list) {
+      final pos = verdict.signature.position;
+      if (pos == null) continue;
+      // SignaturePosition holds 0-indexed page indices.
+      // PdfPage pageNumber is 1-indexed.
+      if (pos.pageIndex != page.pageNumber - 1) continue;
+
+      _drawSignatureOverlay(canvas, pageRect, page, verdict, pos);
+    }
+  }
+
+  void _drawSignatureOverlay(
+    Canvas canvas,
+    Rect pageRect,
+    PdfPage page,
+    SignatureVerdict verdict,
+    SignaturePosition pos,
+  ) {
+    final rect = PdfRect(pos.x, pos.y + pos.height, pos.x + pos.width, pos.y)
+        .toRect(page: page, scaledPageSize: pageRect.size)
+        .translate(pageRect.left, pageRect.top);
+
+    // 1. Resolve visual state (Always in English for document compliance)
+    final String statusText;
+    final Color tickColor;
+    final bool isTrusted;
+    final bool isInvalid;
+
+    switch (verdict.status) {
+      case SignatureStatus.trusted:
+        statusText = 'Signature valid';
+        tickColor = const Color(0xFF00C853).withValues(alpha: 0.65); // Softer green
+        isTrusted = true;
+        isInvalid = false;
+        break;
+      case SignatureStatus.validNotTrusted:
+        statusText = 'Signature valid, untrusted';
+        tickColor = const Color(0xFFFF9100).withValues(alpha: 0.65); // Softer orange
+        isTrusted = false;
+        isInvalid = false;
+        break;
+      case SignatureStatus.invalid:
+        statusText = 'Signature invalid';
+        tickColor = const Color(0xFFFF1744).withValues(alpha: 0.65); // Softer red
+        isTrusted = false;
+        isInvalid = true;
+        break;
+      case SignatureStatus.unknown:
+        statusText = 'Signature could not be verified';
+        tickColor = const Color(0xFF757575).withValues(alpha: 0.65); // Softer grey
+        isTrusted = false;
+        isInvalid = false;
+        break;
+    }
+
+    // 2. Draw solid white background to cover the static "Signature Not Verified" and yellow "?"
+    final bgPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    canvas.drawRect(rect, bgPaint);
+
+    // 3. Draw a large, high-fidelity checkmark or cross in the background
+    final checkWidth = rect.width;
+    final checkHeight = rect.height;
+    final minDimension = checkWidth < checkHeight ? checkWidth : checkHeight;
+
+    if (isTrusted || verdict.status == SignatureStatus.validNotTrusted || verdict.status == SignatureStatus.unknown) {
+      // Large checkmark in the background
+      final path = Path()
+        ..moveTo(rect.left + checkWidth * 0.35, rect.top + checkHeight * 0.55)
+        ..lineTo(rect.left + checkWidth * 0.48, rect.top + checkHeight * 0.75)
+        ..lineTo(rect.left + checkWidth * 0.78, rect.top + checkHeight * 0.25);
+
+      final strokeWidth = (minDimension * 0.08).clamp(2.0, 6.0);
+
+      // Black outline/shadow for high visibility
+      final outlinePaint = Paint()
+        ..color = Colors.black.withValues(alpha: 0.25)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth + 1.5
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round;
+      canvas.drawPath(path, outlinePaint);
+
+      // Colored tick
+      final checkPaint = Paint()
+        ..color = tickColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round;
+      canvas.drawPath(path, checkPaint);
+    } else if (isInvalid) {
+      // Large red cross in the background
+      final strokeWidth = (minDimension * 0.08).clamp(2.0, 6.0);
+      final size = checkHeight * 0.25;
+      final cx = rect.center.dx;
+      final cy = rect.center.dy;
+
+      final outlinePaint = Paint()
+        ..color = Colors.black.withValues(alpha: 0.25)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth + 1.5
+        ..strokeCap = StrokeCap.round;
+
+      canvas.drawLine(Offset(cx - size, cy - size), Offset(cx + size, cy + size), outlinePaint);
+      canvas.drawLine(Offset(cx - size, cy + size), Offset(cx + size, cy - size), outlinePaint);
+
+      final crossPaint = Paint()
+        ..color = tickColor
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = strokeWidth
+        ..strokeCap = StrokeCap.round;
+
+      canvas.drawLine(Offset(cx - size, cy - size), Offset(cx + size, cy + size), crossPaint);
+      canvas.drawLine(Offset(cx - size, cy + size), Offset(cx + size, cy - size), crossPaint);
+    }
+
+    // 4. Draw validation text on top
+    const padding = 4.0;
+    final textLeft = rect.left + padding;
+    final maxTextWidth = rect.width - 2 * padding;
+
+    if (maxTextWidth <= 10.0) return;
+
+    final l10n = AppLocalizations.of(context);
+    final signerName = verdict.signature.name?.trim().isNotEmpty == true
+        ? verdict.signature.name!
+        : (verdict.signature.signerCertificate?.commonName ?? l10n.signatureSignerUnknown);
+
+    final signedAt = verdict.signature.bestSignedAt;
+
+    // Direct Acrobat-style date formatting (e.g. 2026.07.08 20:04:40 IST)
+    String formatPdfDate(DateTime dt) {
+      final y = dt.year;
+      final m = dt.month.toString().padLeft(2, '0');
+      final d = dt.day.toString().padLeft(2, '0');
+      final h = dt.hour.toString().padLeft(2, '0');
+      final min = dt.minute.toString().padLeft(2, '0');
+      final sec = dt.second.toString().padLeft(2, '0');
+      var tzName = dt.timeZoneName;
+      if (tzName == 'Coordinated Universal Time') tzName = 'UTC';
+      return '$y.$m.$d $h:$min:$sec $tzName';
+    }
+
+    final dateStr = signedAt != null ? formatPdfDate(signedAt.toLocal()) : null;
+
+    // Scale font sizes based on minDimension to fit narrow signature cards perfectly
+    final titleSize = (minDimension * 0.11).clamp(5.0, 10.0);
+    final bodySize = (minDimension * 0.085).clamp(4.0, 8.0);
+
+    // Title status line
+    final line1Painter = TextPainter(
+      text: TextSpan(
+        text: statusText,
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: titleSize,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: maxTextWidth);
+
+    // Signer name line (supports natural word wrapping)
+    final line2Painter = TextPainter(
+      text: TextSpan(
+        text: 'Digitally signed by $signerName',
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: bodySize,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      textDirection: TextDirection.ltr,
+    )..layout(maxWidth: maxTextWidth);
+
+    // Signing date line (supports natural word wrapping)
+    TextPainter? line3Painter;
+    if (dateStr != null) {
+      line3Painter = TextPainter(
+        text: TextSpan(
+          text: 'Date: $dateStr',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: bodySize,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout(maxWidth: maxTextWidth);
+    }
+
+    final totalTextHeight = line1Painter.height + line2Painter.height + (line3Painter?.height ?? 0.0) + (line3Painter != null ? 4.0 : 2.0);
+    var currentY = rect.top + (rect.height - totalTextHeight) / 2;
+
+    line1Painter.paint(canvas, Offset(textLeft, currentY));
+    currentY += line1Painter.height + 1.0;
+
+    line2Painter.paint(canvas, Offset(textLeft, currentY));
+    if (line3Painter != null) {
+      currentY += line2Painter.height + 2.0;
+      line3Painter.paint(canvas, Offset(textLeft, currentY));
+    }
+  }
+
   /// The per-page interactive layer (ink capture, note markers, text markup).
   List<Widget> _annotationOverlays(
     BuildContext context,
@@ -547,6 +800,11 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
+    final hasSignatures = ref
+            .watch(hasSignaturesProvider(widget.docRef.cachePath))
+            .valueOrNull ??
+        false;
+
     ref.listen<TtsService>(ttsServiceProvider, (previous, next) {
       if (next.takeVoiceLostNotice()) {
         ScaffoldMessenger.of(
@@ -565,7 +823,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                 widget.docRef.displayName,
                 overflow: TextOverflow.ellipsis,
               ),
-              actions: _error != null ? null : _buildActions(context, l10n),
+              actions: _error != null
+                  ? null
+                  : _buildActions(context, l10n, hasSignatures),
             ),
       endDrawer: _document == null
           ? null
@@ -651,6 +911,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
+    final verdictsVal = ref.watch(signatureVerdictsProvider(widget.docRef.cachePath));
+    _currentVerdicts = verdictsVal.valueOrNull;
+
     final search = _search;
     final viewer = PdfViewer.file(
       widget.docRef.cachePath,
@@ -664,20 +927,36 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         onViewerReady: _onViewerReady,
         onPageChanged: _onPageChanged,
         errorBannerBuilder: _errorBanner,
+        // Disable pdfrx's built-in scale gesture. PinchZoomWrapper handles
+        // all pinch-to-zoom using raw pointer events instead — this avoids
+        // the Flutter gesture-arena issue where pinching with fingers that
+        // start far apart is not detected.
+        scaleEnabled: false,
         // Select-and-copy, but only where there is real text to select.
         // Turned off while drawing so a markup drag is not eaten by selection.
         enableTextSelection: _textUsable && !_annotateMode,
         pagePaintCallbacks: [
           if (search != null) _paintMatches,
           if (_annotate != null) _paintAnnotations,
+          _paintSignatureOverlays,
         ],
         pageOverlaysBuilder: _annotate == null ? null : _annotationOverlays,
       ),
     );
 
-    return _invert
-        ? ColorFiltered(colorFilter: _invertFilter, child: viewer)
-        : viewer;
+    // PinchZoomWrapper intercepts two-finger gestures via raw Listener events
+    // (outside the gesture arena) and applies zoom directly to the controller's
+    // transformation matrix. Single-finger pan/fling still handled by pdfrx.
+    final wrapped = PinchZoomWrapper(
+      key: _viewerKey,
+      controller: _controller,
+      child: viewer,
+    );
+
+    return ColorFiltered(
+      colorFilter: _invert ? _invertFilter : _identityFilter,
+      child: wrapped,
+    );
   }
 
   /// Draws the search matches over the page pdfrx is painting.
@@ -694,7 +973,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     ).paint(canvas, pageRect, page);
   }
 
-  List<Widget> _buildActions(BuildContext context, AppLocalizations l10n) {
+  List<Widget> _buildActions(
+      BuildContext context, AppLocalizations l10n, bool hasSignatures) {
     return [
       IconButton(
         icon: const Icon(Icons.search),
@@ -725,115 +1005,234 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         isSelected: _annotateMode,
         onPressed: _document == null ? null : _toggleAnnotateMode,
       ),
-      IconButton(
-        icon: Icon(_invert ? Icons.brightness_5 : Icons.brightness_4_outlined),
-        tooltip: l10n.invertColors,
-        onPressed: _toggleInvert,
-      ),
-      IconButton(
-        icon: const Icon(Icons.grid_view_outlined),
-        tooltip: l10n.thumbnailsTitle,
-        onPressed: _document == null ? null : _showThumbnails,
-      ),
-      IconButton(
-        icon: const Icon(Icons.list_alt_outlined),
-        tooltip: l10n.contentsTitle,
-        onPressed: _document == null
-            ? null
-            : () => _scaffoldKey.currentState?.openEndDrawer(),
-      ),
       PopupMenuButton<_ViewerMenu>(
         onSelected: (item) => switch (item) {
-          _ViewerMenu.continuous => _setViewMode(PdfViewMode.continuous),
-          _ViewerMenu.single => _setViewMode(PdfViewMode.single),
-          _ViewerMenu.book => _setViewMode(PdfViewMode.book),
-          _ViewerMenu.fitWidth => _fitWidth(),
-          _ViewerMenu.fitPage => _fitPage(),
+          _ViewerMenu.invertColors => _toggleInvert(),
+          _ViewerMenu.viewMode => _showViewModeDialog(),
+          _ViewerMenu.pageFit => _showPageFitDialog(),
+          _ViewerMenu.thumbnails => _showThumbnails(),
+          _ViewerMenu.contents => _scaffoldKey.currentState?.openEndDrawer(),
+          _ViewerMenu.bookmarks => _showBookmarks(),
           _ViewerMenu.details => _showDetails(),
           _ViewerMenu.extract => _showExtractionDialog(),
           _ViewerMenu.pageOps => _showPageOps(),
           _ViewerMenu.print => _showPrint(),
-          _ViewerMenu.bookmarks => _showBookmarks(),
           _ViewerMenu.signatures => _showSignatures(),
+          _ViewerMenu.settings => context.pushNamed(AppRoute.settings.name),
         },
         itemBuilder: (context) => [
-          _checked(
-            _ViewerMenu.continuous,
-            l10n.viewModeContinuous,
-            _viewMode == PdfViewMode.continuous,
+          PopupMenuItem(
+            value: _ViewerMenu.invertColors,
+            child: Row(
+              children: [
+                Icon(
+                  _invert ? Icons.brightness_5 : Icons.brightness_4_outlined,
+                  size: 18,
+                ),
+                const SizedBox(width: 12),
+                Text(l10n.invertColors),
+              ],
+            ),
           ),
-          _checked(
-            _ViewerMenu.single,
-            l10n.viewModeSingle,
-            _viewMode == PdfViewMode.single,
+          PopupMenuItem(
+            value: _ViewerMenu.viewMode,
+            child: Row(
+              children: [
+                const Icon(Icons.visibility_outlined, size: 18),
+                const SizedBox(width: 12),
+                Text(l10n.viewModeTooltip),
+              ],
+            ),
           ),
-          _checked(
-            _ViewerMenu.book,
-            l10n.viewModeBook,
-            _viewMode == PdfViewMode.book,
+          PopupMenuItem(
+            value: _ViewerMenu.pageFit,
+            child: Row(
+              children: [
+                const Icon(Icons.fit_screen_outlined, size: 18),
+                const SizedBox(width: 12),
+                Text(l10n.pageFit),
+              ],
+            ),
           ),
           const PopupMenuDivider(),
           PopupMenuItem(
-            value: _ViewerMenu.fitWidth,
-            child: Text(l10n.fitWidth),
+            value: _ViewerMenu.thumbnails,
+            child: Row(
+              children: [
+                const Icon(Icons.grid_view_outlined, size: 18),
+                const SizedBox(width: 12),
+                Text(l10n.thumbnailsTitle),
+              ],
+            ),
           ),
-          PopupMenuItem(value: _ViewerMenu.fitPage, child: Text(l10n.fitPage)),
-          const PopupMenuDivider(),
+          PopupMenuItem(
+            value: _ViewerMenu.contents,
+            child: Row(
+              children: [
+                const Icon(Icons.list_alt_outlined, size: 18),
+                const SizedBox(width: 12),
+                Text(l10n.contentsTitle),
+              ],
+            ),
+          ),
           PopupMenuItem(
             value: _ViewerMenu.bookmarks,
-            child: Text(l10n.bookmarksAction),
+            child: Row(
+              children: [
+                const Icon(Icons.bookmarks_outlined, size: 18),
+                const SizedBox(width: 12),
+                Text(l10n.bookmarksAction),
+              ],
+            ),
           ),
           PopupMenuItem(
             value: _ViewerMenu.details,
-            child: Text(l10n.metadataAction),
+            child: Row(
+              children: [
+                const Icon(Icons.info_outline, size: 18),
+                const SizedBox(width: 12),
+                Text(l10n.metadataAction),
+              ],
+            ),
           ),
           const PopupMenuDivider(),
           PopupMenuItem(
             value: _ViewerMenu.extract,
-            child: Text(l10n.extractAndConvert),
+            child: Row(
+              children: [
+                const Icon(Icons.transform_outlined, size: 18),
+                const SizedBox(width: 12),
+                Text(l10n.extractAndConvert),
+              ],
+            ),
           ),
           PopupMenuItem(
             value: _ViewerMenu.pageOps,
-            child: Text(l10n.pageToolsTitle),
+            child: Row(
+              children: [
+                const Icon(Icons.auto_stories_outlined, size: 18),
+                const SizedBox(width: 12),
+                Text(l10n.pageToolsTitle),
+              ],
+            ),
           ),
           PopupMenuItem(
             value: _ViewerMenu.print,
-            child: Text(l10n.printAction),
+            child: Row(
+              children: [
+                const Icon(Icons.print_outlined, size: 18),
+                const SizedBox(width: 12),
+                Text(l10n.printAction),
+              ],
+            ),
           ),
-          // Only offered when the document actually carries signatures — an
-          // entry that always led to "this PDF is not signed" would be a dead
-          // button (project rule 6). While the check is still running, or if it
-          // failed, the entry stays hidden rather than guessing.
-          if (ref
-                  .watch(hasSignaturesProvider(widget.docRef.cachePath))
-                  .valueOrNull ??
-              false)
+          if (hasSignatures)
             PopupMenuItem(
               value: _ViewerMenu.signatures,
-              child: Text(l10n.signaturesAction),
+              child: Row(
+                children: [
+                  const Icon(Icons.draw_outlined, size: 18),
+                  const SizedBox(width: 12),
+                  Text(l10n.signaturesAction),
+                ],
+              ),
             ),
+          const PopupMenuDivider(),
+          PopupMenuItem(
+            value: _ViewerMenu.settings,
+            child: Row(
+              children: [
+                const Icon(Icons.settings_outlined, size: 18),
+                const SizedBox(width: 12),
+                Text(l10n.settingsTitle),
+              ],
+            ),
+          ),
         ],
       ),
     ];
   }
 
-  PopupMenuItem<_ViewerMenu> _checked(
-    _ViewerMenu value,
-    String label,
-    bool selected,
-  ) {
-    return PopupMenuItem(
-      value: value,
-      child: Row(
-        children: [
-          Icon(
-            selected ? Icons.radio_button_checked : Icons.radio_button_off,
-            size: 18,
+  Future<void> _showViewModeDialog() async {
+    final l10n = AppLocalizations.of(context);
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(l10n.viewModeTooltip),
+          content: RadioGroup<PdfViewMode>(
+            groupValue: _viewMode,
+            onChanged: (value) {
+              if (value != null) {
+                _setViewMode(value);
+                Navigator.of(context).pop();
+              }
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile<PdfViewMode>(
+                  title: Text(l10n.viewModeContinuous),
+                  value: PdfViewMode.continuous,
+                ),
+                RadioListTile<PdfViewMode>(
+                  title: Text(l10n.viewModeSingle),
+                  value: PdfViewMode.single,
+                ),
+                RadioListTile<PdfViewMode>(
+                  title: Text(l10n.viewModeBook),
+                  value: PdfViewMode.book,
+                ),
+              ],
+            ),
           ),
-          const SizedBox(width: 12),
-          Text(label),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.cancelAction),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showPageFitDialog() async {
+    final l10n = AppLocalizations.of(context);
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(l10n.pageFit),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.swap_horiz_outlined),
+                title: Text(l10n.fitWidth),
+                onTap: () {
+                  _fitWidth();
+                  Navigator.of(context).pop();
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.fit_screen_outlined),
+                title: Text(l10n.fitPage),
+                onTap: () {
+                  _fitPage();
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.cancelAction),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -957,15 +1356,16 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
 }
 
 enum _ViewerMenu {
-  continuous,
-  single,
-  book,
-  fitWidth,
-  fitPage,
+  invertColors,
+  viewMode,
+  pageFit,
+  thumbnails,
+  contents,
+  bookmarks,
   details,
   extract,
   pageOps,
   print,
-  bookmarks,
   signatures,
+  settings,
 }

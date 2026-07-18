@@ -95,6 +95,9 @@ class AppLocalizationsMl extends AppLocalizations {
   String get fitPage => 'പേജിന് ഒപ്പിക്കുക';
 
   @override
+  String get pageFit => 'പേജ് ക്രമീകരണം';
+
+  @override
   String get zoomIn => 'വലുതാക്കുക';
 
   @override

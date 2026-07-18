@@ -95,6 +95,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fitPage => 'Fit page';
 
   @override
+  String get pageFit => 'Page fit';
+
+  @override
   String get zoomIn => 'Zoom in';
 
   @override

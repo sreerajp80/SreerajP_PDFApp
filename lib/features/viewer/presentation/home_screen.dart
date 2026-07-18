@@ -131,11 +131,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             tooltip: l10n.openSettings,
             onPressed: () => context.pushNamed(AppRoute.settings.name),
           ),
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            tooltip: l10n.openAbout,
-            onPressed: () => context.pushNamed(AppRoute.about.name),
-          ),
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(

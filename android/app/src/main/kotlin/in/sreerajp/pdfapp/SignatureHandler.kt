@@ -8,6 +8,9 @@ import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.pdmodel.encryption.InvalidPasswordException
 import com.tom_roush.pdfbox.pdmodel.interactive.digitalsignature.PDSignature
+import com.tom_roush.pdfbox.cos.COSDictionary
+import com.tom_roush.pdfbox.cos.COSName
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationWidget
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodChannel
 import org.bouncycastle.asn1.ASN1Set
@@ -130,6 +133,42 @@ class SignatureHandler(context: Context, messenger: BinaryMessenger) {
         }
     }
 
+    private class SignatureLoc(
+        val pageIndex: Int,
+        val x: Float,
+        val y: Float,
+        val width: Float,
+        val height: Float
+    )
+
+    private fun findSignatureLocations(doc: PDDocument): Map<COSDictionary, SignatureLoc> {
+        val locations = mutableMapOf<COSDictionary, SignatureLoc>()
+        val cosNameV = COSName.V
+        for (pageIndex in 0 until doc.numberOfPages) {
+            val page = doc.getPage(pageIndex)
+            val annots = try { page.annotations } catch (_: Exception) { emptyList() }
+            for (annot in annots) {
+                if (annot is PDAnnotationWidget) {
+                    val cosDict = annot.cosObject
+                    val vDict = cosDict.getDictionaryObject(cosNameV)
+                    if (vDict is COSDictionary) {
+                        val rect = annot.rectangle
+                        if (rect != null) {
+                            locations[vDict] = SignatureLoc(
+                                pageIndex = pageIndex,
+                                x = rect.lowerLeftX,
+                                y = rect.lowerLeftY,
+                                width = rect.width,
+                                height = rect.height
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        return locations
+    }
+
     private fun verifySignatures(
         path: String,
         password: String?,
@@ -142,10 +181,25 @@ class SignatureHandler(context: Context, messenger: BinaryMessenger) {
             val anchors = trustAnchorsB64.mapNotNull { decodeCertificate(it) }
 
             openDocument(path, password).use { doc ->
+                val locations = findSignatureLocations(doc)
                 doc.signatureDictionaries.map { sig ->
                     // One bad signature must not hide the good ones next to it.
                     try {
-                        verifyOne(sig, fileBytes, anchors)
+                        val baseResult = verifyOne(sig, fileBytes, anchors)
+                        val loc = locations[sig.cosObject]
+                        if (loc != null) {
+                            baseResult.toMutableMap().apply {
+                                put("position", mapOf(
+                                    "pageIndex" to loc.pageIndex,
+                                    "x" to loc.x,
+                                    "y" to loc.y,
+                                    "width" to loc.width,
+                                    "height" to loc.height
+                                ))
+                            }
+                        } else {
+                            baseResult
+                        }
                     } catch (e: Exception) {
                         unknownSignature(sig, e.message)
                     }
@@ -195,7 +249,14 @@ class SignatureHandler(context: Context, messenger: BinaryMessenger) {
 
         val signedContent = sig.getSignedContent(fileBytes)
         val contents = sig.getContents(fileBytes)
-        val cms = CMSSignedData(CMSProcessableByteArray(signedContent), contents)
+
+        // adbe.pkcs7.sha1 encapsulates the SHA-1 hash of the document bytes inside the CMS container.
+        // Detached signatures have no encapsulated content and verify the document bytes directly.
+        val cms = if (subFilter == "adbe.pkcs7.sha1") {
+            CMSSignedData(contents)
+        } else {
+            CMSSignedData(CMSProcessableByteArray(signedContent), contents)
+        }
         val signer = cms.signerInfos.signers.firstOrNull()
             ?: return base.apply {
                 put("integrity", UNKNOWN)
@@ -212,9 +273,18 @@ class SignatureHandler(context: Context, messenger: BinaryMessenger) {
 
         // The cryptographic check: were these exact bytes signed by this certificate's key?
         val integrityValid = try {
-            signer.verify(JcaSimpleSignerInfoVerifierBuilder().setProvider(bc).build(signerCert))
-        } catch (_: Exception) {
+            val verifier = JcaSimpleSignerInfoVerifierBuilder().setProvider(bc).build(signerCert)
+            val sigValid = signer.verify(verifier)
+            if (sigValid && subFilter == "adbe.pkcs7.sha1") {
+                val expectedSha1 = cms.signedContent?.content as? ByteArray
+                val actualSha1 = MessageDigest.getInstance("SHA-1").digest(signedContent)
+                expectedSha1 != null && expectedSha1.contentEquals(actualSha1)
+            } else {
+                sigValid
+            }
+        } catch (e: Exception) {
             // A verifier that throws means "did not verify" — not a crash, and not trust.
+            android.util.Log.e("SignatureHandler", "Signature cryptographic verification failed", e)
             false
         }
 

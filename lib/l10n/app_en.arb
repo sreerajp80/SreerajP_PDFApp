@@ -53,6 +53,8 @@
   "@fitWidth": { "description": "Fit page to screen width" },
   "fitPage": "Fit page",
   "@fitPage": { "description": "Fit whole page to screen" },
+  "pageFit": "Page fit",
+  "@pageFit": { "description": "Label for page fit options dialog" },
   "zoomIn": "Zoom in",
   "@zoomIn": { "description": "Zoom in control" },
   "zoomOut": "Zoom out",

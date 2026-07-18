@@ -87,30 +87,23 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('renders all sections and theme radio choices', (tester) async {
-    await pumpSettings(tester);
-
-    expect(find.text('Settings'), findsOneWidget);
-    expect(find.text('Theme'), findsOneWidget);
-    expect(find.text('System'), findsOneWidget);
-    expect(find.text('Light'), findsOneWidget);
-    expect(find.text('Dark'), findsOneWidget);
-    expect(find.text('Sepia'), findsOneWidget);
-
-    expect(find.text('Read aloud'), findsOneWidget);
-    expect(find.text('Malayalam voice'), findsOneWidget);
-  });
-
-  testWidgets('changing the theme updates notifier and settings', (
+  testWidgets('renders Theme and About cards and read-aloud section', (
     tester,
   ) async {
     await pumpSettings(tester);
 
-    // Default theme is system. Tap Light.
-    await tester.tap(find.text('Light'));
-    await tester.pumpAndSettle();
+    expect(find.text('Settings'), findsOneWidget);
+    // Theme is now a card showing the current theme (default: System).
+    expect(find.text('Theme'), findsOneWidget);
+    expect(find.text('System'), findsOneWidget);
+    // The radio choices live on the Theme page, not here.
+    expect(find.text('Light'), findsNothing);
+    expect(find.text('Dark'), findsNothing);
+    expect(find.text('Sepia'), findsNothing);
 
-    expect(prefs.getString(AppConstants.prefThemeMode), 'light');
+    expect(find.text('About'), findsOneWidget);
+    expect(find.text('Read aloud'), findsOneWidget);
+    expect(find.text('Malayalam voice'), findsOneWidget);
   });
 
   testWidgets(
