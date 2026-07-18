@@ -106,10 +106,7 @@ class ExtractionService {
   }
 
   /// Reads AcroForm fields and saves them as a `.json` file, returning the file path.
-  Future<String> readFormFieldsToFile(
-    String path, {
-    String? password,
-  }) async {
+  Future<String> readFormFieldsToFile(String path, {String? password}) async {
     final fields = await readFormFields(path, password: password);
     final dir = await getExtractionDirectory();
     final timestamp = DateTime.now().millisecondsSinceEpoch;

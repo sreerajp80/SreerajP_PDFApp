@@ -108,7 +108,8 @@ class NormalizedText {
       // Find the cluster containing matchStart.
       int? startClusterIndex;
       for (var idx = 0; idx <= endClusterIndex; idx++) {
-        if (clusters[idx].keyStart <= matchStart && matchStart < clusters[idx].keyEnd) {
+        if (clusters[idx].keyStart <= matchStart &&
+            matchStart < clusters[idx].keyEnd) {
           startClusterIndex = idx;
           break;
         }

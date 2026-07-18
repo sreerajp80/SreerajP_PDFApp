@@ -84,7 +84,7 @@ open source; confirm the license before adding any new one.
 | Secure storage (secrets) | `flutter_secure_storage` |
 | Text-to-Speech | `flutter_tts` |
 | Share | `share_plus` |
-| Print / print-out | `printing` |
+| Print / print-out | Android's own print framework via a native channel — no package (see §6, PDF printer) |
 | Logging | `logger` (behind `AppLogger`) |
 | App info / version | `package_info_plus` (used with the config file for About) |
 
@@ -183,9 +183,19 @@ Each module plugs into the shared core and declares which shared capabilities it
   app's own DB, keyed to fingerprint + page + position, and are drawn on top of the rendered
   page. The original PDF is never modified. Optional export writes real PDF annotations into a
   **copy**. Overlay annotations are visible only in this app until exported.
-- **PDF printer** — (1) register as a share / "Open with" target for printable content and save
-  it as a new PDF (copy-on-write); (2) print a PDF out via Android's print framework (page range
-  or extracted text); (3) a system print service (native Kotlin) as a later, riskier item.
+- **PDF printer** — (1) a share / "Open with" target for pictures and text, saved as a new PDF
+  built by PdfBox (copy-on-write); (2) print a PDF out via Android's print framework (whole
+  document, page range, or extracted text); (3) a system print service — **dropped**, see §16.
+  A page range is printed by slicing a range-only copy with PdfBox first and handing that to the
+  spooler, rather than re-cutting the document inside the print adapter.
+  **Why no package:** Android's print framework is an OS API and PdfBox was already in the build,
+  so nothing new was needed. The `printing` package (Apache 2.0) would also have worked — on
+  Android it wraps the same `PrintManager` / `PrintDocumentAdapter` we use and carries no native
+  code of its own. We wrote our own because the app already owns a native-channel path (PdfBox,
+  TTS, SAF) and this fits it — a preference, not a constraint.
+  **Limit:** text → PDF only works for Latin-1 letters. PdfBox ships Latin-1 built-in fonts and
+  has no complex-script shaping engine, so Malayalam and Devanagari text cannot be written and
+  the UI says so plainly. Pictures are unaffected.
 - **Signature verification** — verify PDF digital signatures against a custom trust store and
   show a **green tick** on trusted signatures; honest "not trusted / unknown / invalid" states
   otherwise. See §7 and §10.
@@ -249,13 +259,15 @@ Some work has no first-class Flutter package and runs in native Kotlin behind me
 wrapped by Dart classes in `core/platform/`:
 
 - **PdfBox-Android** (Apache 2.0) — merge, split, reorder/rotate/delete pages, encrypt/decrypt,
-  text extraction, metadata, form field reads, and annotation export into a copy.
+  text extraction, metadata, form field reads, annotation export into a copy, and building a new
+  PDF out of shared pictures or text.
 - **Signature module** — PdfBox-Android reads the signature and ByteRange; **Bouncy Castle**
   (the **repackaged** artifact, to avoid Android's stripped built-in Bouncy Castle causing
   classloader conflicts) verifies the PKCS#7 / CMS data; Android's built-in `CertPathValidator`
   checks the certificate chain and revocation.
-- **Print service** — registering as an Android print service to accept print jobs from other
-  apps (the riskier, later part of the printer feature).
+- **Print bridge** — hands a finished PDF to Android's `PrintManager` through a
+  `PrintDocumentAdapter` that streams the file. Android draws the print dialog (printer, copies,
+  paper, and its own built-in "Save as PDF" printer), so the app builds none of that.
 
 ---
 
@@ -268,10 +280,10 @@ wrapped by Dart classes in `core/platform/`:
 
 | Version | Adds | Purpose | State |
 |---|---|---|---|
-| 1 | base/meta table | schema baseline | **current** |
+| 1 | base/meta table | schema baseline | Phase 0 |
 | 2 | `recent_files`, `reading_positions` | recents + last-read page (keyed to fingerprint) | Phase 1 |
 | 3 | `annotations` | overlay layer (fingerprint + page + position + type + payload) | Phase 5 |
-| 4 | `trust_store` | user-added signing certificates | Phase 7 |
+| 4 | `trust_store` | user-added signing certificates | **current** (Phase 7) |
 
 - **File identity = content fingerprint** (file size + hash), with the persisted URI as a fast
   path, so reading positions, bookmarks, and overlay annotations survive move / rename / re-pick.
@@ -423,5 +435,15 @@ Full rules are in [security-rules.md](security-rules.md). In summary:
 - Real release signing config (keystore + `key.properties`) is added in Phase 8 — see
   [release-signing.md](release-signing.md).
 - Log rotation / disk log output is not yet implemented (§14.4).
+- **System print service — dropped (Phase 6, step 3).** An Android `PrintService` exists to drive
+  *real* printers: it must discover them, report their capabilities, and handle their jobs. It is
+  not a way to be a "save as PDF" target, and Android's print dialog already ships its own
+  built-in "Save as PDF" printer. It would be a lot of risky native code for almost no user gain,
+  and the share → save-as-PDF path (step 1) covers the actual need. Revisit only if a real user
+  need for driving printers appears.
+- **Text → PDF is Latin-1 only.** Writing Malayalam or Devanagari into a PDF needs an embedded
+  Unicode font *and* a complex-script shaping engine; PdfBox-Android has neither. The app detects
+  this and says so instead of writing broken glyphs. Lifting it would mean bundling a font plus a
+  shaping engine (e.g. HarfBuzz), which is a project of its own.
 - 16 KB page-size compliance to be verified once native `.so`-bearing dependencies (pdfrx,
   PdfBox, Bouncy Castle) are added in later phases.

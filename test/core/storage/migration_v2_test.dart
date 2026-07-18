@@ -24,7 +24,9 @@ void main() {
     final names = await tableNames(db);
     expect(names, contains(AppConstants.tableRecentFiles));
     expect(names, contains(AppConstants.tableReadingPositions));
-    expect(await db.getVersion(), 2);
+    // A fresh database is created at the current schema version, which the v2
+    // tables are part of.
+    expect(await db.getVersion(), AppConstants.databaseVersion);
 
     await appDb.close();
   });

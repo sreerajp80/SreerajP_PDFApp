@@ -32,12 +32,16 @@ class MainActivity : FlutterActivity() {
 
     private var pendingPick: MethodChannel.Result? = null
     private var pendingPickMulti: MethodChannel.Result? = null
+    private var pendingPickCert: MethodChannel.Result? = null
     private var pendingSave: MethodChannel.Result? = null
     private var pendingSaveSource: String? = null
     private var eventSink: EventChannel.EventSink? = null
 
     // PDF data bridge (Phase 2). Owns its own channel; see PdfBoxHandler.
     private var pdfBoxHandler: PdfBoxHandler? = null
+
+    // Signature verification (Phase 7). Owns its own channel; see SignatureHandler.
+    private var signatureHandler: SignatureHandler? = null
 
     // An "Open with" intent that arrived before Dart was listening.
     private var initialIntentPayload: Map<String, Any?>? = null
@@ -50,6 +54,7 @@ class MainActivity : FlutterActivity() {
                 when (call.method) {
                     "pickPdf" -> startPickPdf(result)
                     "pickPdfs" -> startPickPdfs(result)
+                    "pickCertificate" -> startPickCertificate(result)
                     "saveToDevice" -> {
                         val sourcePath = call.argument<String>("sourcePath")
                         val suggestedName = call.argument<String>("suggestedName")
@@ -102,7 +107,9 @@ class MainActivity : FlutterActivity() {
             })
 
         pdfBoxHandler = PdfBoxHandler(this, flutterEngine.dartExecutor.binaryMessenger)
+        signatureHandler = SignatureHandler(this, flutterEngine.dartExecutor.binaryMessenger)
         TtsHandler(this, flutterEngine.dartExecutor.binaryMessenger)
+        PrintHandler(this, flutterEngine.dartExecutor.binaryMessenger)
 
         // Capture a launch "Open with" intent so Dart can ask for it once ready.
         initialIntentPayload = payloadFromIntent(intent)
@@ -111,6 +118,8 @@ class MainActivity : FlutterActivity() {
     override fun onDestroy() {
         pdfBoxHandler?.dispose()
         pdfBoxHandler = null
+        signatureHandler?.dispose()
+        signatureHandler = null
         super.onDestroy()
     }
 
@@ -144,6 +153,7 @@ class MainActivity : FlutterActivity() {
             REQUEST_PICK_PDF -> handlePickResult(resultCode, data)
             REQUEST_PICK_PDFS -> handlePickMultiResult(resultCode, data)
             REQUEST_SAVE_DOC -> handleSaveResult(resultCode, data)
+            REQUEST_PICK_CERT -> handlePickCertResult(resultCode, data)
         }
     }
 
@@ -188,17 +198,7 @@ class MainActivity : FlutterActivity() {
             data.data?.let { uris.add(it) }
         }
         try {
-            val payloads = uris.map { uri ->
-                val name = queryDisplayName(uri) ?: "document.pdf"
-                val cacheFile = copyToCache(uri, name)
-                mapOf(
-                    "uri" to uri.toString(),
-                    "name" to name,
-                    "size" to cacheFile.length(),
-                    "path" to cacheFile.absolutePath,
-                )
-            }
-            result.success(payloads)
+            result.success(uris.map { pdfPayload(it) })
         } catch (e: Exception) {
             result.error("copy_failed", "Could not read a selected file.", e.message)
         }
@@ -253,6 +253,55 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    // --- Certificate picker for the trust store (Phase 7) ---
+
+    /**
+     * Picks a certificate file and copies it into the cache, returning the path.
+     *
+     * No *persistable* permission is taken here, unlike [startPickPdf]: the file is read once
+     * and its bytes go into the trust store, so there is nothing to reopen later and no reason
+     * to hold lasting access to the user's storage.
+     *
+     * The type filter is a convenience, not a check — the picker cannot be trusted to return
+     * what it advertises, so the file is still parsed as untrusted input on the other side.
+     */
+    private fun startPickCertificate(result: MethodChannel.Result) {
+        if (pendingPickCert != null) {
+            result.error("busy", "A pick is already in progress.", null)
+            return
+        }
+        pendingPickCert = result
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "*/*"
+            putExtra(Intent.EXTRA_MIME_TYPES, CERT_MIME_TYPES)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            startActivityForResult(intent, REQUEST_PICK_CERT)
+        } catch (e: Exception) {
+            pendingPickCert = null
+            result.error("no_picker", "No file picker is available.", e.message)
+        }
+    }
+
+    private fun handlePickCertResult(resultCode: Int, data: Intent?) {
+        val result = pendingPickCert ?: return
+        pendingPickCert = null
+
+        if (resultCode != Activity.RESULT_OK || data?.data == null) {
+            result.success(null) // user cancelled
+            return
+        }
+        try {
+            val uri = data.data!!
+            val name = queryDisplayName(uri) ?: "certificate"
+            result.success(copyToCache(uri, name).absolutePath)
+        } catch (e: Exception) {
+            result.error("copy_failed", "Could not read the selected file.", e.message)
+        }
+    }
+
     // --- Save a cache file to a user-chosen location (ACTION_CREATE_DOCUMENT) ---
 
     private fun startSaveToDevice(
@@ -289,16 +338,7 @@ class MainActivity : FlutterActivity() {
 
     private fun deliverCopy(uri: Uri, result: MethodChannel.Result) {
         try {
-            val name = queryDisplayName(uri) ?: "document.pdf"
-            val cacheFile = copyToCache(uri, name)
-            result.success(
-                mapOf(
-                    "uri" to uri.toString(),
-                    "name" to name,
-                    "size" to cacheFile.length(),
-                    "path" to cacheFile.absolutePath,
-                ),
-            )
+            result.success(pdfPayload(uri))
         } catch (e: SecurityException) {
             result.error("no_access", "No permission to read this file.", e.message)
         } catch (e: Exception) {
@@ -326,27 +366,123 @@ class MainActivity : FlutterActivity() {
         return payload
     }
 
-    /** Extracts a PDF URI from a VIEW/SEND intent, or null if it isn't one. */
+    /**
+     * Turns a VIEW/SEND intent into something Dart can act on, or null if it isn't one.
+     *
+     * Every payload carries a `kind` so Dart knows where to send it:
+     *  - `pdf`    — open it in the viewer (Phase 1).
+     *  - `images` — build a PDF out of the pictures (Phase 6).
+     *  - `text`   — build a PDF out of the text (Phase 6).
+     *
+     * Anything unreadable returns null rather than throwing: a share we cannot make sense of
+     * must never take the app down (project rule).
+     */
     private fun payloadFromIntent(intent: Intent?): Map<String, Any?>? {
         if (intent == null) return null
-        val uri: Uri? = when (intent.action) {
-            Intent.ACTION_VIEW -> intent.data
-            Intent.ACTION_SEND -> intent.getParcelableExtra(Intent.EXTRA_STREAM)
-            else -> null
-        }
-        if (uri == null) return null
         return try {
-            val name = queryDisplayName(uri) ?: "document.pdf"
-            val cacheFile = copyToCache(uri, name)
-            mapOf(
-                "uri" to uri.toString(),
-                "name" to name,
-                "size" to cacheFile.length(),
-                "path" to cacheFile.absolutePath,
-            )
+            when (intent.action) {
+                Intent.ACTION_VIEW -> intent.data?.let { pdfPayload(it) }
+                Intent.ACTION_SEND -> sendPayload(intent)
+                Intent.ACTION_SEND_MULTIPLE -> sendMultiplePayload(intent)
+                else -> null
+            }
         } catch (_: Exception) {
             null
         }
+    }
+
+    private fun sendPayload(intent: Intent): Map<String, Any?>? {
+        val uri: Uri? = intent.getParcelableExtra(Intent.EXTRA_STREAM)
+        if (uri == null) {
+            // Text shared straight from another app, with no file behind it.
+            val text = intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString()
+            return if (text.isNullOrBlank()) null else textPayload(text)
+        }
+        val mime = mimeOf(uri, intent.type)
+        return when {
+            mime == "application/pdf" -> pdfPayload(uri)
+            mime.startsWith("image/") -> imagesPayload(listOf(uri))
+            mime.startsWith("text/") -> {
+                val text = readText(uri)
+                if (text.isNullOrBlank()) null else textPayload(text)
+            }
+            else -> null
+        }
+    }
+
+    private fun sendMultiplePayload(intent: Intent): Map<String, Any?>? {
+        val uris: List<Uri> = intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
+            ?: return null
+        // Only pictures can be joined into one PDF; ignore anything else in the batch.
+        val images = uris.filter { mimeOf(it, null).startsWith("image/") }
+        return if (images.isEmpty()) null else imagesPayload(images)
+    }
+
+    private fun pdfPayload(uri: Uri): Map<String, Any?> {
+        val name = queryDisplayName(uri) ?: "document.pdf"
+        val cacheFile = copyToCache(uri, name)
+        return mapOf(
+            "kind" to "pdf",
+            "uri" to uri.toString(),
+            "name" to name,
+            "size" to cacheFile.length(),
+            "path" to cacheFile.absolutePath,
+        )
+    }
+
+    /** Copies each picture into the cache so PdfBox can read it by path. */
+    private fun imagesPayload(uris: List<Uri>): Map<String, Any?>? {
+        val paths = arrayListOf<String>()
+        var total = 0L
+        for (uri in uris) {
+            try {
+                val name = queryDisplayName(uri) ?: "image"
+                val file = copyToCache(uri, name)
+                paths.add(file.absolutePath)
+                total += file.length()
+            } catch (_: Exception) {
+                // Skip the one we cannot read; the rest of the batch still works.
+            }
+        }
+        if (paths.isEmpty()) return null
+        val firstName = queryDisplayName(uris.first())?.substringBeforeLast('.')
+        return mapOf(
+            "kind" to "images",
+            "name" to (if (firstName.isNullOrBlank()) "images" else firstName),
+            "size" to total,
+            "paths" to paths,
+        )
+    }
+
+    private fun textPayload(text: String): Map<String, Any?> = mapOf(
+        "kind" to "text",
+        "name" to "text",
+        "size" to text.toByteArray().size.toLong(),
+        "text" to text,
+    )
+
+    /** The type of [uri], preferring what the sender declared. */
+    private fun mimeOf(uri: Uri, declared: String?): String {
+        val type = declared?.takeIf { !it.contains('*') } ?: contentResolver.getType(uri)
+        return type ?: ""
+    }
+
+    /** Reads a shared text file, capped so a huge file cannot exhaust memory. */
+    private fun readText(uri: Uri): String? = try {
+        contentResolver.openInputStream(uri)?.use { input ->
+            val bytes = ByteArray(MAX_SHARED_TEXT_BYTES)
+            var filled = 0
+            // One read() may return less than asked for even with more to come, so keep
+            // going until the cap is reached or the stream ends.
+            while (filled < bytes.size) {
+                val read = input.read(bytes, filled, bytes.size - filled)
+                if (read < 0) break
+                filled += read
+            }
+            if (filled <= 0) null else String(bytes, 0, filled, Charsets.UTF_8)
+        }
+    } catch (_: Exception) {
+        null
     }
 
     // --- Helpers ---
@@ -441,5 +577,23 @@ class MainActivity : FlutterActivity() {
         const val REQUEST_PICK_PDF = 4201
         const val REQUEST_PICK_PDFS = 4202
         const val REQUEST_SAVE_DOC = 4203
+        const val REQUEST_PICK_CERT = 4204
+
+        /**
+         * Types shown when picking a certificate (Phase 7). Certificates travel under a
+         * spread of types and often none at all, so `application/octet-stream` and
+         * `text/plain` are included — without them, a perfectly good `.pem` can be greyed
+         * out in the picker and look broken.
+         */
+        val CERT_MIME_TYPES = arrayOf(
+            "application/x-x509-ca-cert",
+            "application/x-x509-user-cert",
+            "application/pkix-cert",
+            "application/octet-stream",
+            "text/plain",
+        )
+
+        /** Most shared text we will take in (Phase 6). Past this the PDF would be absurd. */
+        const val MAX_SHARED_TEXT_BYTES = 2 * 1024 * 1024
     }
 }

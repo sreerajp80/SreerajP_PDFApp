@@ -58,3 +58,5 @@ flutter:
 
   assets:
     - assets/config/
+    # Bundled signing certificates for signature checking (Phase 7). Read-only.
+    - assets/trust/

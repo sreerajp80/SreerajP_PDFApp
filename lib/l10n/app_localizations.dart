@@ -1201,6 +1201,624 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep at least one page.'**
   String get noPagesLeftError;
+
+  /// Turn annotation mode on/off
+  ///
+  /// In en, this message translates to:
+  /// **'Annotate'**
+  String get annotateAction;
+
+  /// Highlight text tool
+  ///
+  /// In en, this message translates to:
+  /// **'Highlight'**
+  String get annotationHighlight;
+
+  /// Underline text tool
+  ///
+  /// In en, this message translates to:
+  /// **'Underline'**
+  String get annotationUnderline;
+
+  /// Strikethrough text tool
+  ///
+  /// In en, this message translates to:
+  /// **'Strikethrough'**
+  String get annotationStrikethrough;
+
+  /// Freehand ink tool
+  ///
+  /// In en, this message translates to:
+  /// **'Draw'**
+  String get annotationInk;
+
+  /// Sticky note tool
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get annotationNote;
+
+  /// Erase a mark tool
+  ///
+  /// In en, this message translates to:
+  /// **'Eraser'**
+  String get annotationEraser;
+
+  /// Remove every mark on the file
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all marks'**
+  String get annotationClearAll;
+
+  /// Write marks into a new PDF copy
+  ///
+  /// In en, this message translates to:
+  /// **'Export annotated copy'**
+  String get annotationExport;
+
+  /// Banner explaining overlay-only annotations
+  ///
+  /// In en, this message translates to:
+  /// **'These marks are saved only inside this app. Export an annotated copy to keep them in the PDF.'**
+  String get annotationOverlayNotice;
+
+  /// Shown when text markup is used on a scanned PDF
+  ///
+  /// In en, this message translates to:
+  /// **'This PDF has no selectable text to mark.'**
+  String get annotationTextMarkupUnavailable;
+
+  /// Progress while exporting annotations
+  ///
+  /// In en, this message translates to:
+  /// **'Making an annotated copy…'**
+  String get annotationExporting;
+
+  /// Export failure message
+  ///
+  /// In en, this message translates to:
+  /// **'Could not export the annotated copy.'**
+  String get annotationExportFailed;
+
+  /// Export pressed with no marks
+  ///
+  /// In en, this message translates to:
+  /// **'Add a mark first.'**
+  String get annotationNothingToExport;
+
+  /// Confirm dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Clear all marks?'**
+  String get annotationClearAllTitle;
+
+  /// Confirm dialog body
+  ///
+  /// In en, this message translates to:
+  /// **'This removes every mark on this file. It cannot be undone.'**
+  String get annotationClearAllMessage;
+
+  /// Note editor title
+  ///
+  /// In en, this message translates to:
+  /// **'Note'**
+  String get noteTitle;
+
+  /// Note editor text field hint
+  ///
+  /// In en, this message translates to:
+  /// **'Write your note'**
+  String get noteHint;
+
+  /// Delete a mark or note
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteAction;
+
+  /// Bookmarks panel title
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmarks'**
+  String get bookmarksTitle;
+
+  /// Open the bookmarks panel
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmarks'**
+  String get bookmarksAction;
+
+  /// Empty bookmarks list
+  ///
+  /// In en, this message translates to:
+  /// **'No bookmarks yet.'**
+  String get bookmarksEmpty;
+
+  /// Add a bookmark on the current page
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmark page {page}'**
+  String bookmarkAddCurrent(int page);
+
+  /// Remove the bookmark on the current page
+  ///
+  /// In en, this message translates to:
+  /// **'Remove bookmark on page {page}'**
+  String bookmarkRemoveCurrent(int page);
+
+  /// Label for a bookmark row
+  ///
+  /// In en, this message translates to:
+  /// **'Page {page}'**
+  String bookmarkPageLabel(int page);
+
+  /// Share sheet could not be opened
+  ///
+  /// In en, this message translates to:
+  /// **'Could not share this file.'**
+  String get shareFailed;
+
+  /// Title of the screen for content shared into the app
+  ///
+  /// In en, this message translates to:
+  /// **'Save as PDF'**
+  String get importTitle;
+
+  /// Progress while building a PDF from shared content
+  ///
+  /// In en, this message translates to:
+  /// **'Making your PDF…'**
+  String get importBuilding;
+
+  /// The shared content became a PDF
+  ///
+  /// In en, this message translates to:
+  /// **'Your PDF is ready'**
+  String get importReadyTitle;
+
+  /// How many shared pictures went into the PDF
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Made from 1 picture} other{Made from {count} pictures}}'**
+  String importImagesSummary(int count);
+
+  /// The PDF was built from shared text
+  ///
+  /// In en, this message translates to:
+  /// **'Made from the text you shared.'**
+  String get importTextSummary;
+
+  /// Size of the built PDF
+  ///
+  /// In en, this message translates to:
+  /// **'Size: {size}'**
+  String importSize(String size);
+
+  /// Save the built PDF to a chosen place
+  ///
+  /// In en, this message translates to:
+  /// **'Save as PDF'**
+  String get importSaveAction;
+
+  /// Share the built PDF
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get importShareAction;
+
+  /// Confirmation after saving the built PDF
+  ///
+  /// In en, this message translates to:
+  /// **'Saved {name}'**
+  String importSaved(String name);
+
+  /// Building a PDF from shared content failed
+  ///
+  /// In en, this message translates to:
+  /// **'Could not make the PDF'**
+  String get importFailedTitle;
+
+  /// Shared text uses a script the PDF fonts do not cover
+  ///
+  /// In en, this message translates to:
+  /// **'These letters cannot be saved yet'**
+  String get importUnsupportedTextTitle;
+
+  /// Plain explanation of the Latin-1 font limit
+  ///
+  /// In en, this message translates to:
+  /// **'This app can only write English letters and numbers into a PDF. Malayalam and other scripts are not supported yet. A picture of the text will save fine.'**
+  String get importUnsupportedTextDetail;
+
+  /// Open the print options
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get printAction;
+
+  /// Title of the print sheet
+  ///
+  /// In en, this message translates to:
+  /// **'Print'**
+  String get printTitle;
+
+  /// Print every page
+  ///
+  /// In en, this message translates to:
+  /// **'Whole document'**
+  String get printWholeAction;
+
+  /// Explains the whole-document print option
+  ///
+  /// In en, this message translates to:
+  /// **'Print every page of this PDF.'**
+  String get printWholeDescription;
+
+  /// Print only some pages
+  ///
+  /// In en, this message translates to:
+  /// **'Page range'**
+  String get printRangeAction;
+
+  /// Explains the page-range print option
+  ///
+  /// In en, this message translates to:
+  /// **'Choose which pages to print.'**
+  String get printRangeDescription;
+
+  /// Print the text of the PDF, not the pages
+  ///
+  /// In en, this message translates to:
+  /// **'Text only'**
+  String get printTextAction;
+
+  /// Explains the text-only print option
+  ///
+  /// In en, this message translates to:
+  /// **'Print the words of this PDF as plain pages.'**
+  String get printTextDescription;
+
+  /// Title of the page-range dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Pages to print'**
+  String get printRangeTitle;
+
+  /// First page of the print range
+  ///
+  /// In en, this message translates to:
+  /// **'From page'**
+  String get printFromLabel;
+
+  /// Last page of the print range
+  ///
+  /// In en, this message translates to:
+  /// **'To page'**
+  String get printToLabel;
+
+  /// The typed print range is out of bounds or backwards
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a page range inside 1 to {pageCount}.'**
+  String printRangeInvalid(int pageCount);
+
+  /// Progress while preparing a document to print
+  ///
+  /// In en, this message translates to:
+  /// **'Getting the pages ready…'**
+  String get printPreparing;
+
+  /// Printing is not supported on this device
+  ///
+  /// In en, this message translates to:
+  /// **'This device cannot print.'**
+  String get printUnavailable;
+
+  /// Generic print failure
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start printing.'**
+  String get printFailed;
+
+  /// Text-only printing on a scanned PDF
+  ///
+  /// In en, this message translates to:
+  /// **'This PDF has no text to print.'**
+  String get printNoText;
+
+  /// Open the signatures screen from the viewer menu
+  ///
+  /// In en, this message translates to:
+  /// **'Signatures'**
+  String get signaturesAction;
+
+  /// Title of the signatures screen
+  ///
+  /// In en, this message translates to:
+  /// **'Signatures'**
+  String get signaturesTitle;
+
+  /// Progress while signatures are verified
+  ///
+  /// In en, this message translates to:
+  /// **'Checking signatures…'**
+  String get signaturesChecking;
+
+  /// Empty state when a document has no signatures
+  ///
+  /// In en, this message translates to:
+  /// **'This PDF is not signed.'**
+  String get signaturesNone;
+
+  /// The signature check itself failed — not the same as a bad signature
+  ///
+  /// In en, this message translates to:
+  /// **'These signatures could not be checked.'**
+  String get signaturesFailed;
+
+  /// Explains that a failed check is not a verdict
+  ///
+  /// In en, this message translates to:
+  /// **'This does not mean the signatures are bad. It means the app could not read them, so it will not say either way.'**
+  String get signaturesFailedDetail;
+
+  /// Green tick state
+  ///
+  /// In en, this message translates to:
+  /// **'Signed and trusted'**
+  String get signatureStatusTrusted;
+
+  /// Explains the trusted state
+  ///
+  /// In en, this message translates to:
+  /// **'The document has not changed since it was signed, and you trust the signer\'s certificate.'**
+  String get signatureStatusTrustedDetail;
+
+  /// Valid crypto, untrusted signer
+  ///
+  /// In en, this message translates to:
+  /// **'Signed, but signer unknown'**
+  String get signatureStatusValidNotTrusted;
+
+  /// Explains the valid-not-trusted state
+  ///
+  /// In en, this message translates to:
+  /// **'The document has not changed since it was signed. But the app does not know the signer, so it cannot vouch for who they are.'**
+  String get signatureStatusValidNotTrustedDetail;
+
+  /// Red state
+  ///
+  /// In en, this message translates to:
+  /// **'Signature is not valid'**
+  String get signatureStatusInvalid;
+
+  /// Explains the invalid state
+  ///
+  /// In en, this message translates to:
+  /// **'The document changed after it was signed, or the signature does not match. Do not rely on it.'**
+  String get signatureStatusInvalidDetail;
+
+  /// Grey state
+  ///
+  /// In en, this message translates to:
+  /// **'Signature could not be read'**
+  String get signatureStatusUnknown;
+
+  /// Explains the unknown state
+  ///
+  /// In en, this message translates to:
+  /// **'The app could not make sense of this signature, so it will not say whether it is good or bad.'**
+  String get signatureStatusUnknownDetail;
+
+  /// Short label for the partial-coverage note
+  ///
+  /// In en, this message translates to:
+  /// **'Covers only part of the file'**
+  String get signatureNotePartialCoverage;
+
+  /// Explains partial coverage in plain words
+  ///
+  /// In en, this message translates to:
+  /// **'Something was added to this file after it was signed. The signature says nothing about that part.'**
+  String get signatureNotePartialCoverageDetail;
+
+  /// Short label for a revoked certificate
+  ///
+  /// In en, this message translates to:
+  /// **'The certificate was cancelled'**
+  String get signatureNoteRevoked;
+
+  /// Explains revocation
+  ///
+  /// In en, this message translates to:
+  /// **'Whoever issued this certificate has since cancelled it. It should not be trusted.'**
+  String get signatureNoteRevokedDetail;
+
+  /// Short label when revocation was not checked
+  ///
+  /// In en, this message translates to:
+  /// **'Could not check if the certificate was cancelled'**
+  String get signatureNoteRevocationNotChecked;
+
+  /// Explains why revocation was not checked, offline-first
+  ///
+  /// In en, this message translates to:
+  /// **'Checking that needs the internet, which this app never uses, and this PDF does not carry the proof inside it.'**
+  String get signatureNoteRevocationNotCheckedDetail;
+
+  /// Short label for expired-at-signing
+  ///
+  /// In en, this message translates to:
+  /// **'The certificate had expired when it signed'**
+  String get signatureNoteCertExpired;
+
+  /// Explains expired-at-signing
+  ///
+  /// In en, this message translates to:
+  /// **'The signing certificate was outside its valid dates at the time of signing.'**
+  String get signatureNoteCertExpiredDetail;
+
+  /// Short label for an unverified signing time
+  ///
+  /// In en, this message translates to:
+  /// **'The signing time is only a claim'**
+  String get signatureNoteUnverifiedTime;
+
+  /// Explains why a signing time may not be trustworthy
+  ///
+  /// In en, this message translates to:
+  /// **'This time is stored outside the signed part of the file, so anyone could have changed it.'**
+  String get signatureNoteUnverifiedTimeDetail;
+
+  /// Label for the signer name
+  ///
+  /// In en, this message translates to:
+  /// **'Signed by'**
+  String get signatureSignerLabel;
+
+  /// Shown when the signature carries no signer name
+  ///
+  /// In en, this message translates to:
+  /// **'Not stated'**
+  String get signatureSignerUnknown;
+
+  /// Label for the signing time
+  ///
+  /// In en, this message translates to:
+  /// **'Signed on'**
+  String get signatureSignedAtLabel;
+
+  /// Label for the stated reason for signing
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get signatureReasonLabel;
+
+  /// Label for the stated signing location
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get signatureLocationLabel;
+
+  /// Title of the certificate details section
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate'**
+  String get signatureCertificateTitle;
+
+  /// Certificate subject
+  ///
+  /// In en, this message translates to:
+  /// **'Issued to'**
+  String get signatureIssuedToLabel;
+
+  /// Certificate issuer
+  ///
+  /// In en, this message translates to:
+  /// **'Issued by'**
+  String get signatureIssuedByLabel;
+
+  /// Certificate start date
+  ///
+  /// In en, this message translates to:
+  /// **'Valid from'**
+  String get signatureValidFromLabel;
+
+  /// Certificate end date
+  ///
+  /// In en, this message translates to:
+  /// **'Valid until'**
+  String get signatureValidUntilLabel;
+
+  /// Explains a self-signed certificate without implying it is fake
+  ///
+  /// In en, this message translates to:
+  /// **'This certificate vouches for itself. Nobody else backs it, so trust it only if you know the signer.'**
+  String get signatureSelfSignedNote;
+
+  /// Button to add the signer's certificate to the trust store
+  ///
+  /// In en, this message translates to:
+  /// **'Trust this certificate'**
+  String get signatureTrustAction;
+
+  /// Title of the trust confirmation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Trust this signer?'**
+  String get signatureTrustTitle;
+
+  /// Explains what trusting a certificate means before the user does it
+  ///
+  /// In en, this message translates to:
+  /// **'From now on, any PDF signed with this certificate will show as trusted. Only do this if you know who the signer is.'**
+  String get signatureTrustExplain;
+
+  /// Confirm button of the trust dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Trust'**
+  String get signatureTrustConfirm;
+
+  /// Shown after a certificate is added to the trust store
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate trusted.'**
+  String get signatureTrustedToast;
+
+  /// Title of the trust store screen
+  ///
+  /// In en, this message translates to:
+  /// **'Trusted certificates'**
+  String get trustStoreTitle;
+
+  /// Empty state of the trust store screen
+  ///
+  /// In en, this message translates to:
+  /// **'You have not trusted any certificates yet.'**
+  String get trustStoreEmpty;
+
+  /// Explains the trust store
+  ///
+  /// In en, this message translates to:
+  /// **'When you trust a signer\'s certificate, it is listed here. You can remove it at any time.'**
+  String get trustStoreEmptyDetail;
+
+  /// Pick a certificate file to trust
+  ///
+  /// In en, this message translates to:
+  /// **'Add a certificate'**
+  String get trustStoreAddAction;
+
+  /// Remove a certificate from the trust store
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get trustStoreRemoveAction;
+
+  /// Title of the remove confirmation
+  ///
+  /// In en, this message translates to:
+  /// **'Stop trusting this certificate?'**
+  String get trustStoreRemoveTitle;
+
+  /// Explains what removing a certificate does
+  ///
+  /// In en, this message translates to:
+  /// **'PDFs signed with it will stop showing as trusted.'**
+  String get trustStoreRemoveExplain;
+
+  /// The picked file could not be parsed as a certificate
+  ///
+  /// In en, this message translates to:
+  /// **'That file is not a certificate the app can read.'**
+  String get trustStoreInvalidFile;
+
+  /// Warning shown for an expired certificate in the trust store
+  ///
+  /// In en, this message translates to:
+  /// **'This certificate has expired.'**
+  String get trustStoreExpiredWarning;
 }
 
 class _AppLocalizationsDelegate

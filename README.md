@@ -4,7 +4,7 @@ An **offline Android app**, built in Flutter, for **everything PDF**: opening, r
 searching, listening (English + Malayalam TTS), annotating, extracting, reorganizing, printing,
 and verifying digital signatures. Only **open-source** libraries are used.
 
-See [CLAUDE.md](CLAUDE.md) for the project rules and [doc/](doc/) for the product idea, full
+See [CLAUDE.md](CLAUDE.md) for the project rules and [docs/](docs/) for the product idea, full
 technical design, and the phased implementation plan. Engineering-side design notes live in
 [docs/architecture.md](docs/architecture.md).
 

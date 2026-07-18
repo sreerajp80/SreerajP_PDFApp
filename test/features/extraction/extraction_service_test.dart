@@ -17,7 +17,9 @@ void main() {
   }
 
   setUp(() {
-    const pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
+    const pathProviderChannel = MethodChannel(
+      'plugins.flutter.io/path_provider',
+    );
     messenger.setMockMethodCallHandler(pathProviderChannel, (call) async {
       if (call.method == 'getTemporaryDirectory') {
         return Directory.systemTemp.path;
@@ -28,7 +30,10 @@ void main() {
 
   tearDown(() {
     messenger.setMockMethodCallHandler(channel, null);
-    messenger.setMockMethodCallHandler(const MethodChannel('plugins.flutter.io/path_provider'), null);
+    messenger.setMockMethodCallHandler(
+      const MethodChannel('plugins.flutter.io/path_provider'),
+      null,
+    );
   });
 
   final pdfBoxChannel = PdfBoxChannel(method: channel);
@@ -41,7 +46,11 @@ void main() {
         return 'extracted plain text';
       });
 
-      final result = await sut.extractText('/path/to/doc.pdf', startPage: 1, endPage: 2);
+      final result = await sut.extractText(
+        '/path/to/doc.pdf',
+        startPage: 1,
+        endPage: 2,
+      );
       expect(result, 'extracted plain text');
     });
 
@@ -66,19 +75,25 @@ void main() {
         return ['/tmp/extracted/img_1.png'];
       });
 
-      final paths = await sut.extractImages('/path/to/doc.pdf', startPage: 1, endPage: 1);
+      final paths = await sut.extractImages(
+        '/path/to/doc.pdf',
+        startPage: 1,
+        endPage: 1,
+      );
       expect(paths, ['/tmp/extracted/img_1.png']);
     });
 
     test('readFormFields delegates to channel', () async {
-      mockChannel((call) async => [
-            {
-              'name': 'First Name',
-              'value': 'Sreeraj',
-              'type': 'Tx',
-              'readOnly': false,
-            }
-          ]);
+      mockChannel(
+        (call) async => [
+          {
+            'name': 'First Name',
+            'value': 'Sreeraj',
+            'type': 'Tx',
+            'readOnly': false,
+          },
+        ],
+      );
 
       final fields = await sut.readFormFields('/path/to/doc.pdf');
       expect(fields, hasLength(1));
@@ -87,14 +102,16 @@ void main() {
     });
 
     test('readFormFieldsToFile writes json and returns path', () async {
-      mockChannel((call) async => [
-            {
-              'name': 'First Name',
-              'value': 'Sreeraj',
-              'type': 'Tx',
-              'readOnly': false,
-            }
-          ]);
+      mockChannel(
+        (call) async => [
+          {
+            'name': 'First Name',
+            'value': 'Sreeraj',
+            'type': 'Tx',
+            'readOnly': false,
+          },
+        ],
+      );
 
       final path = await sut.readFormFieldsToFile('/path/to/doc.pdf');
       expect(path, contains('form_fields_'));

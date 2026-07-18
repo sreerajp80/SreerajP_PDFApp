@@ -620,4 +620,365 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get noPagesLeftError => 'കുറഞ്ഞത് ഒരു പേജെങ്കിലും വേണം.';
+
+  @override
+  String get annotateAction => 'അടയാളപ്പെടുത്തുക';
+
+  @override
+  String get annotationHighlight => 'ഹൈലൈറ്റ്';
+
+  @override
+  String get annotationUnderline => 'അടിവര';
+
+  @override
+  String get annotationStrikethrough => 'വെട്ടിവര';
+
+  @override
+  String get annotationInk => 'വരയ്ക്കുക';
+
+  @override
+  String get annotationNote => 'കുറിപ്പ്';
+
+  @override
+  String get annotationEraser => 'മായ്ക്കുക';
+
+  @override
+  String get annotationClearAll => 'എല്ലാ അടയാളങ്ങളും മായ്ക്കുക';
+
+  @override
+  String get annotationExport => 'അടയാളങ്ങളോടെ പകർപ്പ് കയറ്റുമതി ചെയ്യുക';
+
+  @override
+  String get annotationOverlayNotice =>
+      'ഈ അടയാളങ്ങൾ ഈ ആപ്പിനുള്ളിൽ മാത്രമേ സൂക്ഷിക്കൂ. PDF-ൽ നിലനിർത്താൻ അടയാളങ്ങളോടെ ഒരു പകർപ്പ് കയറ്റുമതി ചെയ്യുക.';
+
+  @override
+  String get annotationTextMarkupUnavailable =>
+      'ഈ PDF-ൽ അടയാളപ്പെടുത്താൻ തിരഞ്ഞെടുക്കാവുന്ന വാചകം ഇല്ല.';
+
+  @override
+  String get annotationExporting => 'അടയാളങ്ങളോടെ പകർപ്പ് ഉണ്ടാക്കുന്നു…';
+
+  @override
+  String get annotationExportFailed =>
+      'അടയാളങ്ങളോടെ പകർപ്പ് ഉണ്ടാക്കാൻ കഴിഞ്ഞില്ല.';
+
+  @override
+  String get annotationNothingToExport => 'ആദ്യം ഒരു അടയാളം ചേർക്കുക.';
+
+  @override
+  String get annotationClearAllTitle => 'എല്ലാ അടയാളങ്ങളും മായ്ക്കണോ?';
+
+  @override
+  String get annotationClearAllMessage =>
+      'ഇത് ഈ ഫയലിലെ എല്ലാ അടയാളങ്ങളും നീക്കും. ഇത് പഴയപടിയാക്കാൻ കഴിയില്ല.';
+
+  @override
+  String get noteTitle => 'കുറിപ്പ്';
+
+  @override
+  String get noteHint => 'നിങ്ങളുടെ കുറിപ്പ് എഴുതുക';
+
+  @override
+  String get deleteAction => 'നീക്കുക';
+
+  @override
+  String get bookmarksTitle => 'ബുക്ക്‌മാർക്കുകൾ';
+
+  @override
+  String get bookmarksAction => 'ബുക്ക്‌മാർക്കുകൾ';
+
+  @override
+  String get bookmarksEmpty => 'ബുക്ക്‌മാർക്കുകൾ ഇല്ല.';
+
+  @override
+  String bookmarkAddCurrent(int page) {
+    return 'പേജ് $page ബുക്ക്‌മാർക്ക് ചെയ്യുക';
+  }
+
+  @override
+  String bookmarkRemoveCurrent(int page) {
+    return 'പേജ് $page-ലെ ബുക്ക്‌മാർക്ക് നീക്കുക';
+  }
+
+  @override
+  String bookmarkPageLabel(int page) {
+    return 'പേജ് $page';
+  }
+
+  @override
+  String get shareFailed => 'ഈ ഫയൽ പങ്കിടാൻ കഴിഞ്ഞില്ല.';
+
+  @override
+  String get importTitle => 'PDF ആയി സേവ് ചെയ്യുക';
+
+  @override
+  String get importBuilding => 'നിങ്ങളുടെ PDF ഉണ്ടാക്കുന്നു…';
+
+  @override
+  String get importReadyTitle => 'നിങ്ങളുടെ PDF തയ്യാറാണ്';
+
+  @override
+  String importImagesSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ചിത്രങ്ങളിൽ നിന്ന് ഉണ്ടാക്കി',
+      one: '1 ചിത്രത്തിൽ നിന്ന് ഉണ്ടാക്കി',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get importTextSummary => 'നിങ്ങൾ പങ്കിട്ട എഴുത്തിൽ നിന്ന് ഉണ്ടാക്കി.';
+
+  @override
+  String importSize(String size) {
+    return 'വലുപ്പം: $size';
+  }
+
+  @override
+  String get importSaveAction => 'PDF ആയി സേവ് ചെയ്യുക';
+
+  @override
+  String get importShareAction => 'പങ്കിടുക';
+
+  @override
+  String importSaved(String name) {
+    return '$name സേവ് ചെയ്തു';
+  }
+
+  @override
+  String get importFailedTitle => 'PDF ഉണ്ടാക്കാൻ കഴിഞ്ഞില്ല';
+
+  @override
+  String get importUnsupportedTextTitle =>
+      'ഈ അക്ഷരങ്ങൾ ഇപ്പോൾ സേവ് ചെയ്യാൻ കഴിയില്ല';
+
+  @override
+  String get importUnsupportedTextDetail =>
+      'ഈ ആപ്പിന് ഇംഗ്ലീഷ് അക്ഷരങ്ങളും അക്കങ്ങളും മാത്രമേ PDF-ൽ എഴുതാൻ കഴിയൂ. മലയാളവും മറ്റു ലിപികളും ഇപ്പോൾ പിന്തുണയ്ക്കുന്നില്ല. എഴുത്തിന്റെ ഒരു ചിത്രം സേവ് ചെയ്യാൻ കുഴപ്പമില്ല.';
+
+  @override
+  String get printAction => 'പ്രിന്റ് ചെയ്യുക';
+
+  @override
+  String get printTitle => 'പ്രിന്റ്';
+
+  @override
+  String get printWholeAction => 'മുഴുവൻ ഡോക്യുമെന്റ്';
+
+  @override
+  String get printWholeDescription =>
+      'ഈ PDF-ന്റെ എല്ലാ പേജുകളും പ്രിന്റ് ചെയ്യുക.';
+
+  @override
+  String get printRangeAction => 'പേജ് പരിധി';
+
+  @override
+  String get printRangeDescription =>
+      'ഏതു പേജുകൾ പ്രിന്റ് ചെയ്യണമെന്ന് തിരഞ്ഞെടുക്കുക.';
+
+  @override
+  String get printTextAction => 'എഴുത്ത് മാത്രം';
+
+  @override
+  String get printTextDescription =>
+      'ഈ PDF-ലെ വാക്കുകൾ സാധാരണ പേജുകളായി പ്രിന്റ് ചെയ്യുക.';
+
+  @override
+  String get printRangeTitle => 'പ്രിന്റ് ചെയ്യേണ്ട പേജുകൾ';
+
+  @override
+  String get printFromLabel => 'ഈ പേജ് മുതൽ';
+
+  @override
+  String get printToLabel => 'ഈ പേജ് വരെ';
+
+  @override
+  String printRangeInvalid(int pageCount) {
+    return '1 മുതൽ $pageCount വരെയുള്ള പേജ് പരിധി നൽകുക.';
+  }
+
+  @override
+  String get printPreparing => 'പേജുകൾ തയ്യാറാക്കുന്നു…';
+
+  @override
+  String get printUnavailable => 'ഈ ഉപകരണത്തിന് പ്രിന്റ് ചെയ്യാൻ കഴിയില്ല.';
+
+  @override
+  String get printFailed => 'പ്രിന്റ് തുടങ്ങാൻ കഴിഞ്ഞില്ല.';
+
+  @override
+  String get printNoText => 'ഈ PDF-ൽ പ്രിന്റ് ചെയ്യാൻ എഴുത്തില്ല.';
+
+  @override
+  String get signaturesAction => 'ഒപ്പുകൾ';
+
+  @override
+  String get signaturesTitle => 'ഒപ്പുകൾ';
+
+  @override
+  String get signaturesChecking => 'ഒപ്പുകൾ പരിശോധിക്കുന്നു…';
+
+  @override
+  String get signaturesNone => 'ഈ PDF-ൽ ഒപ്പില്ല.';
+
+  @override
+  String get signaturesFailed => 'ഈ ഒപ്പുകൾ പരിശോധിക്കാൻ കഴിഞ്ഞില്ല.';
+
+  @override
+  String get signaturesFailedDetail =>
+      'ഒപ്പുകൾ മോശമാണെന്ന് ഇതിനർത്ഥമില്ല. ആപ്പിന് അവ വായിക്കാൻ കഴിഞ്ഞില്ല, അതിനാൽ ഒന്നും പറയുന്നില്ല.';
+
+  @override
+  String get signatureStatusTrusted => 'ഒപ്പിട്ടത്, വിശ്വസിക്കാം';
+
+  @override
+  String get signatureStatusTrustedDetail =>
+      'ഒപ്പിട്ടതിനു ശേഷം ഈ രേഖ മാറിയിട്ടില്ല. ഒപ്പിട്ടയാളുടെ സർട്ടിഫിക്കറ്റ് നിങ്ങൾ വിശ്വസിക്കുന്നു.';
+
+  @override
+  String get signatureStatusValidNotTrusted =>
+      'ഒപ്പിട്ടത്, പക്ഷേ ഒപ്പിട്ടയാളെ അറിയില്ല';
+
+  @override
+  String get signatureStatusValidNotTrustedDetail =>
+      'ഒപ്പിട്ടതിനു ശേഷം ഈ രേഖ മാറിയിട്ടില്ല. പക്ഷേ ഒപ്പിട്ടയാൾ ആരാണെന്ന് ആപ്പിന് അറിയില്ല.';
+
+  @override
+  String get signatureStatusInvalid => 'ഒപ്പ് ശരിയല്ല';
+
+  @override
+  String get signatureStatusInvalidDetail =>
+      'ഒപ്പിട്ടതിനു ശേഷം രേഖ മാറി, അല്ലെങ്കിൽ ഒപ്പ് ചേരുന്നില്ല. ഇതിനെ ആശ്രയിക്കരുത്.';
+
+  @override
+  String get signatureStatusUnknown => 'ഒപ്പ് വായിക്കാൻ കഴിഞ്ഞില്ല';
+
+  @override
+  String get signatureStatusUnknownDetail =>
+      'ഈ ഒപ്പ് ആപ്പിന് മനസ്സിലായില്ല, അതിനാൽ അത് നല്ലതോ ചീത്തയോ എന്ന് പറയുന്നില്ല.';
+
+  @override
+  String get signatureNotePartialCoverage =>
+      'ഫയലിന്റെ ഒരു ഭാഗം മാത്രം ഉൾക്കൊള്ളുന്നു';
+
+  @override
+  String get signatureNotePartialCoverageDetail =>
+      'ഒപ്പിട്ടതിനു ശേഷം ഈ ഫയലിൽ എന്തോ ചേർത്തിട്ടുണ്ട്. ആ ഭാഗത്തെക്കുറിച്ച് ഒപ്പ് ഒന്നും പറയുന്നില്ല.';
+
+  @override
+  String get signatureNoteRevoked => 'സർട്ടിഫിക്കറ്റ് റദ്ദാക്കി';
+
+  @override
+  String get signatureNoteRevokedDetail =>
+      'ഈ സർട്ടിഫിക്കറ്റ് നൽകിയവർ അത് റദ്ദാക്കിയിട്ടുണ്ട്. ഇത് വിശ്വസിക്കരുത്.';
+
+  @override
+  String get signatureNoteRevocationNotChecked =>
+      'സർട്ടിഫിക്കറ്റ് റദ്ദാക്കിയോ എന്ന് പരിശോധിക്കാൻ കഴിഞ്ഞില്ല';
+
+  @override
+  String get signatureNoteRevocationNotCheckedDetail =>
+      'അത് പരിശോധിക്കാൻ ഇന്റർനെറ്റ് വേണം, ഈ ആപ്പ് ഒരിക്കലും അത് ഉപയോഗിക്കില്ല. ഈ PDF-ൽ ആ തെളിവ് ഇല്ല.';
+
+  @override
+  String get signatureNoteCertExpired =>
+      'ഒപ്പിടുമ്പോൾ സർട്ടിഫിക്കറ്റിന്റെ കാലാവധി കഴിഞ്ഞിരുന്നു';
+
+  @override
+  String get signatureNoteCertExpiredDetail =>
+      'ഒപ്പിട്ട സമയത്ത് സർട്ടിഫിക്കറ്റ് അതിന്റെ സാധുവായ തീയതികൾക്ക് പുറത്തായിരുന്നു.';
+
+  @override
+  String get signatureNoteUnverifiedTime =>
+      'ഒപ്പിട്ട സമയം ഒരു അവകാശവാദം മാത്രം';
+
+  @override
+  String get signatureNoteUnverifiedTimeDetail =>
+      'ഈ സമയം ഫയലിന്റെ ഒപ്പിട്ട ഭാഗത്തിന് പുറത്താണ്, അതിനാൽ ആർക്കും അത് മാറ്റാമായിരുന്നു.';
+
+  @override
+  String get signatureSignerLabel => 'ഒപ്പിട്ടത്';
+
+  @override
+  String get signatureSignerUnknown => 'പറഞ്ഞിട്ടില്ല';
+
+  @override
+  String get signatureSignedAtLabel => 'ഒപ്പിട്ട തീയതി';
+
+  @override
+  String get signatureReasonLabel => 'കാരണം';
+
+  @override
+  String get signatureLocationLabel => 'സ്ഥലം';
+
+  @override
+  String get signatureCertificateTitle => 'സർട്ടിഫിക്കറ്റ്';
+
+  @override
+  String get signatureIssuedToLabel => 'നൽകിയത്';
+
+  @override
+  String get signatureIssuedByLabel => 'നൽകിയവർ';
+
+  @override
+  String get signatureValidFromLabel => 'സാധുവായ തുടക്കം';
+
+  @override
+  String get signatureValidUntilLabel => 'സാധുവായ അവസാനം';
+
+  @override
+  String get signatureSelfSignedNote =>
+      'ഈ സർട്ടിഫിക്കറ്റ് സ്വയം ഉറപ്പുനൽകുന്നു. മറ്റാരും ഇതിന് പിന്തുണ നൽകുന്നില്ല, അതിനാൽ ഒപ്പിട്ടയാളെ അറിയാമെങ്കിൽ മാത്രം വിശ്വസിക്കുക.';
+
+  @override
+  String get signatureTrustAction => 'ഈ സർട്ടിഫിക്കറ്റ് വിശ്വസിക്കുക';
+
+  @override
+  String get signatureTrustTitle => 'ഈ ഒപ്പിട്ടയാളെ വിശ്വസിക്കണോ?';
+
+  @override
+  String get signatureTrustExplain =>
+      'ഇനി മുതൽ ഈ സർട്ടിഫിക്കറ്റ് ഉപയോഗിച്ച് ഒപ്പിട്ട ഏത് PDF-ഉം വിശ്വസനീയമായി കാണിക്കും. ഒപ്പിട്ടയാൾ ആരാണെന്ന് അറിയാമെങ്കിൽ മാത്രം ഇത് ചെയ്യുക.';
+
+  @override
+  String get signatureTrustConfirm => 'വിശ്വസിക്കുക';
+
+  @override
+  String get signatureTrustedToast => 'സർട്ടിഫിക്കറ്റ് വിശ്വസിച്ചു.';
+
+  @override
+  String get trustStoreTitle => 'വിശ്വസിക്കുന്ന സർട്ടിഫിക്കറ്റുകൾ';
+
+  @override
+  String get trustStoreEmpty =>
+      'നിങ്ങൾ ഇതുവരെ ഒരു സർട്ടിഫിക്കറ്റും വിശ്വസിച്ചിട്ടില്ല.';
+
+  @override
+  String get trustStoreEmptyDetail =>
+      'ഒപ്പിട്ടയാളുടെ സർട്ടിഫിക്കറ്റ് വിശ്വസിക്കുമ്പോൾ അത് ഇവിടെ കാണാം. എപ്പോൾ വേണമെങ്കിലും നീക്കം ചെയ്യാം.';
+
+  @override
+  String get trustStoreAddAction => 'ഒരു സർട്ടിഫിക്കറ്റ് ചേർക്കുക';
+
+  @override
+  String get trustStoreRemoveAction => 'നീക്കം ചെയ്യുക';
+
+  @override
+  String get trustStoreRemoveTitle =>
+      'ഈ സർട്ടിഫിക്കറ്റ് വിശ്വസിക്കുന്നത് നിർത്തണോ?';
+
+  @override
+  String get trustStoreRemoveExplain =>
+      'ഇത് ഉപയോഗിച്ച് ഒപ്പിട്ട PDF-കൾ ഇനി വിശ്വസനീയമായി കാണിക്കില്ല.';
+
+  @override
+  String get trustStoreInvalidFile =>
+      'ആ ഫയൽ ആപ്പിന് വായിക്കാൻ കഴിയുന്ന സർട്ടിഫിക്കറ്റല്ല.';
+
+  @override
+  String get trustStoreExpiredWarning =>
+      'ഈ സർട്ടിഫിക്കറ്റിന്റെ കാലാവധി കഴിഞ്ഞു.';
 }

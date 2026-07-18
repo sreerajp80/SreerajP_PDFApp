@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pdfapp/app/config/providers.dart';
+import 'package:pdfapp/app/routing/app_router.dart';
 import 'package:pdfapp/app/theme/app_theme.dart';
 import 'package:pdfapp/features/reading/data/tts_service.dart';
 import 'package:pdfapp/features/reading/domain/tts_state.dart';
@@ -94,6 +96,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   await ref.read(ttsServiceProvider).refreshVoices();
                 }
               },
+            ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.verified_user_outlined),
+              title: Text(l10n.trustStoreTitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.pushNamed(AppRoute.trustStore.name),
             ),
           ],
         ),

@@ -617,4 +617,355 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noPagesLeftError => 'Keep at least one page.';
+
+  @override
+  String get annotateAction => 'Annotate';
+
+  @override
+  String get annotationHighlight => 'Highlight';
+
+  @override
+  String get annotationUnderline => 'Underline';
+
+  @override
+  String get annotationStrikethrough => 'Strikethrough';
+
+  @override
+  String get annotationInk => 'Draw';
+
+  @override
+  String get annotationNote => 'Note';
+
+  @override
+  String get annotationEraser => 'Eraser';
+
+  @override
+  String get annotationClearAll => 'Clear all marks';
+
+  @override
+  String get annotationExport => 'Export annotated copy';
+
+  @override
+  String get annotationOverlayNotice =>
+      'These marks are saved only inside this app. Export an annotated copy to keep them in the PDF.';
+
+  @override
+  String get annotationTextMarkupUnavailable =>
+      'This PDF has no selectable text to mark.';
+
+  @override
+  String get annotationExporting => 'Making an annotated copy…';
+
+  @override
+  String get annotationExportFailed => 'Could not export the annotated copy.';
+
+  @override
+  String get annotationNothingToExport => 'Add a mark first.';
+
+  @override
+  String get annotationClearAllTitle => 'Clear all marks?';
+
+  @override
+  String get annotationClearAllMessage =>
+      'This removes every mark on this file. It cannot be undone.';
+
+  @override
+  String get noteTitle => 'Note';
+
+  @override
+  String get noteHint => 'Write your note';
+
+  @override
+  String get deleteAction => 'Delete';
+
+  @override
+  String get bookmarksTitle => 'Bookmarks';
+
+  @override
+  String get bookmarksAction => 'Bookmarks';
+
+  @override
+  String get bookmarksEmpty => 'No bookmarks yet.';
+
+  @override
+  String bookmarkAddCurrent(int page) {
+    return 'Bookmark page $page';
+  }
+
+  @override
+  String bookmarkRemoveCurrent(int page) {
+    return 'Remove bookmark on page $page';
+  }
+
+  @override
+  String bookmarkPageLabel(int page) {
+    return 'Page $page';
+  }
+
+  @override
+  String get shareFailed => 'Could not share this file.';
+
+  @override
+  String get importTitle => 'Save as PDF';
+
+  @override
+  String get importBuilding => 'Making your PDF…';
+
+  @override
+  String get importReadyTitle => 'Your PDF is ready';
+
+  @override
+  String importImagesSummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Made from $count pictures',
+      one: 'Made from 1 picture',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get importTextSummary => 'Made from the text you shared.';
+
+  @override
+  String importSize(String size) {
+    return 'Size: $size';
+  }
+
+  @override
+  String get importSaveAction => 'Save as PDF';
+
+  @override
+  String get importShareAction => 'Share';
+
+  @override
+  String importSaved(String name) {
+    return 'Saved $name';
+  }
+
+  @override
+  String get importFailedTitle => 'Could not make the PDF';
+
+  @override
+  String get importUnsupportedTextTitle => 'These letters cannot be saved yet';
+
+  @override
+  String get importUnsupportedTextDetail =>
+      'This app can only write English letters and numbers into a PDF. Malayalam and other scripts are not supported yet. A picture of the text will save fine.';
+
+  @override
+  String get printAction => 'Print';
+
+  @override
+  String get printTitle => 'Print';
+
+  @override
+  String get printWholeAction => 'Whole document';
+
+  @override
+  String get printWholeDescription => 'Print every page of this PDF.';
+
+  @override
+  String get printRangeAction => 'Page range';
+
+  @override
+  String get printRangeDescription => 'Choose which pages to print.';
+
+  @override
+  String get printTextAction => 'Text only';
+
+  @override
+  String get printTextDescription =>
+      'Print the words of this PDF as plain pages.';
+
+  @override
+  String get printRangeTitle => 'Pages to print';
+
+  @override
+  String get printFromLabel => 'From page';
+
+  @override
+  String get printToLabel => 'To page';
+
+  @override
+  String printRangeInvalid(int pageCount) {
+    return 'Enter a page range inside 1 to $pageCount.';
+  }
+
+  @override
+  String get printPreparing => 'Getting the pages ready…';
+
+  @override
+  String get printUnavailable => 'This device cannot print.';
+
+  @override
+  String get printFailed => 'Could not start printing.';
+
+  @override
+  String get printNoText => 'This PDF has no text to print.';
+
+  @override
+  String get signaturesAction => 'Signatures';
+
+  @override
+  String get signaturesTitle => 'Signatures';
+
+  @override
+  String get signaturesChecking => 'Checking signatures…';
+
+  @override
+  String get signaturesNone => 'This PDF is not signed.';
+
+  @override
+  String get signaturesFailed => 'These signatures could not be checked.';
+
+  @override
+  String get signaturesFailedDetail =>
+      'This does not mean the signatures are bad. It means the app could not read them, so it will not say either way.';
+
+  @override
+  String get signatureStatusTrusted => 'Signed and trusted';
+
+  @override
+  String get signatureStatusTrustedDetail =>
+      'The document has not changed since it was signed, and you trust the signer\'s certificate.';
+
+  @override
+  String get signatureStatusValidNotTrusted => 'Signed, but signer unknown';
+
+  @override
+  String get signatureStatusValidNotTrustedDetail =>
+      'The document has not changed since it was signed. But the app does not know the signer, so it cannot vouch for who they are.';
+
+  @override
+  String get signatureStatusInvalid => 'Signature is not valid';
+
+  @override
+  String get signatureStatusInvalidDetail =>
+      'The document changed after it was signed, or the signature does not match. Do not rely on it.';
+
+  @override
+  String get signatureStatusUnknown => 'Signature could not be read';
+
+  @override
+  String get signatureStatusUnknownDetail =>
+      'The app could not make sense of this signature, so it will not say whether it is good or bad.';
+
+  @override
+  String get signatureNotePartialCoverage => 'Covers only part of the file';
+
+  @override
+  String get signatureNotePartialCoverageDetail =>
+      'Something was added to this file after it was signed. The signature says nothing about that part.';
+
+  @override
+  String get signatureNoteRevoked => 'The certificate was cancelled';
+
+  @override
+  String get signatureNoteRevokedDetail =>
+      'Whoever issued this certificate has since cancelled it. It should not be trusted.';
+
+  @override
+  String get signatureNoteRevocationNotChecked =>
+      'Could not check if the certificate was cancelled';
+
+  @override
+  String get signatureNoteRevocationNotCheckedDetail =>
+      'Checking that needs the internet, which this app never uses, and this PDF does not carry the proof inside it.';
+
+  @override
+  String get signatureNoteCertExpired =>
+      'The certificate had expired when it signed';
+
+  @override
+  String get signatureNoteCertExpiredDetail =>
+      'The signing certificate was outside its valid dates at the time of signing.';
+
+  @override
+  String get signatureNoteUnverifiedTime => 'The signing time is only a claim';
+
+  @override
+  String get signatureNoteUnverifiedTimeDetail =>
+      'This time is stored outside the signed part of the file, so anyone could have changed it.';
+
+  @override
+  String get signatureSignerLabel => 'Signed by';
+
+  @override
+  String get signatureSignerUnknown => 'Not stated';
+
+  @override
+  String get signatureSignedAtLabel => 'Signed on';
+
+  @override
+  String get signatureReasonLabel => 'Reason';
+
+  @override
+  String get signatureLocationLabel => 'Location';
+
+  @override
+  String get signatureCertificateTitle => 'Certificate';
+
+  @override
+  String get signatureIssuedToLabel => 'Issued to';
+
+  @override
+  String get signatureIssuedByLabel => 'Issued by';
+
+  @override
+  String get signatureValidFromLabel => 'Valid from';
+
+  @override
+  String get signatureValidUntilLabel => 'Valid until';
+
+  @override
+  String get signatureSelfSignedNote =>
+      'This certificate vouches for itself. Nobody else backs it, so trust it only if you know the signer.';
+
+  @override
+  String get signatureTrustAction => 'Trust this certificate';
+
+  @override
+  String get signatureTrustTitle => 'Trust this signer?';
+
+  @override
+  String get signatureTrustExplain =>
+      'From now on, any PDF signed with this certificate will show as trusted. Only do this if you know who the signer is.';
+
+  @override
+  String get signatureTrustConfirm => 'Trust';
+
+  @override
+  String get signatureTrustedToast => 'Certificate trusted.';
+
+  @override
+  String get trustStoreTitle => 'Trusted certificates';
+
+  @override
+  String get trustStoreEmpty => 'You have not trusted any certificates yet.';
+
+  @override
+  String get trustStoreEmptyDetail =>
+      'When you trust a signer\'s certificate, it is listed here. You can remove it at any time.';
+
+  @override
+  String get trustStoreAddAction => 'Add a certificate';
+
+  @override
+  String get trustStoreRemoveAction => 'Remove';
+
+  @override
+  String get trustStoreRemoveTitle => 'Stop trusting this certificate?';
+
+  @override
+  String get trustStoreRemoveExplain =>
+      'PDFs signed with it will stop showing as trusted.';
+
+  @override
+  String get trustStoreInvalidFile =>
+      'That file is not a certificate the app can read.';
+
+  @override
+  String get trustStoreExpiredWarning => 'This certificate has expired.';
 }

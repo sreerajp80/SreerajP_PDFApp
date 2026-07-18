@@ -19,9 +19,9 @@ class TextPreviewDialog extends ConsumerWidget {
   void _copyToClipboard(BuildContext context, AppLocalizations l10n) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.copySuccess)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.copySuccess)));
       }
     });
   }
@@ -65,16 +65,15 @@ class TextPreviewDialog extends ConsumerWidget {
         IconButton(
           icon: const Icon(Icons.share),
           tooltip: l10n.shareAction,
-          onPressed: text.isEmpty
-              ? null
-              : () => shareService.shareText(text),
+          onPressed: text.isEmpty ? null : () => shareService.shareText(text),
         ),
         IconButton(
           icon: const Icon(Icons.insert_drive_file),
           tooltip: l10n.shareFileAction,
           onPressed: filePath.isEmpty
               ? null
-              : () => shareService.shareFiles([filePath], mimeType: 'text/plain'),
+              : () =>
+                    shareService.shareFiles([filePath], mimeType: 'text/plain'),
         ),
       ],
     );

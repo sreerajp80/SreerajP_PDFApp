@@ -352,10 +352,99 @@ class PdfBoxChannel {
     }
   }
 
+  // --- Annotation export (Phase 5). Writes a new annotated copy. ---
+
+  /// Writes a copy of [cachePath] at [outputPath] with the overlay annotations
+  /// baked in as real PDF annotations (copy-on-write — the source is only read).
+  ///
+  /// [annotations] is a list of maps already flattened for the platform side:
+  /// `{'type', 'page' (1-based), 'color' (ARGB or null), ...shape}` where the
+  /// shape is `quads` (markup), `strokes` (ink), `at`/`text` (note), or `label`
+  /// (bookmark → PDF outline entry). All coordinates are normalized (0–1,
+  /// top-left origin); the native side converts to PDF points.
+  Future<String> exportAnnotations(
+    String cachePath,
+    String outputPath,
+    List<Map<String, Object?>> annotations, {
+    String? password,
+  }) async {
+    try {
+      final result = await _method.invokeMethod<String>('exportAnnotations', {
+        'path': cachePath,
+        'password': password,
+        'outputPath': outputPath,
+        'annotations': annotations,
+      });
+      return result ?? outputPath;
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException(
+        'Annotation export is not available here.',
+        cause: e,
+      );
+    }
+  }
+
+  // --- Building a PDF from shared content (Phase 6). Always writes a new file. ---
+
+  /// Builds a new PDF at [outputPath] with one page per picture in [paths].
+  /// Pictures that cannot be read are skipped; if none can be read, this throws.
+  Future<String> imagesToPdf(List<String> paths, String outputPath) async {
+    try {
+      final result = await _method.invokeMethod<String>('imagesToPdf', {
+        'paths': paths,
+        'outputPath': outputPath,
+      });
+      return result ?? outputPath;
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException('Making a PDF is not available here.', cause: e);
+    }
+  }
+
+  /// Builds a new PDF at [outputPath] holding [text], wrapped onto A4 pages.
+  ///
+  /// Throws [PdfUnsupportedTextException] when the letters are outside what the
+  /// built-in fonts can write (see the exception's own note).
+  Future<String> textToPdf(String text, String outputPath) async {
+    try {
+      final result = await _method.invokeMethod<String>('textToPdf', {
+        'text': text,
+        'outputPath': outputPath,
+      });
+      return result ?? outputPath;
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException('Making a PDF is not available here.', cause: e);
+    }
+  }
+
+  /// True when [text] can be written into a PDF at all. Lets the UI warn before
+  /// the user commits to a save, rather than failing at the end.
+  Future<bool> canWriteTextToPdf(String text) async {
+    try {
+      final result = await _method.invokeMethod<bool>('canWriteTextToPdf', {
+        'text': text,
+      });
+      return result ?? false;
+    } on PlatformException {
+      return false;
+    } on MissingPluginException {
+      return false;
+    }
+  }
+
   AppException _mapException(PlatformException e) {
     return switch (e.code) {
       'password_required' => PdfPasswordRequiredException(
         'This PDF is locked, so its content cannot be read.',
+        cause: e,
+      ),
+      'unsupported_text' => PdfUnsupportedTextException(
+        e.message ?? 'These letters cannot be written into a PDF.',
         cause: e,
       ),
       _ => PdfOpenException(

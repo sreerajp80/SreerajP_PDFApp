@@ -121,9 +121,7 @@ class _ReaderSearchBarState extends State<ReaderSearchBar> {
         Row(
           children: [
             const SizedBox(width: 16),
-            Expanded(
-              child: _Status(state: widget.state),
-            ),
+            Expanded(child: _Status(state: widget.state)),
             _OptionsMenu(
               options: widget.options,
               onChanged: widget.onOptionsChanged,

@@ -21,9 +21,9 @@ class FormFieldsDialog extends ConsumerWidget {
     final jsonStr = encoder.convert(fields);
     Clipboard.setData(ClipboardData(text: jsonStr)).then((_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(l10n.copySuccess)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.copySuccess)));
       }
     });
   }
@@ -57,7 +57,8 @@ class FormFieldsDialog extends ConsumerWidget {
                       ),
                       child: ListView.separated(
                         itemCount: fields.length,
-                        separatorBuilder: (context, index) => const Divider(height: 1),
+                        separatorBuilder: (context, index) =>
+                            const Divider(height: 1),
                         itemBuilder: (context, index) {
                           final field = fields[index];
                           final name = field['name'] as String;
@@ -75,7 +76,9 @@ class FormFieldsDialog extends ConsumerWidget {
                             subtitle: Text(
                               value.isEmpty ? '(Empty)' : value,
                               style: theme.textTheme.bodyMedium?.copyWith(
-                                color: value.isEmpty ? theme.disabledColor : null,
+                                color: value.isEmpty
+                                    ? theme.disabledColor
+                                    : null,
                               ),
                             ),
                             trailing: Column(
@@ -121,9 +124,11 @@ class FormFieldsDialog extends ConsumerWidget {
             tooltip: l10n.shareFileAction,
             onPressed: filePath.isEmpty
                 ? null
-                : () => shareService.shareFiles([filePath], mimeType: 'application/json'),
+                : () => shareService.shareFiles([
+                    filePath,
+                  ], mimeType: 'application/json'),
           ),
-        ]
+        ],
       ],
     );
   }

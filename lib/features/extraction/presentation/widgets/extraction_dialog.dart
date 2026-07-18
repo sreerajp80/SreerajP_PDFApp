@@ -6,18 +6,9 @@ import 'package:pdfapp/features/extraction/presentation/widgets/form_fields_dial
 import 'package:pdfapp/features/extraction/presentation/widgets/text_preview_dialog.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
-enum ExtractionType {
-  text,
-  embeddedImages,
-  pageImages,
-  formFields,
-}
+enum ExtractionType { text, embeddedImages, pageImages, formFields }
 
-enum RangeType {
-  all,
-  current,
-  custom,
-}
+enum RangeType { all, current, custom }
 
 class ExtractionDialog extends ConsumerStatefulWidget {
   const ExtractionDialog({
@@ -55,7 +46,9 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
   @override
   void initState() {
     super.initState();
-    _startController = TextEditingController(text: widget.currentPage.toString());
+    _startController = TextEditingController(
+      text: widget.currentPage.toString(),
+    );
     _endController = TextEditingController(text: widget.currentPage.toString());
   }
 
@@ -122,10 +115,8 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
             Navigator.of(context).pop(); // Close this dialog
             showDialog<void>(
               context: context,
-              builder: (context) => TextPreviewDialog(
-                text: text,
-                filePath: filePath,
-              ),
+              builder: (context) =>
+                  TextPreviewDialog(text: text, filePath: filePath),
             );
           }
           break;
@@ -140,9 +131,9 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
           if (mounted) {
             Navigator.of(context).pop(); // Close dialog
             if (imagePaths.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.noImagesFound)),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(l10n.noImagesFound)));
             } else {
               // Trigger share chooser
               await shareService.shareFiles(imagePaths, mimeType: 'image/png');
@@ -181,10 +172,8 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
             Navigator.of(context).pop(); // Close dialog
             showDialog<void>(
               context: context,
-              builder: (context) => FormFieldsDialog(
-                fields: fields,
-                filePath: filePath,
-              ),
+              builder: (context) =>
+                  FormFieldsDialog(fields: fields, filePath: filePath),
             );
           }
           break;
@@ -243,7 +232,10 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
               initialValue: _type,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
               ),
               items: [
                 DropdownMenuItem(
@@ -366,7 +358,9 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
                   Text(
                     _dpi <= 150 ? 'Standard' : 'High Quality',
                     style: theme.textTheme.labelSmall?.copyWith(
-                      color: _dpi <= 150 ? theme.hintColor : theme.colorScheme.primary,
+                      color: _dpi <= 150
+                          ? theme.hintColor
+                          : theme.colorScheme.primary,
                     ),
                   ),
                 ],
@@ -392,10 +386,7 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l10n.cancelAction),
         ),
-        ElevatedButton(
-          onPressed: _runExtraction,
-          child: Text(l10n.goAction),
-        ),
+        ElevatedButton(onPressed: _runExtraction, child: Text(l10n.goAction)),
       ],
     );
   }

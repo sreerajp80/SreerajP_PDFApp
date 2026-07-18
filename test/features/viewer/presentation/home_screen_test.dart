@@ -17,10 +17,10 @@ class _FakeOpenDocumentChannel extends OpenDocumentChannel {
   Future<OpenedDocument?> pickPdf() async => null;
 
   @override
-  Future<OpenedDocument?> initialIntent() async => null;
+  Future<IncomingContent?> initialIntent() async => null;
 
   @override
-  Stream<OpenedDocument> get incoming => const Stream.empty();
+  Stream<IncomingContent> get incoming => const Stream.empty();
 }
 
 /// A recents notifier backed by an in-memory list, so the widget test does no

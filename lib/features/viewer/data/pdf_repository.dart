@@ -92,9 +92,10 @@ class PdfRepository {
     ),
   );
 
-  /// The "Open with" document that launched the app, if any.
-  Future<OpenedDocument?> launchIntent() => _channel.initialIntent();
+  /// The content that launched the app via "Open with" / share, if any. May be
+  /// a PDF for the viewer, or pictures/text for the Phase 6 Import screen.
+  Future<IncomingContent?> launchIntent() => _channel.initialIntent();
 
-  /// Documents shared while the app is running.
-  Stream<OpenedDocument> get incoming => _channel.incoming;
+  /// Content shared while the app is running.
+  Stream<IncomingContent> get incoming => _channel.incoming;
 }

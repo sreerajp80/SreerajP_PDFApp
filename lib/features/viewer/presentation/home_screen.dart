@@ -15,7 +15,9 @@ import 'package:pdfapp/l10n/app_localizations.dart';
 ///
 /// Also the landing point for "Open with" / share intents: the launch intent is
 /// consumed once on start, and shared files that arrive while running are
-/// handled through the incoming stream.
+/// handled through the incoming stream. A shared PDF opens in the viewer;
+/// shared pictures or text go to the Import screen to become a new PDF
+/// (Phase 6).
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -24,7 +26,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  StreamSubscription<OpenedDocument>? _incomingSub;
+  StreamSubscription<IncomingContent>? _incomingSub;
   bool _busy = false;
 
   @override
@@ -45,22 +47,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _handleLaunchIntent() async {
     final repo = ref.read(pdfRepositoryProvider);
-    final opened = await repo.launchIntent();
-    if (opened == null || !mounted) return;
-    await _openFromIntent(opened);
+    final content = await repo.launchIntent();
+    if (content == null || !mounted) return;
+    await _handleIncoming(content);
   }
 
   void _listenForIncoming() {
     final repo = ref.read(pdfRepositoryProvider);
-    _incomingSub = repo.incoming.listen((opened) {
-      if (mounted) _openFromIntent(opened);
+    _incomingSub = repo.incoming.listen((content) {
+      if (mounted) _handleIncoming(content);
     });
   }
 
-  Future<void> _openFromIntent(OpenedDocument opened) async {
-    await _guardedOpen(
-      () => ref.read(pdfRepositoryProvider).openFromIntent(opened),
-    );
+  /// Sends shared content where it belongs: a PDF to the viewer, pictures or
+  /// text to the Import screen that turns them into a new PDF.
+  Future<void> _handleIncoming(IncomingContent content) async {
+    switch (content) {
+      case IncomingPdf(:final document):
+        await _guardedOpen(
+          () => ref.read(pdfRepositoryProvider).openFromIntent(document),
+        );
+      case IncomingImages():
+      case IncomingText():
+        await context.pushNamed(AppRoute.import.name, extra: content);
+    }
   }
 
   Future<void> _openWithPicker() async {

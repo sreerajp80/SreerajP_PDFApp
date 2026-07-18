@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 // Hide pdfrx's PdfDocumentRef — this app has its own domain type of that name.
 import 'package:pdfrx/pdfrx.dart' hide PdfDocumentRef;
+import 'package:pdfapp/app/routing/app_router.dart';
+import 'package:pdfapp/features/signature/presentation/providers.dart';
 import 'package:pdfapp/features/reading/data/pdf_text_source.dart';
 import 'package:pdfapp/features/reading/data/tts_service.dart';
 import 'package:pdfapp/features/reading/domain/text_quality.dart';
@@ -26,6 +29,14 @@ import 'package:pdfapp/features/viewer/presentation/widgets/viewer_error_view.da
 import 'package:pdfapp/l10n/app_localizations.dart';
 import 'package:pdfapp/features/extraction/presentation/widgets/extraction_dialog.dart';
 import 'package:pdfapp/features/page_ops/presentation/page_ops_sheet.dart';
+import 'package:pdfapp/features/printer/presentation/widgets/print_sheet.dart';
+import 'package:pdfapp/features/annotation/presentation/annotation_controller.dart';
+import 'package:pdfapp/features/annotation/presentation/annotation_painter.dart';
+import 'package:pdfapp/features/annotation/presentation/providers.dart';
+import 'package:pdfapp/features/annotation/presentation/widgets/annotation_overlay_notice.dart';
+import 'package:pdfapp/features/annotation/presentation/widgets/annotation_toolbar.dart';
+import 'package:pdfapp/features/annotation/presentation/widgets/bookmarks_panel.dart';
+import 'package:pdfapp/features/annotation/presentation/widgets/page_annotation_layer.dart';
 
 /// Inverts page colors for night reading (project rule: comfortable dark read).
 const ColorFilter _invertFilter = ColorFilter.matrix(<double>[
@@ -82,6 +93,18 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   bool _searching = false;
   bool _ttsActive = false;
 
+  // --- Annotation (Phase 5) ---
+
+  /// Overlay-annotation state for this file. Built once the document opens.
+  AnnotationController? _annotate;
+
+  /// Whether the annotation toolbar is showing. Separate from the active tool
+  /// so the strip can be open before a tool is picked.
+  bool _annotateMode = false;
+
+  /// Dismissed for this session once the "in-app only" banner is closed.
+  bool _annotationNoticeDismissed = false;
+
   /// True when search / copy can honestly be offered.
   bool get _textUsable => _textQuality == TextQuality.good;
 
@@ -118,6 +141,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     _flushSave();
     _search
       ?..removeListener(_onSearchChanged)
+      ..dispose();
+    _annotate
+      ?..removeListener(_onAnnotationsChanged)
       ..dispose();
     // Stop speaking when leaving the viewer screen.
     ref.read(ttsServiceProvider).stop();
@@ -156,11 +182,18 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     final source = PdfTextSource(document);
     final search = PdfSearchController(source: source)
       ..addListener(_onSearchChanged);
+    final annotate = AnnotationController(
+      repository: ref.read(annotationRepositoryProvider),
+      fingerprint: widget.docRef.fingerprint,
+      sourcePath: widget.docRef.cachePath,
+    )..addListener(_onAnnotationsChanged);
     setState(() {
       _document = document;
       _textSource = source;
       _search = search;
+      _annotate = annotate;
     });
+    unawaited(annotate.load());
     unawaited(_repo.recordPageCount(widget.docRef.fingerprint, _pageCount));
     unawaited(_checkTextQuality(source));
     if (widget.docRef.isLarge && !_largeWarningShown) {
@@ -293,6 +326,25 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     );
   }
 
+  /// Signature check for the open document (Phase 7).
+  void _showSignatures() {
+    if (_document == null) return;
+    context.pushNamed(AppRoute.signatures.name, extra: widget.docRef.cachePath);
+  }
+
+  /// Print options for the open document (Phase 6).
+  void _showPrint() {
+    if (_document == null) return;
+    unawaited(
+      showPrintSheet(
+        context,
+        path: widget.docRef.cachePath,
+        jobName: widget.docRef.displayName,
+        pageCount: _pageCount,
+      ),
+    );
+  }
+
   // --- Search (Phase 2) ---
 
   /// Repaints the pages when the results change.
@@ -302,6 +354,131 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   /// are out of date. This is how pdfrx's own text searcher does it too.
   void _onSearchChanged() {
     if (_controller.isReady) _controller.invalidate();
+  }
+
+  // --- Annotation (Phase 5) ---
+
+  /// Repaints the pages when marks change and, the first time a mark is added,
+  /// shows the "these marks live only in this app" notice.
+  void _onAnnotationsChanged() {
+    if (_controller.isReady) _controller.invalidate();
+    final annotate = _annotate;
+    if (annotate != null &&
+        annotate.hasAnnotations &&
+        !annotate.noticeShown &&
+        !_annotationNoticeDismissed) {
+      annotate.markNoticeShown();
+    }
+    setState(() {});
+  }
+
+  void _toggleAnnotateMode() {
+    setState(() {
+      _annotateMode = !_annotateMode;
+      if (!_annotateMode) {
+        _annotate?.setTool(AnnotationTool.none);
+      }
+    });
+  }
+
+  void _explainNoTextMarkup() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context).annotationTextMarkupUnavailable,
+        ),
+      ),
+    );
+  }
+
+  void _showBookmarks() {
+    final annotate = _annotate;
+    if (annotate == null) return;
+    unawaited(
+      showBookmarksPanel(
+        context,
+        controller: annotate,
+        currentPage: _currentPage,
+        onJump: (page) => _controller.goToPage(pageNumber: page),
+      ),
+    );
+  }
+
+  Future<void> _confirmClearAll() async {
+    final annotate = _annotate;
+    if (annotate == null) return;
+    final l10n = AppLocalizations.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.annotationClearAllTitle),
+        content: Text(l10n.annotationClearAllMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.cancelAction),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.annotationClearAll),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) await annotate.clearAll();
+  }
+
+  Future<void> _exportAnnotations() async {
+    final annotate = _annotate;
+    if (annotate == null) return;
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    if (!annotate.hasAnnotations) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.annotationNothingToExport)),
+      );
+      return;
+    }
+    messenger.showSnackBar(SnackBar(content: Text(l10n.annotationExporting)));
+    try {
+      final outPath = await annotate.exportCopy();
+      final name =
+          'annotated_${widget.docRef.displayName.replaceAll(RegExp(r'\.pdf$'), '')}.pdf';
+      final saved = await annotate.saveToDevice(outPath, name);
+      if (!mounted) return;
+      if (saved != null) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.savedFileMessage(saved))),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.annotationExportFailed)),
+      );
+    }
+  }
+
+  /// Draws the stored overlay annotations over the page pdfrx is painting.
+  void _paintAnnotations(Canvas canvas, Rect pageRect, PdfPage page) {
+    final annotate = _annotate;
+    if (annotate == null || annotate.annotations.isEmpty) return;
+    AnnotationPainter(
+      annotations: annotate.annotations,
+    ).paint(canvas, pageRect, page);
+  }
+
+  /// The per-page interactive layer (ink capture, note markers, text markup).
+  List<Widget> _annotationOverlays(
+    BuildContext context,
+    Rect pageRect,
+    PdfPage page,
+  ) {
+    final annotate = _annotate;
+    if (annotate == null) return const [];
+    return [
+      PageAnnotationLayer(controller: annotate, page: page, pageRect: pageRect),
+    ];
   }
 
   void _openSearch() {
@@ -405,6 +582,19 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               quality: _textQuality!,
               onDismiss: () => setState(() => _noticeDismissed = true),
             ),
+          if (_showAnnotationNotice)
+            AnnotationOverlayNotice(
+              onDismiss: () =>
+                  setState(() => _annotationNoticeDismissed = true),
+            ),
+          if (_annotateMode && _annotate != null)
+            AnnotationToolbar(
+              controller: _annotate!,
+              textMarkupEnabled: _textUsable,
+              onExport: () => unawaited(_exportAnnotations()),
+              onClearAll: () => unawaited(_confirmClearAll()),
+              onTextMarkupBlocked: _explainNoTextMarkup,
+            ),
           Expanded(child: _buildBody(theme)),
         ],
       ),
@@ -419,6 +609,14 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       !_searching &&
       _textQuality != null &&
       _textQuality != TextQuality.good;
+
+  /// The overlay-only annotation banner appears once the file has a mark and
+  /// until the reader dismisses it for the session.
+  bool get _showAnnotationNotice =>
+      _error == null &&
+      !_searching &&
+      !_annotationNoticeDismissed &&
+      (_annotate?.hasAnnotations ?? false);
 
   /// The search bar takes over the app bar, the way find-in-page normally does.
   PreferredSizeWidget _buildSearchAppBar() {
@@ -467,8 +665,13 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         onPageChanged: _onPageChanged,
         errorBannerBuilder: _errorBanner,
         // Select-and-copy, but only where there is real text to select.
-        enableTextSelection: _textUsable,
-        pagePaintCallbacks: [if (search != null) _paintMatches],
+        // Turned off while drawing so a markup drag is not eaten by selection.
+        enableTextSelection: _textUsable && !_annotateMode,
+        pagePaintCallbacks: [
+          if (search != null) _paintMatches,
+          if (_annotate != null) _paintAnnotations,
+        ],
+        pageOverlaysBuilder: _annotate == null ? null : _annotationOverlays,
       ),
     );
 
@@ -517,6 +720,12 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               },
       ),
       IconButton(
+        icon: Icon(_annotateMode ? Icons.edit : Icons.edit_outlined),
+        tooltip: l10n.annotateAction,
+        isSelected: _annotateMode,
+        onPressed: _document == null ? null : _toggleAnnotateMode,
+      ),
+      IconButton(
         icon: Icon(_invert ? Icons.brightness_5 : Icons.brightness_4_outlined),
         tooltip: l10n.invertColors,
         onPressed: _toggleInvert,
@@ -543,6 +752,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           _ViewerMenu.details => _showDetails(),
           _ViewerMenu.extract => _showExtractionDialog(),
           _ViewerMenu.pageOps => _showPageOps(),
+          _ViewerMenu.print => _showPrint(),
+          _ViewerMenu.bookmarks => _showBookmarks(),
+          _ViewerMenu.signatures => _showSignatures(),
         },
         itemBuilder: (context) => [
           _checked(
@@ -568,6 +780,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           PopupMenuItem(value: _ViewerMenu.fitPage, child: Text(l10n.fitPage)),
           const PopupMenuDivider(),
           PopupMenuItem(
+            value: _ViewerMenu.bookmarks,
+            child: Text(l10n.bookmarksAction),
+          ),
+          PopupMenuItem(
             value: _ViewerMenu.details,
             child: Text(l10n.metadataAction),
           ),
@@ -580,6 +796,22 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             value: _ViewerMenu.pageOps,
             child: Text(l10n.pageToolsTitle),
           ),
+          PopupMenuItem(
+            value: _ViewerMenu.print,
+            child: Text(l10n.printAction),
+          ),
+          // Only offered when the document actually carries signatures — an
+          // entry that always led to "this PDF is not signed" would be a dead
+          // button (project rule 6). While the check is still running, or if it
+          // failed, the entry stays hidden rather than guessing.
+          if (ref
+                  .watch(hasSignaturesProvider(widget.docRef.cachePath))
+                  .valueOrNull ??
+              false)
+            PopupMenuItem(
+              value: _ViewerMenu.signatures,
+              child: Text(l10n.signaturesAction),
+            ),
         ],
       ),
     ];
@@ -733,4 +965,7 @@ enum _ViewerMenu {
   details,
   extract,
   pageOps,
+  print,
+  bookmarks,
+  signatures,
 }

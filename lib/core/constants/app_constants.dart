@@ -5,13 +5,15 @@ class AppConstants {
 
   // Database.
   static const String databaseName = 'pdfapp.db';
-  static const int databaseVersion = 2;
+  static const int databaseVersion = 4;
 
   // Table names (added per phase; keep the list here so it is easy to review).
   static const String tableMeta = 'meta';
   static const String tableRecentFiles = 'recent_files'; // v2 (Phase 1)
   static const String tableReadingPositions =
       'reading_positions'; // v2 (Phase 1)
+  static const String tableAnnotations = 'annotations'; // v3 (Phase 5)
+  static const String tableTrustStore = 'trust_store'; // v4 (Phase 7)
 
   // Method-channel ids (native modules built in later phases).
   static const String channelPdfBox = 'in.sreerajp.pdfapp/pdfbox';
@@ -50,4 +52,25 @@ class AppConstants {
   // Stop after this many search matches. Guards the UI and memory against a
   // one-letter query on a huge document.
   static const int searchMatchLimit = 500;
+
+  // --- Printer / import (Phase 6) ---
+
+  // Cache folder for PDFs built from shared pictures or text, and for the
+  // range-only copies made before printing. Cleared before each new job.
+  static const String printerCacheDir = 'printer';
+
+  // Most pictures accepted in one share. Beyond this the PDF is unwieldy and the
+  // build would take long enough to feel broken.
+  static const int maxImportImages = 100;
+
+  // --- Signatures (Phase 7) ---
+
+  // The bundled "globally trusted" certificate list (EU Trusted Lists). Read-only
+  // asset. Adobe's AATL is deliberately not bundled: its redistribution terms are
+  // not clearly open, and project rule 1 requires a checked licence.
+  static const String eutlAssetPath = 'assets/trust/eutl_certificates.pem';
+
+  // Largest certificate file accepted when the user adds one to the trust store.
+  // A real certificate is a few kilobytes; anything this big is not one.
+  static const int maxCertificateBytes = 512 * 1024;
 }

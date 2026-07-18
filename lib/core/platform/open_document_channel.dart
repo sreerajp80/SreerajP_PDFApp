@@ -29,6 +29,69 @@ class OpenedDocument {
   );
 }
 
+/// Something another app sent us through "Open with" or share.
+///
+/// A PDF goes to the viewer. Pictures and text go to the Phase 6 import screen, which turns
+/// them into a new PDF. The `kind` tag on the native payload decides which.
+sealed class IncomingContent {
+  const IncomingContent();
+
+  /// Reads a native intent payload. Returns null for a shape we do not know — a strange
+  /// share must be ignored, never crash the app.
+  static IncomingContent? fromMap(Map<Object?, Object?> map) {
+    // Payloads written before Phase 6 carry no kind; they were always PDFs.
+    final kind = map['kind'] as String? ?? 'pdf';
+    try {
+      switch (kind) {
+        case 'pdf':
+          return IncomingPdf(OpenedDocument.fromMap(map));
+        case 'images':
+          final paths = (map['paths']! as List<Object?>).cast<String>();
+          if (paths.isEmpty) return null;
+          return IncomingImages(
+            paths: paths,
+            suggestedName: map['name'] as String? ?? 'images',
+          );
+        case 'text':
+          final text = map['text']! as String;
+          if (text.trim().isEmpty) return null;
+          return IncomingText(
+            text: text,
+            suggestedName: map['name'] as String? ?? 'text',
+          );
+        default:
+          return null;
+      }
+    } catch (e) {
+      AppLogger.warning('Ignored a share we could not read.', error: e);
+      return null;
+    }
+  }
+}
+
+/// A PDF to open in the viewer.
+class IncomingPdf extends IncomingContent {
+  const IncomingPdf(this.document);
+
+  final OpenedDocument document;
+}
+
+/// One or more pictures to turn into a PDF. [paths] are cache copies.
+class IncomingImages extends IncomingContent {
+  const IncomingImages({required this.paths, required this.suggestedName});
+
+  final List<String> paths;
+  final String suggestedName;
+}
+
+/// Text to turn into a PDF.
+class IncomingText extends IncomingContent {
+  const IncomingText({required this.text, required this.suggestedName});
+
+  final String text;
+  final String suggestedName;
+}
+
 /// Dart side of the scoped-storage open bridge (Phase 1).
 ///
 /// Wraps the native SAF picker, the reopen-from-recents copy, and the stream of
@@ -70,6 +133,21 @@ class OpenDocumentChannel {
     }
   }
 
+  /// Opens the system picker for a certificate file (Phase 7). Returns the cache
+  /// path of the picked file, or null if the user cancelled.
+  ///
+  /// Unlike [pickPdf] this takes no persistable URI permission: the certificate
+  /// is read once, parsed, and stored in the trust store as bytes. There is
+  /// nothing to reopen later, so asking for lasting access to the user's file
+  /// would be access we do not need.
+  Future<String?> pickCertificate() async {
+    try {
+      return await _method.invokeMethod<String>('pickCertificate');
+    } on PlatformException catch (e) {
+      throw StorageException('Could not open the file picker.', cause: e);
+    }
+  }
+
   /// Saves the cache file at [sourcePath] to a user-chosen location through the
   /// Android "create document" dialog. Returns the saved file name, or null if
   /// the user cancelled.
@@ -106,24 +184,27 @@ class OpenDocumentChannel {
     }
   }
 
-  /// The "Open with" document that launched the app, if any (consumed once).
-  Future<OpenedDocument?> initialIntent() async {
+  /// The content that launched the app via "Open with" / share, if any (consumed once).
+  Future<IncomingContent?> initialIntent() async {
     try {
       final result = await _method.invokeMethod<Map<Object?, Object?>>(
         'getInitialIntent',
       );
       if (result == null) return null;
-      return OpenedDocument.fromMap(result);
+      return IncomingContent.fromMap(result);
     } on PlatformException catch (e) {
       AppLogger.warning('Could not read the launch intent.', error: e);
       return null;
     }
   }
 
-  /// Documents shared to the app while it is running ("Open with" / share).
-  Stream<OpenedDocument> get incoming => _events.receiveBroadcastStream().map(
-    (event) => OpenedDocument.fromMap(event as Map<Object?, Object?>),
-  );
+  /// Content shared to the app while it is running ("Open with" / share).
+  /// Shares we cannot make sense of are dropped rather than surfaced.
+  Stream<IncomingContent> get incoming => _events
+      .receiveBroadcastStream()
+      .map((event) => IncomingContent.fromMap(event as Map<Object?, Object?>))
+      .where((content) => content != null)
+      .cast<IncomingContent>();
 
   /// Shares one or more files in [paths] via Android's native share sheet.
   /// [mimeType] is the type of content being shared (e.g. "image/png", "text/plain").

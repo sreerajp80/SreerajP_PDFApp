@@ -1,11 +1,27 @@
 package `in`.sreerajp.pdfapp
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Handler
 import android.os.Looper
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
+import com.tom_roush.pdfbox.pdmodel.PDPage
+import com.tom_roush.pdfbox.pdmodel.PDPageContentStream
 import com.tom_roush.pdfbox.pdmodel.encryption.InvalidPasswordException
+import com.tom_roush.pdfbox.pdmodel.font.PDType1Font
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDColor
+import com.tom_roush.pdfbox.pdmodel.graphics.color.PDDeviceRGB
+import com.tom_roush.pdfbox.pdmodel.graphics.image.JPEGFactory
+import com.tom_roush.pdfbox.pdmodel.graphics.image.LosslessFactory
+import com.tom_roush.pdfbox.pdmodel.graphics.image.PDImageXObject
+import com.tom_roush.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState
+import com.tom_roush.pdfbox.pdmodel.interactive.annotation.PDAnnotationText
+import com.tom_roush.pdfbox.pdmodel.common.PDRectangle
+import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageFitDestination
+import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline
+import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
@@ -155,6 +171,43 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
                         result.error("bad_args", "Missing path, outputPath, or password.", null)
                     } else {
                         decryptPdf(path, password, outputPath, result)
+                    }
+                }
+                "exportAnnotations" -> {
+                    val path = call.argument<String>("path")
+                    val password = call.argument<String>("password")
+                    val outputPath = call.argument<String>("outputPath")
+                    val annotations = call.argument<List<Map<String, Any?>>>("annotations")
+                    if (path.isNullOrEmpty() || outputPath.isNullOrEmpty() || annotations == null) {
+                        result.error("bad_args", "Missing path, outputPath, or annotations.", null)
+                    } else {
+                        exportAnnotations(path, password, outputPath, annotations, result)
+                    }
+                }
+                "imagesToPdf" -> {
+                    val paths = call.argument<List<String>>("paths")
+                    val outputPath = call.argument<String>("outputPath")
+                    if (paths.isNullOrEmpty() || outputPath.isNullOrEmpty()) {
+                        result.error("bad_args", "Missing paths or outputPath.", null)
+                    } else {
+                        imagesToPdf(paths, outputPath, result)
+                    }
+                }
+                "textToPdf" -> {
+                    val text = call.argument<String>("text")
+                    val outputPath = call.argument<String>("outputPath")
+                    if (text == null || outputPath.isNullOrEmpty()) {
+                        result.error("bad_args", "Missing text or outputPath.", null)
+                    } else {
+                        textToPdf(text, outputPath, result)
+                    }
+                }
+                "canWriteTextToPdf" -> {
+                    val text = call.argument<String>("text")
+                    if (text == null) {
+                        result.error("bad_args", "Missing text.", null)
+                    } else {
+                        result.success(isLatin1Writable(text))
                     }
                 }
                 else -> result.notImplemented()
@@ -562,11 +615,414 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
         }
     }
 
+    /**
+     * Writes a new copy at [outputPath] with the overlay [annotations] baked in (copy-on-write —
+     * the source is only read).
+     *
+     * Each annotation is a map `{type, page (1-based), color (ARGB or null), ...shape}`. All
+     * coordinates arrive **normalized** (0–1, top-left origin); we convert to PDF points using
+     * each page's MediaBox (PDF's origin is bottom-left).
+     *
+     * Highlight, underline, strikethrough, and ink are painted straight into the page's content
+     * stream so they render in every PDF viewer without depending on annotation-appearance
+     * generation (which PdfBox-Android does not do, and it has no ink-annotation class). Notes
+     * become real sticky-note ([PDAnnotationText]) annotations, and bookmarks become PDF outline
+     * (contents) entries — there is no PDF "bookmark annotation".
+     */
+    private fun exportAnnotations(
+        path: String,
+        password: String?,
+        outputPath: String,
+        annotations: List<Map<String, Any?>>,
+        result: MethodChannel.Result
+    ) {
+        io.execute {
+            try {
+                check(resourcesReady)
+                val file = File(path)
+                PDDocument.load(file, password ?: "").use { doc ->
+                    val pageCount = doc.numberOfPages
+
+                    for (index in 0 until pageCount) {
+                        val oneBased = index + 1
+                        val forPage = annotations.filter {
+                            (it["page"] as? Number)?.toInt() == oneBased &&
+                                it["type"] != "bookmark"
+                        }
+                        if (forPage.isEmpty()) continue
+                        val page = doc.getPage(index)
+                        val box = page.mediaBox
+
+                        val painted = forPage.filter { it["type"] != "note" }
+                        if (painted.isNotEmpty()) {
+                            PDPageContentStream(
+                                doc, page, PDPageContentStream.AppendMode.APPEND, true, true
+                            ).use { cs ->
+                                for (a in painted) {
+                                    when (a["type"]) {
+                                        "highlight" -> drawHighlight(cs, box, a)
+                                        "underline" -> drawMarkupLine(cs, box, a, atBottom = true)
+                                        "strikethrough" -> drawMarkupLine(cs, box, a, atBottom = false)
+                                        "ink" -> drawInk(cs, box, a)
+                                    }
+                                }
+                            }
+                        }
+                        for (a in forPage.filter { it["type"] == "note" }) {
+                            addNote(page, box, a)
+                        }
+                    }
+
+                    val bookmarks = annotations.filter { it["type"] == "bookmark" }
+                    if (bookmarks.isNotEmpty()) addBookmarks(doc, bookmarks, pageCount)
+                    doc.save(outputPath)
+                }
+                main.post { result.success(outputPath) }
+            } catch (e: InvalidPasswordException) {
+                main.post { result.error("password_required", "This PDF is locked.", null) }
+            } catch (e: Exception) {
+                main.post { result.error("op_failed", "Could not export annotations: ${e.message}", null) }
+            } catch (e: OutOfMemoryError) {
+                main.post { result.error("op_failed", "This PDF is too large to export.", null) }
+            }
+        }
+    }
+
+    // Normalized X (0–1, left origin) -> PDF X point.
+    private fun pdfX(nx: Float, box: PDRectangle) = box.lowerLeftX + nx * box.width
+
+    // Normalized Y (0–1, TOP origin) -> PDF Y point (bottom origin: flip).
+    private fun pdfY(ny: Float, box: PDRectangle) = box.upperRightY - ny * box.height
+
+    // ARGB int -> RGB floats, or [fallback] when there is no colour.
+    private fun rgbOf(a: Map<String, Any?>, fallback: FloatArray): FloatArray {
+        val argb = (a["color"] as? Number)?.toInt() ?: return fallback
+        return floatArrayOf(
+            ((argb shr 16) and 0xFF) / 255f,
+            ((argb shr 8) and 0xFF) / 255f,
+            (argb and 0xFF) / 255f,
+        )
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun drawHighlight(cs: PDPageContentStream, box: PDRectangle, a: Map<String, Any?>) {
+        val quads = a["quads"] as? List<List<Number>> ?: return
+        val rgb = rgbOf(a, floatArrayOf(1f, 0.92f, 0.23f)) // yellow
+        // A translucent fill so the text underneath stays readable.
+        val gs = PDExtendedGraphicsState()
+        gs.setNonStrokingAlphaConstant(0.35f)
+        cs.setGraphicsStateParameters(gs)
+        cs.setNonStrokingColor(rgb[0], rgb[1], rgb[2])
+        for (q in quads) {
+            val (x, y, w, h) = pdfRect(q, box) ?: continue
+            cs.addRect(x, y, w, h)
+        }
+        cs.fill()
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun drawMarkupLine(
+        cs: PDPageContentStream, box: PDRectangle, a: Map<String, Any?>, atBottom: Boolean
+    ) {
+        val quads = a["quads"] as? List<List<Number>> ?: return
+        val rgb = rgbOf(a, floatArrayOf(0.9f, 0.2f, 0.2f)) // red
+        cs.setStrokingColor(rgb[0], rgb[1], rgb[2])
+        cs.setLineCapStyle(1)
+        for (q in quads) {
+            val (x, y, w, h) = pdfRect(q, box) ?: continue
+            // Underline sits near the baseline; strike crosses the middle.
+            val lineY = if (atBottom) y + h * 0.08f else y + h * 0.5f
+            cs.setLineWidth((h * 0.06f).coerceIn(0.6f, 3f))
+            cs.moveTo(x, lineY)
+            cs.lineTo(x + w, lineY)
+            cs.stroke()
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun drawInk(cs: PDPageContentStream, box: PDRectangle, a: Map<String, Any?>) {
+        val strokes = a["strokes"] as? List<Map<String, Any?>> ?: return
+        val rgb = rgbOf(a, floatArrayOf(0.1f, 0.1f, 0.9f)) // blue
+        cs.setStrokingColor(rgb[0], rgb[1], rgb[2])
+        cs.setLineCapStyle(1)
+        cs.setLineJoinStyle(1)
+        for (stroke in strokes) {
+            val pts = stroke["pts"] as? List<List<Number>> ?: continue
+            if (pts.size < 2) continue
+            val widthNorm = (stroke["w"] as? Number)?.toFloat() ?: 0.004f
+            cs.setLineWidth((widthNorm * box.width).coerceAtLeast(0.6f))
+            val first = pts.first()
+            cs.moveTo(pdfX(first[0].toFloat(), box), pdfY(first[1].toFloat(), box))
+            for (i in 1 until pts.size) {
+                val p = pts[i]
+                cs.lineTo(pdfX(p[0].toFloat(), box), pdfY(p[1].toFloat(), box))
+            }
+            cs.stroke()
+        }
+    }
+
+    // A normalized [x,y,w,h] quad (top-left origin) -> PDF rect (x, y, w, h) with bottom-left
+    // origin, ready for addRect. Returns null on a malformed quad.
+    private fun pdfRect(q: List<Number>, box: PDRectangle): FloatArray? {
+        if (q.size < 4) return null
+        val nx = q[0].toFloat(); val ny = q[1].toFloat()
+        val nw = q[2].toFloat(); val nh = q[3].toFloat()
+        val left = pdfX(nx, box)
+        val bottom = pdfY(ny + nh, box) // lower edge has the larger normalized Y
+        return floatArrayOf(left, bottom, nw * box.width, nh * box.height)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun addNote(page: PDPage, box: PDRectangle, a: Map<String, Any?>) {
+        val at = a["at"] as? List<Number> ?: return
+        val x = pdfX(at[0].toFloat(), box)
+        val y = pdfY(at[1].toFloat(), box)
+        val note = PDAnnotationText()
+        note.setContents(a["text"] as? String ?: "")
+        note.name = PDAnnotationText.NAME_NOTE
+        val rgb = rgbOf(a, floatArrayOf(1f, 0.85f, 0.2f))
+        note.color = PDColor(rgb, PDDeviceRGB.INSTANCE)
+        note.setOpen(false)
+        // Sticky-note icon is ~18pt square; anchor its top-left at the tap point.
+        note.rectangle = PDRectangle(x, y - 18f, 18f, 18f)
+        page.annotations.add(note)
+    }
+
+    private fun addBookmarks(doc: PDDocument, bookmarks: List<Map<String, Any?>>, pageCount: Int) {
+        val outline = doc.documentCatalog.documentOutline ?: PDDocumentOutline().also {
+            doc.documentCatalog.documentOutline = it
+        }
+        // Show marks in page order for a tidy contents list.
+        val sorted = bookmarks.sortedBy { (it["page"] as? Number)?.toInt() ?: 0 }
+        for ((i, b) in sorted.withIndex()) {
+            val oneBased = (b["page"] as? Number)?.toInt() ?: continue
+            val index = oneBased - 1
+            if (index < 0 || index >= pageCount) continue
+            val label = (b["label"] as? String).let { if (it.isNullOrBlank()) "Page $oneBased" else it }
+            val item = PDOutlineItem()
+            item.title = label
+            val dest = PDPageFitDestination()
+            dest.page = doc.getPage(index)
+            item.destination = dest
+            outline.addLast(item)
+            if (i == 0) outline.openNode()
+        }
+    }
+
+    // --- Building a PDF from incoming content (Phase 6). Always a NEW file. ---
+
+    /**
+     * Builds a new PDF at [outputPath] with one page per image in [paths] (in order).
+     *
+     * Each page is A4 with a small margin; the picture is scaled to fit and centred, keeping
+     * its shape. Big pictures are sampled down while decoding — a modern phone photo would
+     * otherwise eat the heap for no visible gain at print size.
+     */
+    private fun imagesToPdf(paths: List<String>, outputPath: String, result: MethodChannel.Result) {
+        io.execute {
+            try {
+                check(resourcesReady)
+                PDDocument().use { doc ->
+                    var added = 0
+                    for (p in paths) {
+                        val bitmap = decodeScaled(p) ?: continue
+                        try {
+                            val page = PDPage(PDRectangle.A4)
+                            doc.addPage(page)
+                            // A picture with see-through parts must stay lossless; JPEG would
+                            // turn those parts black. Everything else takes the smaller JPEG.
+                            val image: PDImageXObject = if (bitmap.hasAlpha()) {
+                                LosslessFactory.createFromImage(doc, bitmap)
+                            } else {
+                                JPEGFactory.createFromImage(doc, bitmap, JPEG_QUALITY)
+                            }
+                            PDPageContentStream(doc, page).use { cs ->
+                                val box = page.mediaBox
+                                val maxW = box.width - PAGE_MARGIN * 2
+                                val maxH = box.height - PAGE_MARGIN * 2
+                                val scale = minOf(maxW / image.width, maxH / image.height)
+                                val w = image.width * scale
+                                val h = image.height * scale
+                                val x = box.lowerLeftX + (box.width - w) / 2
+                                val y = box.lowerLeftY + (box.height - h) / 2
+                                cs.drawImage(image, x, y, w, h)
+                            }
+                            added++
+                        } finally {
+                            bitmap.recycle()
+                        }
+                    }
+                    if (added == 0) {
+                        throw IllegalStateException("None of the pictures could be read.")
+                    }
+                    doc.save(outputPath)
+                }
+                main.post { result.success(outputPath) }
+            } catch (e: Exception) {
+                main.post {
+                    result.error("op_failed", "Could not make a PDF from these pictures: ${e.message}", null)
+                }
+            } catch (e: OutOfMemoryError) {
+                main.post { result.error("op_failed", "These pictures are too large to make a PDF.", null) }
+            }
+        }
+    }
+
+    /**
+     * Decodes the image at [path], sampled down so its longest side is near [MAX_IMAGE_PX].
+     * Returns null if the file is not a picture we can read — the caller skips it rather than
+     * failing the whole job.
+     */
+    private fun decodeScaled(path: String): Bitmap? {
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        BitmapFactory.decodeFile(path, bounds)
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+
+        var sample = 1
+        val longest = maxOf(bounds.outWidth, bounds.outHeight)
+        while (longest / sample > MAX_IMAGE_PX) sample *= 2
+
+        val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+        return BitmapFactory.decodeFile(path, opts)
+    }
+
+    /**
+     * Builds a new PDF at [outputPath] holding [text], wrapped onto A4 pages.
+     *
+     * PdfBox's built-in fonts only cover Latin-1, and PdfBox has no shaping engine for complex
+     * scripts, so Malayalam or Devanagari text cannot be written here — it would throw or come
+     * out as broken glyphs. We check first and answer with a typed `unsupported_text` error so
+     * Dart can say so plainly instead of saving nonsense.
+     */
+    private fun textToPdf(text: String, outputPath: String, result: MethodChannel.Result) {
+        io.execute {
+            try {
+                check(resourcesReady)
+                if (text.isBlank()) throw IllegalStateException("There is no text to save.")
+                if (!isLatin1Writable(text)) {
+                    main.post {
+                        result.error("unsupported_text", "These letters cannot be written to a PDF.", null)
+                    }
+                    return@execute
+                }
+
+                val font = PDType1Font.HELVETICA
+                val maxWidth = PDRectangle.A4.width - PAGE_MARGIN * 2
+                val lines = wrapText(text, font, TEXT_FONT_SIZE, maxWidth)
+                val linesPerPage = ((PDRectangle.A4.height - PAGE_MARGIN * 2) / TEXT_LEADING).toInt()
+                if (linesPerPage <= 0) throw IllegalStateException("The page is too small for text.")
+                val pageCount = (lines.size + linesPerPage - 1) / linesPerPage
+                if (pageCount > MAX_TEXT_PAGES) {
+                    throw IllegalStateException("This text is too long to save as a PDF.")
+                }
+
+                PDDocument().use { doc ->
+                    for (pageIndex in 0 until maxOf(pageCount, 1)) {
+                        val page = PDPage(PDRectangle.A4)
+                        doc.addPage(page)
+                        PDPageContentStream(doc, page).use { cs ->
+                            cs.beginText()
+                            cs.setFont(font, TEXT_FONT_SIZE)
+                            cs.setLeading(TEXT_LEADING.toDouble())
+                            cs.newLineAtOffset(
+                                PAGE_MARGIN,
+                                page.mediaBox.height - PAGE_MARGIN - TEXT_FONT_SIZE,
+                            )
+                            val from = pageIndex * linesPerPage
+                            val to = minOf(from + linesPerPage, lines.size)
+                            for (i in from until to) {
+                                cs.showText(lines[i])
+                                cs.newLine()
+                            }
+                            cs.endText()
+                        }
+                    }
+                    doc.save(outputPath)
+                }
+                main.post { result.success(outputPath) }
+            } catch (e: Exception) {
+                main.post { result.error("op_failed", "Could not save this text as a PDF: ${e.message}", null) }
+            } catch (e: OutOfMemoryError) {
+                main.post { result.error("op_failed", "This text is too long to save as a PDF.", null) }
+            }
+        }
+    }
+
+    /** True when every letter in [text] can be written with a built-in Latin-1 font. */
+    private fun isLatin1Writable(text: String): Boolean {
+        val encoder = java.nio.charset.Charset.forName("windows-1252").newEncoder()
+        return text.all { ch ->
+            // Line breaks and tabs never reach the font — they drive layout instead.
+            ch == '\n' || ch == '\r' || ch == '\t' || encoder.canEncode(ch)
+        }
+    }
+
+    /** Breaks [text] into lines that fit [maxWidth], keeping the author's own line breaks. */
+    private fun wrapText(text: String, font: PDType1Font, size: Float, maxWidth: Float): List<String> {
+        val out = ArrayList<String>()
+        val cleaned = text.replace("\r\n", "\n").replace("\r", "\n").replace("\t", "    ")
+        for (paragraph in cleaned.split("\n")) {
+            if (paragraph.isEmpty()) {
+                out.add("")
+                continue
+            }
+            var line = StringBuilder()
+            for (word in paragraph.split(" ")) {
+                val candidate = if (line.isEmpty()) word else "$line $word"
+                if (widthOf(candidate, font, size) <= maxWidth) {
+                    line = StringBuilder(candidate)
+                    continue
+                }
+                if (line.isNotEmpty()) {
+                    out.add(line.toString())
+                    line = StringBuilder()
+                }
+                // A single word longer than the page still has to land somewhere: cut it.
+                if (widthOf(word, font, size) > maxWidth) {
+                    var chunk = StringBuilder()
+                    for (ch in word) {
+                        if (widthOf("$chunk$ch", font, size) > maxWidth && chunk.isNotEmpty()) {
+                            out.add(chunk.toString())
+                            chunk = StringBuilder()
+                        }
+                        chunk.append(ch)
+                    }
+                    line = chunk
+                } else {
+                    line = StringBuilder(word)
+                }
+            }
+            if (line.isNotEmpty()) out.add(line.toString())
+        }
+        return out
+    }
+
+    private fun widthOf(text: String, font: PDType1Font, size: Float): Float = try {
+        font.getStringWidth(text) / 1000f * size
+    } catch (_: Exception) {
+        // An unmeasurable glyph should not sink the whole job; treat it as over-wide so the
+        // line breaks here rather than running off the page.
+        Float.MAX_VALUE
+    }
+
     fun dispose() {
         io.shutdown()
     }
 
     companion object {
         const val CHANNEL = "in.sreerajp.pdfapp/pdfbox"
+
+        // --- Phase 6: building a PDF from incoming content ---
+        /** Blank edge kept around pictures and text, in PDF points (~8.5 mm). */
+        private const val PAGE_MARGIN = 24f
+        /** JPEG quality for photos placed on a page. High enough to look clean in print. */
+        private const val JPEG_QUALITY = 0.85f
+        /** Longest side a picture is sampled down to before it goes on a page. */
+        private const val MAX_IMAGE_PX = 2400
+        private const val TEXT_FONT_SIZE = 11f
+        /** Line-to-line distance; ~1.3x the font size reads comfortably. */
+        private const val TEXT_LEADING = 14f
+        /** Refuse absurdly long text rather than grinding the device to a halt. */
+        private const val MAX_TEXT_PAGES = 500
     }
 }
