@@ -26,13 +26,57 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- "Open with" a PDF from another app (file / content / SAF URIs). -->
+            <!-- 1. Primary "Open with" / VIEW intent filter for PDF MIME types -->
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="content" android:mimeType="application/pdf"/>
-                <data android:scheme="file" android:mimeType="application/pdf"/>
+                <data android:scheme="content"/>
+                <data android:scheme="file"/>
+                <data android:mimeType="application/pdf"/>
+                <data android:mimeType="application/x-pdf"/>
+                <data android:mimeType="application/vnd.pdf"/>
+            </intent-filter>
+
+            <!-- 2. Fallback "Open with" / VIEW intent filter for generic/wildcard MIME types (e.g. */* or application/octet-stream) but ending with .pdf or .PDF -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="content"/>
+                <data android:scheme="file"/>
+                <data android:host="*"/>
+                <data android:mimeType="*/*"/>
+                <data android:pathPattern=".*\\.pdf"/>
+                <data android:pathPattern=".*\\.PDF"/>
+                <data android:pathPattern=".*\\..*\\.pdf"/>
+                <data android:pathPattern=".*\\..*\\.PDF"/>
+                <data android:pathPattern=".*\\..*\\..*\\.pdf"/>
+                <data android:pathPattern=".*\\..*\\..*\\.PDF"/>
+                <data android:pathPattern=".*\\..*\\..*\\..*\\.pdf"/>
+                <data android:pathPattern=".*\\..*\\..*\\..*\\.PDF"/>
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\.pdf"/>
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\.PDF"/>
+            </intent-filter>
+
+            <!-- 3. Fallback "Open with" / VIEW intent filter for files with no MIME type specified but ending with .pdf or .PDF -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="content"/>
+                <data android:scheme="file"/>
+                <data android:host="*"/>
+                <data android:pathPattern=".*\\.pdf"/>
+                <data android:pathPattern=".*\\.PDF"/>
+                <data android:pathPattern=".*\\..*\\.pdf"/>
+                <data android:pathPattern=".*\\..*\\.PDF"/>
+                <data android:pathPattern=".*\\..*\\..*\\.pdf"/>
+                <data android:pathPattern=".*\\..*\\..*\\.PDF"/>
+                <data android:pathPattern=".*\\..*\\..*\\..*\\.pdf"/>
+                <data android:pathPattern=".*\\..*\\..*\\..*\\.PDF"/>
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\.pdf"/>
+                <data android:pathPattern=".*\\..*\\..*\\..*\\..*\\.PDF"/>
             </intent-filter>
             <!-- Share a PDF into the app. -->
             <intent-filter>
