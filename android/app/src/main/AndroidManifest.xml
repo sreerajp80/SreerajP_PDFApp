@@ -22,6 +22,17 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <!-- Turn off Flutter's automatic deep-linking. The VIEW intent
+                 filters below include the BROWSABLE category (needed for
+                 "Open with"), which would otherwise make Flutter treat the
+                 opened file's content:// URI as an initial route and hand it to
+                 go_router, which has no matching route ("Page Not Found").
+                 The app already handles the launch intent through its own native
+                 bridge (getInitialIntent), so URL-style deep-link routing is not
+                 used and is safely disabled here. -->
+            <meta-data
+              android:name="flutter_deeplinking_enabled"
+              android:value="false" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
