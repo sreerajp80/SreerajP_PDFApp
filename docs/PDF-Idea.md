@@ -9,8 +9,8 @@ split out from the original single "File Reader" idea (the others cover text/dat
 code files, HTML, and EPUB).
 
 # Development Tools versions
-Flutter 3.41.9 or higher
-Dart 3.11.5 or higher
+Flutter 3.44.8 or higher
+Dart 3.12.2 or higher
 
 # Licensing constraint
 Every library used by this app must be **open source**. Commercial or source-available SDKs

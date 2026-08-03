@@ -69,7 +69,7 @@ logging, secrets, or anything that handles opened-file input.
 ## 5. Where things live
 
 ```
-.agents/AGENTS.md         # this file — project rules
+CLAUDE.md                 # this file — project rules
 docs/                      # product idea and design notes
 docs/PDF-Idea.md              # full product idea (features, risks, libraries, NFRs)
 docs/architecture.md          # full technical design (layers, modules, DB, security)

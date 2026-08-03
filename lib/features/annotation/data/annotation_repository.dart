@@ -13,32 +13,30 @@ import 'package:pdfapp/features/annotation/domain/annotation.dart';
 /// is never changed.
 class AnnotationRepository {
   AnnotationRepository({
-    required AnnotationDao dao,
-    required PdfBoxChannel pdfBox,
-    required OpenDocumentChannel openChannel,
-  }) : _dao = dao,
-       _pdfBox = pdfBox,
-       _openChannel = openChannel;
+    required this.dao,
+    required this.pdfBox,
+    required this.openChannel,
+  });
 
-  final AnnotationDao _dao;
-  final PdfBoxChannel _pdfBox;
-  final OpenDocumentChannel _openChannel;
+  final AnnotationDao dao;
+  final PdfBoxChannel pdfBox;
+  final OpenDocumentChannel openChannel;
 
   Future<List<Annotation>> forFile(String fingerprint) =>
-      _dao.byFile(fingerprint);
+      dao.byFile(fingerprint);
 
   /// Adds an annotation and returns it with its new database id filled in.
   Future<Annotation> add(Annotation annotation) async {
-    final id = await _dao.insert(annotation);
+    final id = await dao.insert(annotation);
     return Annotation.fromRow({...annotation.toRow(), 'id': id});
   }
 
-  Future<void> update(Annotation annotation) => _dao.update(annotation);
+  Future<void> update(Annotation annotation) => dao.update(annotation);
 
-  Future<void> delete(int id) => _dao.deleteById(id);
+  Future<void> delete(int id) => dao.deleteById(id);
 
   Future<void> clearFile(String fingerprint) =>
-      _dao.deleteAllForFile(fingerprint);
+      dao.deleteAllForFile(fingerprint);
 
   /// Exports [annotations] into a new annotated copy of [sourcePath], returning
   /// the path of the produced file in the app cache. Copy-on-write.
@@ -49,7 +47,7 @@ class AnnotationRepository {
   }) async {
     final out = await _outputPath('annotated');
     final flattened = annotations.map(_toPlatformMap).toList();
-    return _pdfBox.exportAnnotations(
+    return pdfBox.exportAnnotations(
       sourcePath,
       out,
       flattened,
@@ -60,7 +58,7 @@ class AnnotationRepository {
   /// Saves a produced file to a user-chosen location (SAF). Returns the saved
   /// name, or null if the user cancelled.
   Future<String?> saveToDevice(String sourcePath, String suggestedName) =>
-      _openChannel.saveToDevice(sourcePath, suggestedName);
+      openChannel.saveToDevice(sourcePath, suggestedName);
 
   /// Flattens a domain annotation into the map the platform side expects.
   Map<String, Object?> _toPlatformMap(Annotation a) {

@@ -10,7 +10,7 @@ technical design, and the phased implementation plan. Engineering-side design no
 
 ## Prerequisites
 
-- **Flutter 3.41.9+** and **Dart 3.11.5+** (`flutter --version`).
+- **Flutter 3.44.8+** and **Dart 3.12.2+** (`flutter --version`).
 - **JDK 17** for the Android/Gradle build. Point Flutter at it if your default JDK differs:
   `flutter config --jdk-dir <path-to-jdk-17>` (or set `JAVA_HOME`).
 - Android SDK with **minSdk 26** (Android 8.0). AGP 8.x — do **not** upgrade to AGP 9.

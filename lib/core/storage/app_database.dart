@@ -9,11 +9,10 @@ import 'package:sqflite/sqflite.dart';
 ///
 /// The connection is opened once and kept for the app lifetime (§9.3).
 class AppDatabase {
-  AppDatabase({DatabaseFactory? factory, String? path})
-    : _factory = factory,
-      _pathOverride = path;
+  AppDatabase({this.factory, String? path})
+    : _pathOverride = path;
 
-  final DatabaseFactory? _factory;
+  final DatabaseFactory? factory;
   final String? _pathOverride;
 
   Database? _db;
@@ -29,12 +28,12 @@ class AppDatabase {
   Future<Database> open() async {
     if (_db != null) return _db!;
     try {
-      final factory = _factory ?? databaseFactory;
+      final dbFactory = factory ?? databaseFactory;
       final path =
           _pathOverride ??
-          p.join(await factory.getDatabasesPath(), AppConstants.databaseName);
+          p.join(await dbFactory.getDatabasesPath(), AppConstants.databaseName);
 
-      _db = await factory.openDatabase(
+      _db = await dbFactory.openDatabase(
         path,
         options: OpenDatabaseOptions(
           version: AppConstants.databaseVersion,

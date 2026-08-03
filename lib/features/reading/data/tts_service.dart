@@ -17,19 +17,17 @@ import 'package:pdfapp/features/reading/domain/tts_state.dart';
 /// nothing.
 class TtsService extends ChangeNotifier {
   TtsService({
-    required TtsEngine engine,
-    required Future<void> Function({required bool enabled})
-    saveMalayalamEnabled,
+    required this.engine,
+    required this.saveMalayalamEnabled,
     bool malayalamEnabled = false,
-  }) : _engine = engine,
-       _saveMalayalamEnabled = saveMalayalamEnabled {
+  }) {
     _status = TtsStatus(malayalamEnabled: malayalamEnabled);
-    _engine.onComplete = _onComplete;
-    _engine.onError = _onError;
+    engine.onComplete = _onComplete;
+    engine.onError = _onError;
   }
 
-  final TtsEngine _engine;
-  final Future<void> Function({required bool enabled}) _saveMalayalamEnabled;
+  final TtsEngine engine;
+  final Future<void> Function({required bool enabled}) saveMalayalamEnabled;
 
   TtsStatus _status = const TtsStatus();
   TtsStatus get status => _status;
@@ -54,7 +52,7 @@ class TtsService extends ChangeNotifier {
     final lost = _status.malayalamEnabled && malayalam != TtsVoiceState.ready;
     if (lost) {
       _voiceLostNotice = true;
-      await _saveMalayalamEnabled(enabled: false);
+      await saveMalayalamEnabled(enabled: false);
       AppLogger.info(
         'The Malayalam voice is gone; the setting was turned off.',
       );
@@ -74,7 +72,7 @@ class TtsService extends ChangeNotifier {
   /// "Installed" and "the engine has heard of it" are different things, and the
   /// difference decides what we offer: a download, or an honest "not possible".
   Future<TtsVoiceState> _check(TtsLanguage language) async {
-    final languages = await _engine.availableLanguages();
+    final languages = await engine.availableLanguages();
     if (languages.isEmpty) return TtsVoiceState.unavailable;
 
     final code = language.code.toLowerCase();
@@ -85,7 +83,7 @@ class TtsService extends ChangeNotifier {
         languages.contains(code.split('-').first);
     if (!known) return TtsVoiceState.unavailable;
 
-    return await _engine.isLanguageInstalled(language.code)
+    return await engine.isLanguageInstalled(language.code)
         ? TtsVoiceState.ready
         : TtsVoiceState.needsInstall;
   }
@@ -96,7 +94,7 @@ class TtsService extends ChangeNotifier {
   /// is [TtsVoiceState.needsInstall]. The switch still goes on: the reader asked
   /// for it, and it starts working the moment the voice arrives.
   Future<TtsVoiceState> setMalayalamEnabled({required bool enabled}) async {
-    await _saveMalayalamEnabled(enabled: enabled);
+    await saveMalayalamEnabled(enabled: enabled);
     _set(_status.copyWith(malayalamEnabled: enabled));
 
     if (!enabled) return _status.malayalam;
@@ -119,14 +117,14 @@ class TtsService extends ChangeNotifier {
 
     await stop();
     try {
-      await _engine.setLanguage(language.code);
+      await engine.setLanguage(language.code);
       _set(
         _status.copyWith(
           playback: TtsPlaybackState.speaking,
           speakingPage: page,
         ),
       );
-      await _engine.speak(words);
+      await engine.speak(words);
     } catch (e) {
       AppLogger.warning('Read aloud failed.', error: e);
       _set(
@@ -160,7 +158,7 @@ class TtsService extends ChangeNotifier {
   /// something the reader can see.
   Future<void> pause() async {
     if (!_status.isSpeaking) return;
-    if (await _engine.pause()) {
+    if (await engine.pause()) {
       _set(_status.copyWith(playback: TtsPlaybackState.paused));
     } else {
       await stop();
@@ -169,7 +167,7 @@ class TtsService extends ChangeNotifier {
 
   Future<void> stop() async {
     if (_status.isIdle) return;
-    await _engine.stop();
+    await engine.stop();
     _set(
       _status.copyWith(
         playback: TtsPlaybackState.idle,
@@ -200,7 +198,7 @@ class TtsService extends ChangeNotifier {
   @override
   void dispose() {
     // Speech outlives the screen otherwise — it is played by the system.
-    _engine.stop();
+    engine.stop();
     super.dispose();
   }
 }

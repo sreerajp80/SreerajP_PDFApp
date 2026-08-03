@@ -17,25 +17,20 @@ import 'package:pdfapp/features/signature/domain/trusted_certificate.dart';
 /// facts, and running them through [SignatureTrustEvaluator].
 class SignatureRepository {
   SignatureRepository({
-    required SignatureChannel channel,
-    required TrustStoreDao trustStore,
+    required this.channel,
+    required this.trustStore,
     required EutlTrustList bundledList,
-    SignatureTrustEvaluator evaluator = const SignatureTrustEvaluator(),
-  }) : _channel = channel,
-       _trustStore = trustStore,
-       _bundled = bundledList,
-       _evaluator = evaluator;
+    this.evaluator = const SignatureTrustEvaluator(),
+  }) : _bundled = bundledList;
 
-  final SignatureChannel _channel;
-  final TrustStoreDao _trustStore;
+  final SignatureChannel channel;
+  final TrustStoreDao trustStore;
   final EutlTrustList _bundled;
-  final SignatureTrustEvaluator _evaluator;
-
-  SignatureTrustEvaluator get evaluator => _evaluator;
+  final SignatureTrustEvaluator evaluator;
 
   /// Whether the viewer should offer the Signatures screen at all.
   Future<bool> hasSignatures(String cachePath, {String? password}) async =>
-      await _channel.countSignatures(cachePath, password: password) > 0;
+      await channel.countSignatures(cachePath, password: password) > 0;
 
   /// Every signature in the file, with the app's verdict on each.
   Future<List<SignatureVerdict>> verify(
@@ -43,12 +38,12 @@ class SignatureRepository {
     String? password,
   }) async {
     final anchors = await _trustAnchors();
-    final signatures = await _channel.verifySignatures(
+    final signatures = await channel.verifySignatures(
       cachePath,
       password: password,
       trustAnchors: anchors,
     );
-    return _evaluator.evaluateAll(signatures);
+    return evaluator.evaluateAll(signatures);
   }
 
   /// The user's own certificates plus the bundled list.
@@ -56,7 +51,7 @@ class SignatureRepository {
   /// The user's come first so that if the same certificate is in both, the one
   /// the user chose is the one that matches.
   Future<List<String>> _trustAnchors() async => [
-    ...await _trustStore.allDer(),
+    ...await trustStore.allDer(),
     ...await _bundled.certificates(),
   ];
 
@@ -76,7 +71,7 @@ class SignatureRepository {
         'That file is too big to be a certificate.',
       );
     }
-    return _channel.readCertificate(path);
+    return channel.readCertificate(path);
   }
 
   /// Records that the user trusts [certificate].
@@ -85,12 +80,12 @@ class SignatureRepository {
   /// first. This is the one write that changes what the app will call trusted,
   /// and nothing else may reach it.
   Future<void> trust(CertificateInfo certificate) =>
-      _trustStore.add(certificate);
+      trustStore.add(certificate);
 
   /// The user withdrawing trust.
-  Future<void> untrust(String sha256) => _trustStore.remove(sha256);
+  Future<void> untrust(String sha256) => trustStore.remove(sha256);
 
-  Future<List<CertificateInfo>> trustedCertificates() => _trustStore.all();
+  Future<List<CertificateInfo>> trustedCertificates() => trustStore.all();
 
-  Future<bool> isTrusted(String sha256) => _trustStore.contains(sha256);
+  Future<bool> isTrusted(String sha256) => trustStore.contains(sha256);
 }

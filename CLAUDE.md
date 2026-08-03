@@ -20,8 +20,8 @@ full feature list, risks, and library decisions.
 
 ## 2. Tech stack (fixed)
 
-- **Flutter 3.41.9 or higher**
-- **Dart 3.11.5 or higher**
+- **Flutter 3.44.8 or higher**
+- **Dart 3.12.2 or higher**
 - **minSdk 26 (Android 8.0)**; phones and tablets, portrait and landscape.
 - **Material 3** modern UI.
 - Core libraries (open source only): **pdfrx** (pdfium) for rendering, **PdfBox-Android**

@@ -68,9 +68,8 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
       );
   }
 
-  void _onReorder(int oldIndex, int newIndex) {
+  void _onReorderItem(int oldIndex, int newIndex) {
     setState(() {
-      if (newIndex > oldIndex) newIndex -= 1;
       final item = _entries.removeAt(oldIndex);
       _entries.insert(newIndex, item);
     });
@@ -158,7 +157,7 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
                 : ReorderableListView.builder(
                     padding: const EdgeInsets.all(8),
                     itemCount: _entries.length,
-                    onReorder: _onReorder,
+                    onReorderItem: _onReorderItem,
                     itemBuilder: (context, index) {
                       final entry = _entries[index];
                       return _buildRow(context, l10n, theme, entry, index);

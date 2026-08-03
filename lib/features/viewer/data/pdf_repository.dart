@@ -14,28 +14,26 @@ import 'package:pdfapp/features/viewer/domain/view_mode.dart';
 /// recents, or intent), list/remove recents, and load/save reading positions.
 class PdfRepository {
   PdfRepository({
-    required OpenDocumentChannel channel,
-    required RecentFilesDao recentFilesDao,
-    required ReadingPositionDao readingPositionDao,
-  }) : _channel = channel,
-       _recentFilesDao = recentFilesDao,
-       _readingPositionDao = readingPositionDao;
+    required this.channel,
+    required this.recentFilesDao,
+    required this.readingPositionDao,
+  });
 
-  final OpenDocumentChannel _channel;
-  final RecentFilesDao _recentFilesDao;
-  final ReadingPositionDao _readingPositionDao;
+  final OpenDocumentChannel channel;
+  final RecentFilesDao recentFilesDao;
+  final ReadingPositionDao readingPositionDao;
 
   /// Opens the system picker. Returns the prepared document, or null if the
   /// user cancelled.
   Future<PdfDocumentRef?> openWithPicker() async {
-    final opened = await _channel.pickPdf();
+    final opened = await channel.pickPdf();
     if (opened == null) return null;
     return _prepare(opened);
   }
 
   /// Reopens a file from the recents list (re-copies from its stored URI).
   Future<PdfDocumentRef> openFromRecent(RecentFile recent) async {
-    final opened = await _channel.resolveToCache(recent.uri);
+    final opened = await channel.resolveToCache(recent.uri);
     return _prepare(opened);
   }
 
@@ -47,8 +45,8 @@ class PdfRepository {
   /// returns the ref the viewer opens.
   Future<PdfDocumentRef> _prepare(OpenedDocument opened) async {
     final fingerprint = await Fingerprint.ofFile(opened.cachePath);
-    final existing = await _recentFilesDao.byFingerprint(fingerprint);
-    await _recentFilesDao.upsert(
+    final existing = await recentFilesDao.byFingerprint(fingerprint);
+    await recentFilesDao.upsert(
       RecentFile(
         fingerprint: fingerprint,
         uri: opened.uri,
@@ -68,22 +66,22 @@ class PdfRepository {
     );
   }
 
-  Future<List<RecentFile>> recents() => _recentFilesDao.list();
+  Future<List<RecentFile>> recents() => recentFilesDao.list();
 
   Future<void> removeRecent(String fingerprint) =>
-      _recentFilesDao.remove(fingerprint);
+      recentFilesDao.remove(fingerprint);
 
   Future<void> recordPageCount(String fingerprint, int pageCount) =>
-      _recentFilesDao.setPageCount(fingerprint, pageCount);
+      recentFilesDao.setPageCount(fingerprint, pageCount);
 
   Future<ReadingPosition?> positionFor(String fingerprint) =>
-      _readingPositionDao.byFingerprint(fingerprint);
+      readingPositionDao.byFingerprint(fingerprint);
 
   Future<void> savePosition({
     required String fingerprint,
     required int lastPage,
     required PdfViewMode viewMode,
-  }) => _readingPositionDao.save(
+  }) => readingPositionDao.save(
     ReadingPosition(
       fingerprint: fingerprint,
       lastPage: lastPage,
@@ -94,8 +92,8 @@ class PdfRepository {
 
   /// The content that launched the app via "Open with" / share, if any. May be
   /// a PDF for the viewer, or pictures/text for the Phase 6 Import screen.
-  Future<IncomingContent?> launchIntent() => _channel.initialIntent();
+  Future<IncomingContent?> launchIntent() => channel.initialIntent();
 
   /// Content shared while the app is running.
-  Stream<IncomingContent> get incoming => _channel.incoming;
+  Stream<IncomingContent> get incoming => channel.incoming;
 }

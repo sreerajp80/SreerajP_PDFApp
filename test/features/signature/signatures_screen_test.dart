@@ -47,12 +47,12 @@ class _FakeSignatureRepository extends SignatureRepository {
 class _FakeSignatureVerdictsNotifier extends SignatureVerdictsNotifier {
   _FakeSignatureVerdictsNotifier(
     this._verdicts, {
-    Object? error,
+    this.error,
     this.loading = false,
-  }) : _error = error;
+  });
 
   final List<SignatureVerdict> _verdicts;
-  final Object? _error;
+  final Object? error;
   final bool loading;
 
   @override
@@ -60,7 +60,7 @@ class _FakeSignatureVerdictsNotifier extends SignatureVerdictsNotifier {
     if (loading) {
       return Completer<List<SignatureVerdict>>().future;
     }
-    final err = _error;
+    final err = error;
     if (err != null) {
       throw err;
     }
