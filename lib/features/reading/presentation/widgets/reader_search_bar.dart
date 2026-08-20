@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:pdfapp/core/search/search_normalizer.dart';
 import 'package:pdfapp/features/reading/domain/search_hit.dart';
+import 'package:pdfapp/features/reading/presentation/widgets/malayalam_input_helper.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
 /// The find-in-document bar that replaces the reader's title while searching.
@@ -40,6 +41,7 @@ class _ReaderSearchBarState extends State<ReaderSearchBar> {
   final _field = TextEditingController();
   final _focus = FocusNode();
   Timer? _debounce;
+  bool _showMalayalamHelper = false;
 
   @override
   void initState() {
@@ -74,6 +76,24 @@ class _ReaderSearchBarState extends State<ReaderSearchBar> {
     _focus.requestFocus();
   }
 
+  void _insertMalayalamText(String text) {
+    final curText = _field.text;
+    final selection = _field.selection;
+    final start = selection.start >= 0 ? selection.start : curText.length;
+    final end = selection.end >= 0 ? selection.end : curText.length;
+    final newText = curText.replaceRange(start, end, text);
+    _field.text = newText;
+    _field.selection = TextSelection.collapsed(offset: start + text.length);
+    _onChanged(newText);
+  }
+
+  void _replaceWithTransliteration(String transliterated) {
+    _field.text = transliterated;
+    _field.selection = TextSelection.collapsed(offset: transliterated.length);
+    _debounce?.cancel();
+    widget.onQueryChanged(transliterated);
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -95,7 +115,10 @@ class _ReaderSearchBarState extends State<ReaderSearchBar> {
                 focusNode: _focus,
                 autofocus: true,
                 textInputAction: TextInputAction.search,
-                onChanged: _onChanged,
+                onChanged: (val) {
+                  setState(() {});
+                  _onChanged(val);
+                },
                 // Enter searches at once, without waiting for the pause.
                 onSubmitted: (value) {
                   _debounce?.cancel();
@@ -109,6 +132,19 @@ class _ReaderSearchBarState extends State<ReaderSearchBar> {
                 style: theme.textTheme.titleMedium,
               ),
             ),
+            IconButton(
+              icon: Icon(
+                _showMalayalamHelper
+                    ? Icons.keyboard_alt
+                    : Icons.keyboard_alt_outlined,
+                color: _showMalayalamHelper
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurfaceVariant,
+              ),
+              tooltip: l10n.malayalamHelperTooltip,
+              onPressed: () =>
+                  setState(() => _showMalayalamHelper = !_showMalayalamHelper),
+            ),
             if (_field.text.isNotEmpty)
               IconButton(
                 icon: const Icon(Icons.close),
@@ -117,6 +153,13 @@ class _ReaderSearchBarState extends State<ReaderSearchBar> {
               ),
           ],
         ),
+        if (_showMalayalamHelper)
+          MalayalamInputHelper(
+            currentText: _field.text,
+            onInsertText: _insertMalayalamText,
+            onReplaceText: _replaceWithTransliteration,
+            onClose: () => setState(() => _showMalayalamHelper = false),
+          ),
         const Divider(height: 1, thickness: 0.5),
         Row(
           children: [
@@ -183,9 +226,9 @@ class _Status extends StatelessWidget {
   }
 }
 
-enum _Option { strict, ignoreAccents }
+enum _Option { strict, ignoreAccents, sandhi, phonetic }
 
-/// The two complex-script search switches.
+/// The complex-script search switches.
 class _OptionsMenu extends StatelessWidget {
   const _OptionsMenu({required this.options, required this.onChanged});
 
@@ -200,16 +243,32 @@ class _OptionsMenu extends StatelessWidget {
       icon: const Icon(Icons.tune),
       tooltip: l10n.searchOptionsTooltip,
       onSelected: (option) => onChanged(switch (option) {
-        _Option.strict => SearchOptions(
-          strict: !options.strict,
-          ignoreAccents: options.ignoreAccents,
-        ),
-        _Option.ignoreAccents => SearchOptions(
-          strict: options.strict,
+        _Option.strict => options.copyWith(strict: !options.strict),
+        _Option.ignoreAccents => options.copyWith(
           ignoreAccents: !options.ignoreAccents,
         ),
+        _Option.sandhi => options.copyWith(sandhi: !options.sandhi),
+        _Option.phonetic => options.copyWith(phonetic: !options.phonetic),
       }),
       itemBuilder: (context) => [
+        CheckedPopupMenuItem(
+          value: _Option.sandhi,
+          checked: options.sandhi,
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(l10n.searchOptionSandhi),
+            subtitle: Text(l10n.searchOptionSandhiNote),
+          ),
+        ),
+        CheckedPopupMenuItem(
+          value: _Option.phonetic,
+          checked: options.phonetic,
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(l10n.searchOptionPhonetic),
+            subtitle: Text(l10n.searchOptionPhoneticNote),
+          ),
+        ),
         CheckedPopupMenuItem(
           value: _Option.strict,
           checked: options.strict,

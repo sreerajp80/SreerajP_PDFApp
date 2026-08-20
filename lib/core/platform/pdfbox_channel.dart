@@ -437,6 +437,140 @@ class PdfBoxChannel {
     }
   }
 
+  // --- Smart Margin Trimming & Foldable Booklet Imposition (Feature 2.7) ---
+
+  /// Crops blank margins from pages in [path] and writes to [outputPath].
+  Future<String> trimPdfMargins(
+    String path,
+    String outputPath, {
+    String? password,
+    double padding = 12.0,
+    bool symmetric = true,
+  }) async {
+    try {
+      final result = await _method.invokeMethod<String>('trimPdfMargins', {
+        'path': path,
+        'outputPath': outputPath,
+        'password': ?password,
+        'padding': padding,
+        'symmetric': symmetric,
+      });
+      return result ?? outputPath;
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException(
+        'Margin trimming is not available here.',
+        cause: e,
+      );
+    }
+  }
+
+  /// Generates a 2-Up foldable booklet imposition PDF at [outputPath].
+  /// Generates a 2-Up foldable booklet imposition PDF at [outputPath].
+  Future<String> generateBooklet(
+    String path,
+    String outputPath, {
+    String? password,
+    String binding = 'ltr',
+    String sheetSize = 'auto',
+    bool addFoldGuide = true,
+    double gutter = 0.0,
+  }) async {
+    try {
+      final result = await _method.invokeMethod<String>('generateBooklet', {
+        'path': path,
+        'outputPath': outputPath,
+        'password': ?password,
+        'binding': binding,
+        'sheetSize': sheetSize,
+        'addFoldGuide': addFoldGuide,
+        'gutter': gutter,
+      });
+      return result ?? outputPath;
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException(
+        'Booklet generator is not available here.',
+        cause: e,
+      );
+    }
+  }
+
+  /// Applies a text or image watermark onto pages in [path] and writes to [outputPath].
+  Future<String> applyWatermark(
+    String path,
+    String outputPath, {
+    String? password,
+    String? text,
+    String? imagePath,
+    double opacity = 0.3,
+    double rotation = 45.0,
+    double fontSize = 36.0,
+    String? colorHex,
+    bool isTiled = false,
+    double tileSpacingX = 150.0,
+    double tileSpacingY = 150.0,
+    String? pageRange,
+  }) async {
+    try {
+      final result = await _method.invokeMethod<String>('applyWatermark', {
+        'path': path,
+        'outputPath': outputPath,
+        'password': ?password,
+        'text': ?text,
+        'imagePath': ?imagePath,
+        'opacity': opacity,
+        'rotation': rotation,
+        'fontSize': fontSize,
+        'colorHex': ?colorHex,
+        'isTiled': isTiled,
+        'tileSpacingX': tileSpacingX,
+        'tileSpacingY': tileSpacingY,
+        'pageRange': ?pageRange,
+      });
+      return result ?? outputPath;
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException('Watermarking is not available here.', cause: e);
+    }
+  }
+
+  /// Generates an N-Up multi-page layout grid PDF at [outputPath].
+  Future<String> generateNUpPdf(
+    String path,
+    String outputPath, {
+    String? password,
+    int gridCount = 4,
+    String sheetSize = 'a4',
+    String orientation = 'auto',
+    bool addBorders = true,
+    double margin = 12.0,
+  }) async {
+    try {
+      final result = await _method.invokeMethod<String>('generateNUpPdf', {
+        'path': path,
+        'outputPath': outputPath,
+        'password': ?password,
+        'gridCount': gridCount,
+        'sheetSize': sheetSize,
+        'orientation': orientation,
+        'addBorders': addBorders,
+        'margin': margin,
+      });
+      return result ?? outputPath;
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException(
+        'N-Up layout generator is not available here.',
+        cause: e,
+      );
+    }
+  }
+
   AppException _mapException(PlatformException e) {
     return switch (e.code) {
       'password_required' => PdfPasswordRequiredException(

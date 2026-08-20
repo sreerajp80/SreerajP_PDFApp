@@ -7,15 +7,6 @@ import 'package:pdfapp/features/reading/domain/search_hit.dart';
 ///
 /// Results stream out rather than arriving all at once, so a reader can jump to
 /// the first match on page 2 without waiting for page 200.
-///
-/// **Why this is not on a background isolate.** The rule is to keep heavy work
-/// off the UI isolate, and the matching itself is pure Dart that could move.
-/// But the page text has to come from pdfium through the document handle, which
-/// cannot be sent to an isolate, and `compute` starts a fresh isolate per call —
-/// hundreds of them for a long document. pdfium already does its own work off
-/// the UI thread, and folding one page's text is small next to that, so the
-/// search yields between pages instead. If a very long document ever janks,
-/// batch several pages into one `compute` call rather than one call per page.
 class PdfSearchEngine {
   PdfSearchEngine({required this.source, SearchOptions? options})
     : _normalizer = SearchNormalizer(options ?? SearchOptions.normal);
@@ -32,17 +23,20 @@ class PdfSearchEngine {
   /// Stops at [AppConstants.searchMatchLimit] so a one-letter query on a huge
   /// document cannot fill memory.
   Stream<SearchHit> search(String query, {int startPage = 1}) async* {
-    final key = _normalizer.queryKey(query);
+    final candidateKeys = _normalizer.candidateQueryKeys(query);
     // A query of only joiners or spaces folds away to nothing — that is not a
     // search, and it would otherwise match every position on every page.
-    if (key.trim().isEmpty) return;
+    if (candidateKeys.isEmpty || candidateKeys.every((k) => k.trim().isEmpty)) {
+      return;
+    }
 
     var found = 0;
     for (final pageNumber in _pageOrder(startPage)) {
       final page = await source.page(pageNumber);
       if (page.isEmpty) continue;
 
-      final matches = _normalizer.normalize(page.text).findAll(key);
+      final normalizedPage = _normalizer.normalize(page.text);
+      final matches = normalizedPage.findAllKeys(candidateKeys);
       for (final match in matches) {
         yield SearchHit(
           pageNumber: pageNumber,

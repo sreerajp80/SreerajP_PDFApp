@@ -99,6 +99,207 @@ class PageOpsService {
     return _pdfBox.decryptPdf(path, out, password: password);
   }
 
+  /// Writes a copy with blank margins cropped. Returns the new file path.
+  Future<String> trimMargins(
+    String path, {
+    String? password,
+    double padding = 12.0,
+    bool symmetric = true,
+  }) async {
+    final out = await _outputPath('trimmed');
+    return _pdfBox.trimPdfMargins(
+      path,
+      out,
+      password: password,
+      padding: padding,
+      symmetric: symmetric,
+    );
+  }
+
+  /// Writes a 2-Up foldable booklet imposition PDF. Returns the new file path.
+  Future<String> generateBooklet(
+    String path, {
+    String? password,
+    String binding = 'ltr',
+    String sheetSize = 'auto',
+    bool addFoldGuide = true,
+    double gutter = 0.0,
+  }) async {
+    final out = await _outputPath('booklet');
+    return _pdfBox.generateBooklet(
+      path,
+      out,
+      password: password,
+      binding: binding,
+      sheetSize: sheetSize,
+      addFoldGuide: addFoldGuide,
+      gutter: gutter,
+    );
+  }
+
+  /// Applies a custom watermark onto a new copy of the PDF. Returns the new file path.
+  Future<String> applyWatermark(
+    String path, {
+    String? password,
+    String? text,
+    String? imagePath,
+    double opacity = 0.3,
+    double rotation = 45.0,
+    double fontSize = 36.0,
+    String? colorHex,
+    bool isTiled = false,
+    double tileSpacingX = 150.0,
+    double tileSpacingY = 150.0,
+    String? pageRange,
+  }) async {
+    final out = await _outputPath('watermarked');
+    return _pdfBox.applyWatermark(
+      path,
+      out,
+      password: password,
+      text: text,
+      imagePath: imagePath,
+      opacity: opacity,
+      rotation: rotation,
+      fontSize: fontSize,
+      colorHex: colorHex,
+      isTiled: isTiled,
+      tileSpacingX: tileSpacingX,
+      tileSpacingY: tileSpacingY,
+      pageRange: pageRange,
+    );
+  }
+
+  /// Writes an N-Up multi-page grid PDF (2-in-1, 4-in-1, 6-in-1, 9-in-1). Returns the new file path.
+  Future<String> generateNUp(
+    String path, {
+    String? password,
+    int gridCount = 4,
+    String sheetSize = 'a4',
+    String orientation = 'auto',
+    bool addBorders = true,
+    double margin = 12.0,
+  }) async {
+    final out = await _outputPath('nup');
+    return _pdfBox.generateNUpPdf(
+      path,
+      out,
+      password: password,
+      gridCount: gridCount,
+      sheetSize: sheetSize,
+      orientation: orientation,
+      addBorders: addBorders,
+      margin: margin,
+    );
+  }
+
+  /// Runs batch operations across multiple PDF documents with progress callbacks.
+  Future<BatchSummaryResult> runBatchOperation({
+    required List<OpenedDocument> documents,
+    required BatchOpType type,
+    String? userPassword,
+    String? ownerPassword,
+    void Function(int current, int total, String currentDocName)? onProgress,
+  }) async {
+    final items = <BatchItemResult>[];
+    final dir = await _outputDir();
+
+    if (type == BatchOpType.merge) {
+      // Special case: combine all documents into one single merged PDF
+      try {
+        final paths = documents.map((d) => d.cachePath).toList();
+        final out = await merge(paths);
+        items.add(
+          BatchItemResult(
+            inputPath: documents.first.cachePath,
+            displayName: 'Merged (${documents.length} files)',
+            outputPath: out,
+          ),
+        );
+      } catch (e) {
+        items.add(
+          BatchItemResult(
+            inputPath: documents.first.cachePath,
+            displayName: 'Merged (${documents.length} files)',
+            isSuccess: false,
+            errorMessage: e.toString(),
+          ),
+        );
+      }
+      return BatchSummaryResult(
+        type: type,
+        items: items,
+        totalProcessed: documents.length,
+        successCount: items.where((i) => i.isSuccess).length,
+        failureCount: items.where((i) => !i.isSuccess).length,
+      );
+    }
+
+    // Process file-by-file with error isolation
+    for (var i = 0; i < documents.length; i++) {
+      final doc = documents[i];
+      onProgress?.call(i + 1, documents.length, doc.displayName);
+
+      try {
+        String? outPath;
+        switch (type) {
+          case BatchOpType.encrypt:
+            if (userPassword != null && userPassword.isNotEmpty) {
+              outPath = await protect(
+                doc.cachePath,
+                userPassword: userPassword,
+                ownerPassword: ownerPassword,
+              );
+            }
+            break;
+          case BatchOpType.trimMargins:
+            outPath = await trimMargins(doc.cachePath);
+            break;
+          case BatchOpType.compress:
+            outPath = await compress(doc.cachePath);
+            break;
+          case BatchOpType.extractText:
+            final text = await _pdfBox.extractText(doc.cachePath);
+            final ts = DateTime.now().millisecondsSinceEpoch;
+            final txtFile = File(
+              '${dir.path}/extracted_${doc.displayName}_$ts.txt',
+            );
+            await txtFile.writeAsString(text);
+            outPath = txtFile.path;
+            break;
+          case BatchOpType.merge:
+            break;
+        }
+
+        items.add(
+          BatchItemResult(
+            inputPath: doc.cachePath,
+            displayName: doc.displayName,
+            outputPath: outPath,
+            isSuccess: outPath != null,
+          ),
+        );
+      } catch (e) {
+        items.add(
+          BatchItemResult(
+            inputPath: doc.cachePath,
+            displayName: doc.displayName,
+            isSuccess: false,
+            errorMessage: e.toString(),
+          ),
+        );
+      }
+    }
+
+    return BatchSummaryResult(
+      type: type,
+      items: items,
+      totalProcessed: documents.length,
+      successCount: items.where((i) => i.isSuccess).length,
+      failureCount: items.where((i) => !i.isSuccess).length,
+    );
+  }
+
   /// Saves [sourcePath] to a user-chosen location. Returns the saved name or null.
   Future<String?> saveToDevice(String sourcePath, String suggestedName) =>
       _openChannel.saveToDevice(sourcePath, suggestedName);
@@ -111,6 +312,45 @@ class PageOpsService {
       return null;
     }
   }
+}
+
+enum BatchOpType { encrypt, merge, extractText, trimMargins, compress }
+
+class BatchItemResult {
+  const BatchItemResult({
+    required this.inputPath,
+    required this.displayName,
+    this.outputPath,
+    this.isSuccess = true,
+    this.errorMessage,
+  });
+
+  final String inputPath;
+  final String displayName;
+  final String? outputPath;
+  final bool isSuccess;
+  final String? errorMessage;
+}
+
+class BatchSummaryResult {
+  const BatchSummaryResult({
+    required this.type,
+    required this.items,
+    required this.totalProcessed,
+    required this.successCount,
+    required this.failureCount,
+  });
+
+  final BatchOpType type;
+  final List<BatchItemResult> items;
+  final int totalProcessed;
+  final int successCount;
+  final int failureCount;
+
+  List<String> get outputPaths => items
+      .where((i) => i.outputPath != null)
+      .map((i) => i.outputPath!)
+      .toList();
 }
 
 final pageOpsServiceProvider = Provider<PageOpsService>(

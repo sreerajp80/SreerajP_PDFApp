@@ -29,4 +29,9 @@ class ReadingPositionDao {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
+
+  /// Clears all saved reading positions.
+  Future<void> clearAll() async {
+    await _db.delete(AppConstants.tableReadingPositions);
+  }
 }

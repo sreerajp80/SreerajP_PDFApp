@@ -160,7 +160,8 @@ class SignaturePosition {
   final double width;
   final double height;
 
-  factory SignaturePosition.fromMap(Map<Object?, Object?> map) => SignaturePosition(
+  factory SignaturePosition.fromMap(Map<Object?, Object?> map) =>
+      SignaturePosition(
         pageIndex: map['pageIndex'] as int,
         x: (map['x'] as num).toDouble(),
         y: (map['y'] as num).toDouble(),

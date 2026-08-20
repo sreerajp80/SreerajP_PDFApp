@@ -91,6 +91,37 @@ class MainActivity : FlutterActivity() {
                             shareText(text, result)
                         }
                     }
+                    "openAppSettings" -> {
+                        try {
+                            val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                data = Uri.fromParts("package", packageName, null)
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            startActivity(intent)
+                            result.success(null)
+                        } catch (e: Exception) {
+                            result.error("settings_failed", "Could not open system app settings.", e.message)
+                        }
+                    }
+                    "openPrintSettings" -> {
+                        try {
+                            val intent = Intent(android.provider.Settings.ACTION_PRINT_SETTINGS).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                            startActivity(intent)
+                            result.success(null)
+                        } catch (e: Exception) {
+                            try {
+                                val intent = Intent(android.provider.Settings.ACTION_SETTINGS).apply {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                                startActivity(intent)
+                                result.success(null)
+                            } catch (e2: Exception) {
+                                result.error("settings_failed", "Could not open print settings.", e2.message)
+                            }
+                        }
+                    }
                     else -> result.notImplemented()
                 }
             }

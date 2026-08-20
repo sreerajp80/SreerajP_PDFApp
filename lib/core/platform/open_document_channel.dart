@@ -227,4 +227,22 @@ class OpenDocumentChannel {
       throw StorageException('Could not share text.', cause: e);
     }
   }
+
+  /// Opens the system application details settings page for the app.
+  Future<void> openAppSettings() async {
+    try {
+      await _method.invokeMethod<void>('openAppSettings');
+    } on PlatformException catch (e) {
+      AppLogger.warning('Could not open app settings.', error: e);
+    }
+  }
+
+  /// Opens the system printing settings page on Android.
+  Future<void> openPrintSettings() async {
+    try {
+      await _method.invokeMethod<void>('openPrintSettings');
+    } on PlatformException catch (e) {
+      AppLogger.warning('Could not open print settings.', error: e);
+    }
+  }
 }

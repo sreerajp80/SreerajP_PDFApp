@@ -9,8 +9,7 @@ import 'package:sqflite/sqflite.dart';
 ///
 /// The connection is opened once and kept for the app lifetime (§9.3).
 class AppDatabase {
-  AppDatabase({this.factory, String? path})
-    : _pathOverride = path;
+  AppDatabase({this.factory, String? path}) : _pathOverride = path;
 
   final DatabaseFactory? factory;
   final String? _pathOverride;

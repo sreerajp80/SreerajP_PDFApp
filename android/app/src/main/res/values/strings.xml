@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="print_service_name">SreerajP PDF App</string>
+    <string name="print_service_description">Save or open documents as clean Unicode PDFs in SreerajP PDF App</string>
+    <string name="printer_name_save_pdf">Save as PDF (SreerajP PDF App)</string>
+</resources>

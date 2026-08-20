@@ -17,28 +17,32 @@ class AboutScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.aboutTitle)),
-      body: ListView(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(config.appName, style: textTheme.headlineSmall),
-                const SizedBox(height: 8),
-                Text(config.description, style: textTheme.bodyMedium),
-              ],
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(0, 0, 0, 48),
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(config.appName, style: textTheme.headlineSmall),
+                  const SizedBox(height: 8),
+                  Text(config.description, style: textTheme.bodyMedium),
+                ],
+              ),
             ),
-          ),
-          ListTile(
-            title: const Text('Version'),
-            subtitle: Text('${config.version} (build ${config.build})'),
-          ),
-          const Divider(),
-          for (final entry in config.details.entries)
-            if (entry.key.trim().isNotEmpty && entry.value.trim().isNotEmpty)
-              ListTile(title: Text(entry.key), subtitle: Text(entry.value)),
-        ],
+            ListTile(
+              title: const Text('Version'),
+              subtitle: Text('${config.version} (build ${config.build})'),
+            ),
+            const Divider(),
+            for (final entry in config.details.entries)
+              if (entry.key.trim().isNotEmpty && entry.value.trim().isNotEmpty)
+                ListTile(title: Text(entry.key), subtitle: Text(entry.value)),
+          ],
+        ),
       ),
     );
   }

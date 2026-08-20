@@ -197,6 +197,28 @@ void main() {
 
       expect(await engine.search('क').toList(), hasLength(1));
     });
+
+    test('Sandhi engine finds joined compound in PDF page', () async {
+      final engine = PdfSearchEngine(
+        source: FakeTextSource(['വിദ്യാലയം സ്ഥിതി ചെയ്യുന്നു']),
+      );
+
+      final hits = await engine.search('വിദ്യ ആലയം').toList();
+      expect(hits, hasLength(1));
+      expect(hits.single.sourceStart, 0);
+      expect(hits.single.sourceEnd, 9);
+    });
+
+    test('Phonetic engine finds Anusvara / class nasal variation', () async {
+      final engine = PdfSearchEngine(
+        source: FakeTextSource(['സംഗീതം ആസ്വദിക്കുന്നു']),
+      );
+
+      final hits = await engine.search('സങ്ഗീതം').toList();
+      expect(hits, hasLength(1));
+      expect(hits.single.sourceStart, 0);
+      expect(hits.single.sourceEnd, 6);
+    });
   });
 
   group('assessTextQuality', () {

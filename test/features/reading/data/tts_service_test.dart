@@ -33,10 +33,17 @@ class _FakeTtsEngine implements TtsEngine {
   }
 
   @override
+  Future<void> setSpeechRate(double rate) async {}
+
+  @override
+  Future<void> setPitch(double pitch) async {}
+
+  @override
   Future<void> speak(String text) async {
     lastSpoken = text;
     isSpeaking = true;
     isPaused = false;
+    completeHandler?.call();
   }
 
   @override

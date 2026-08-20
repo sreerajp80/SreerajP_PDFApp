@@ -242,5 +242,75 @@ void main() {
       final page = sut.normalize('$ka$aaSign'); // കാ
       expect(page.findAll(sut.queryKey(ka)), isEmpty);
     });
+
+    test('finds joined Sandhi compound from split query', () {
+      const text = 'ഇവിടെ വിദ്യാലയം സ്ഥിതി ചെയ്യുന്നു';
+      final page = sut.normalize(text);
+      final keys = sut.candidateQueryKeys('വിദ്യ ആലയം');
+      final matches = page.findAllKeys(keys);
+
+      expect(matches, hasLength(1));
+      final match = matches.single;
+      expect(text.substring(match.sourceStart, match.sourceEnd), 'വിദ്യാലയം');
+    });
+
+    test('finds joined Sandhi in Sanskrit Devanagari from split query', () {
+      const text = 'तत्र हिमालयः अस्ति';
+      final page = sut.normalize(text);
+      final keys = sut.candidateQueryKeys('हिम आलय');
+      final matches = page.findAllKeys(keys);
+
+      expect(matches, hasLength(1));
+      final match = matches.single;
+      expect(text.substring(match.sourceStart, match.sourceEnd), 'हिमालयः');
+    });
+  });
+
+  group('Indic phonetic and orthographic sound-alike search', () {
+    test('finds Anusvara spelling when query uses class nasal conjunct', () {
+      const text = 'മനോഹരമായ സംഗീതം കേൾക്കുന്നു';
+      final page = sut.normalize(text);
+      final keys = sut.candidateQueryKeys('സങ്ഗീതം');
+      final matches = page.findAllKeys(keys);
+
+      expect(matches, hasLength(1));
+      expect(
+        text.substring(matches.single.sourceStart, matches.single.sourceEnd),
+        'സംഗീതം',
+      );
+    });
+
+    test('finds Devanagari Anusvara when query uses class nasal', () {
+      const text = 'पवित्र गंगा नदी बहती है';
+      final page = sut.normalize(text);
+      final keys = sut.candidateQueryKeys('गङ्गा');
+      final matches = page.findAllKeys(keys);
+
+      expect(matches, hasLength(1));
+      expect(
+        text.substring(matches.single.sourceStart, matches.single.sourceEnd),
+        'गंगा',
+      );
+    });
+
+    test('finds Repha doubled Sanskrit text', () {
+      const text = 'सनातन धर्म सदा जयति';
+      final page = sut.normalize(text);
+      final keys = sut.candidateQueryKeys('धर्म्म');
+      final matches = page.findAllKeys(keys);
+
+      expect(matches, hasLength(1));
+      expect(
+        text.substring(matches.single.sourceStart, matches.single.sourceEnd),
+        'धर्म',
+      );
+    });
+
+    test('strict mode disables Sandhi and phonetic query expansions', () {
+      const strictSut = SearchNormalizer(SearchOptions(strict: true));
+      final keys = strictSut.candidateQueryKeys('വിദ്യ ആലയം');
+      expect(keys, hasLength(1));
+      expect(keys.contains('വിദ്യാലയം'), isFalse);
+    });
   });
 }

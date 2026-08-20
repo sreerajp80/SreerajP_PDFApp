@@ -15,6 +15,12 @@ abstract class TtsEngine {
 
   Future<void> setLanguage(String languageCode);
 
+  /// Sets speech rate (0.5 to 2.0).
+  Future<void> setSpeechRate(double rate);
+
+  /// Sets voice pitch (0.5 to 2.0).
+  Future<void> setPitch(double pitch);
+
   /// Speaks [text]. Completes when the words have been handed to the engine,
   /// not when they finish being spoken — [onComplete] reports that.
   Future<void> speak(String text);
@@ -71,6 +77,12 @@ class FlutterTtsEngine implements TtsEngine {
   @override
   Future<void> setLanguage(String languageCode) =>
       _tts.setLanguage(languageCode);
+
+  @override
+  Future<void> setSpeechRate(double rate) => _tts.setSpeechRate(rate);
+
+  @override
+  Future<void> setPitch(double pitch) => _tts.setPitch(pitch);
 
   @override
   Future<void> speak(String text) => _tts.speak(text);

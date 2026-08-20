@@ -3,6 +3,7 @@ import 'package:pdfapp/features/page_ops/data/page_ops_service.dart';
 import 'package:pdfapp/features/printer/data/pdf_builder_service.dart';
 import 'package:pdfapp/features/printer/data/print_service.dart';
 import 'package:pdfapp/features/printer/data/printer_channel.dart';
+import 'package:pdfapp/features/printer/data/web_content_cleaner.dart';
 import 'package:pdfapp/features/reading/presentation/providers.dart';
 import 'package:pdfapp/features/viewer/presentation/providers.dart';
 
@@ -10,6 +11,10 @@ import 'package:pdfapp/features/viewer/presentation/providers.dart';
 
 final printerChannelProvider = Provider<PrinterChannel>(
   (ref) => PrinterChannel(),
+);
+
+final webContentCleanerProvider = Provider<WebContentCleaner>(
+  (ref) => const WebContentCleaner(),
 );
 
 final pdfBuilderServiceProvider = Provider<PdfBuilderService>(

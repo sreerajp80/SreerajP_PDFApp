@@ -21,7 +21,21 @@ class TrustStoreScreen extends ConsumerWidget {
     final certificates = ref.watch(trustedCertificatesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.trustStoreTitle)),
+      appBar: AppBar(
+        title: Text(l10n.trustStoreTitle),
+        actions: [
+          certificates.maybeWhen(
+            data: (list) => list.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.file_download_outlined),
+                    tooltip: l10n.trustStoreExportAllAction,
+                    onPressed: () => _exportAll(context, ref),
+                  )
+                : const SizedBox.shrink(),
+            orElse: () => const SizedBox.shrink(),
+          ),
+        ],
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _addCertificate(context, ref),
         icon: const Icon(Icons.add),
@@ -68,10 +82,13 @@ class TrustStoreScreen extends ConsumerWidget {
               ),
             );
           }
-          return ListView.builder(
-            padding: const EdgeInsets.only(bottom: 88.0),
-            itemCount: list.length,
-            itemBuilder: (context, i) => _tile(context, ref, list[i]),
+          return SafeArea(
+            top: false,
+            child: ListView.builder(
+              padding: const EdgeInsets.only(bottom: 88.0),
+              itemCount: list.length,
+              itemBuilder: (context, i) => _tile(context, ref, list[i]),
+            ),
           );
         },
       ),
@@ -93,9 +110,6 @@ class TrustStoreScreen extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(cert.issuerCommonName, style: theme.textTheme.bodySmall),
-          // An expired certificate stays in the store on purpose — it may still
-          // be the right anchor for a document signed years ago. The state is
-          // shown rather than silently dropped.
           if (expired)
             Text(
               l10n.trustStoreExpiredWarning,
@@ -106,12 +120,72 @@ class TrustStoreScreen extends ConsumerWidget {
         ],
       ),
       isThreeLine: expired,
-      trailing: IconButton(
-        icon: const Icon(Icons.delete_outline),
-        tooltip: l10n.trustStoreRemoveAction,
-        onPressed: () => _remove(context, ref, cert),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.file_download_outlined),
+            tooltip: l10n.trustStoreExportAction,
+            onPressed: () => _exportOne(context, ref, cert),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline),
+            tooltip: l10n.trustStoreRemoveAction,
+            onPressed: () => _remove(context, ref, cert),
+          ),
+        ],
       ),
     );
+  }
+
+  Future<void> _exportOne(
+    BuildContext context,
+    WidgetRef ref,
+    CertificateInfo cert,
+  ) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo = ref.read(signatureRepositoryProvider);
+      final path = await repo.exportCertificate(cert);
+      final saved = await ref
+          .read(openDocumentChannelProvider)
+          .saveToDevice(
+            path,
+            '${cert.commonName}.crt',
+            mimeType: 'application/x-x509-ca-cert',
+          );
+      if (saved != null) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.trustStoreExportSuccess(saved))),
+        );
+      }
+    } on AppException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    }
+  }
+
+  Future<void> _exportAll(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final repo = ref.read(signatureRepositoryProvider);
+      final path = await repo.exportAllCertificates();
+      final saved = await ref
+          .read(openDocumentChannelProvider)
+          .saveToDevice(
+            path,
+            'trusted_certificates_bundle.pem',
+            mimeType: 'application/x-pem-file',
+          );
+      if (saved != null) {
+        messenger.showSnackBar(
+          SnackBar(content: Text(l10n.trustStoreExportSuccess(saved))),
+        );
+      }
+    } on AppException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    }
   }
 
   Future<void> _addCertificate(BuildContext context, WidgetRef ref) async {
@@ -119,8 +193,6 @@ class TrustStoreScreen extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context);
     final repository = ref.read(signatureRepositoryProvider);
 
-    // Scoped storage: the file comes through the system picker like every other
-    // file in this app (project rule 3).
     final picked = await ref
         .read(openDocumentChannelProvider)
         .pickCertificate();

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdfapp/core/errors/app_exception.dart';
 import 'package:pdfapp/features/extraction/data/extraction_service.dart';
 import 'package:pdfapp/features/printer/presentation/providers.dart';
+import 'package:pdfapp/features/printer/presentation/widgets/n_up_dialog.dart';
 import 'package:pdfapp/features/printer/presentation/widgets/print_range_dialog.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
@@ -67,6 +68,22 @@ class _PrintSheet extends ConsumerWidget {
               title: Text(l10n.printTextAction),
               subtitle: Text(l10n.printTextDescription),
               onTap: () => _printText(context, ref),
+            ),
+            ListTile(
+              leading: const Icon(Icons.grid_4x4),
+              title: Text(l10n.printNUpAction),
+              subtitle: Text(l10n.printNUpDescription),
+              onTap: () {
+                Navigator.of(context).pop();
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => NUpDialog(
+                    path: path,
+                    jobName: jobName,
+                    pageCount: pageCount,
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 8),
           ],

@@ -1,13 +1,16 @@
 import 'dart:async';
+import 'dart:ui' show DisplayFeatureType;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 // Hide pdfrx's PdfDocumentRef — this app has its own domain type of that name.
 import 'package:pdfrx/pdfrx.dart' hide PdfDocumentRef;
+import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/app/routing/app_router.dart';
 import 'package:pdfapp/features/signature/presentation/providers.dart';
 import 'package:pdfapp/features/reading/data/pdf_text_source.dart';
+import 'package:pdfapp/features/reading/data/reading_velocity_service.dart';
 import 'package:pdfapp/features/reading/data/tts_service.dart';
 import 'package:pdfapp/features/reading/domain/text_quality.dart';
 import 'package:pdfapp/features/reading/presentation/pdf_search_controller.dart';
@@ -40,6 +43,7 @@ import 'package:pdfapp/features/annotation/presentation/widgets/bookmarks_panel.
 import 'package:pdfapp/features/annotation/presentation/widgets/page_annotation_layer.dart';
 import 'package:pdfapp/features/signature/domain/pdf_signature.dart';
 import 'package:pdfapp/features/signature/domain/signature_status.dart';
+import 'package:pdfapp/features/signature/presentation/widgets/signature_detail_sheet.dart';
 
 /// Inverts page colors for night reading (project rule: comfortable dark read).
 const ColorFilter _invertFilter = ColorFilter.matrix(<double>[
@@ -110,6 +114,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   bool _searching = false;
   bool _ttsActive = false;
 
+  /// Tracks reading velocity (WPM, seconds per page) and chapter remaining time.
+  ReadingVelocityService? _velocityService;
+
   // --- Annotation (Phase 5) ---
 
   /// Overlay-annotation state for this file. Built once the document opens.
@@ -160,6 +167,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   void dispose() {
     _saveTimer?.cancel();
     _flushSave();
+    _velocityService?.dispose();
     _search
       ?..removeListener(_onSearchChanged)
       ..dispose();
@@ -209,15 +217,29 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       fingerprint: widget.docRef.fingerprint,
       sourcePath: widget.docRef.cachePath,
     )..addListener(_onAnnotationsChanged);
+
+    final velocity = ReadingVelocityService(textSource: source);
+    velocity.addListener(() {
+      if (mounted) setState(() {});
+    });
+
     setState(() {
       _document = document;
       _textSource = source;
       _search = search;
       _annotate = annotate;
+      _velocityService = velocity;
     });
     unawaited(annotate.load());
     unawaited(_repo.recordPageCount(widget.docRef.fingerprint, _pageCount));
     unawaited(_checkTextQuality(source));
+    unawaited(
+      document.loadOutline().then((outline) {
+        if (mounted && outline.isNotEmpty) {
+          _velocityService?.setOutline(outline, _pageCount);
+        }
+      }),
+    );
     if (widget.docRef.isLarge && !_largeWarningShown) {
       _largeWarningShown = true;
       WidgetsBinding.instance.addPostFrameCallback((_) => _showLargeWarning());
@@ -236,6 +258,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   void _onPageChanged(int? pageNumber) {
     if (pageNumber == null) return;
     _currentPage = pageNumber;
+    _velocityService?.onPageChanged(pageNumber, _pageCount);
     _scheduleSave();
     setState(() {}); // refresh the page indicator
   }
@@ -546,25 +569,33 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     switch (verdict.status) {
       case SignatureStatus.trusted:
         statusText = 'Signature valid';
-        tickColor = const Color(0xFF00C853).withValues(alpha: 0.65); // Softer green
+        tickColor = const Color(
+          0xFF00C853,
+        ).withValues(alpha: 0.65); // Softer green
         isTrusted = true;
         isInvalid = false;
         break;
       case SignatureStatus.validNotTrusted:
         statusText = 'Signature valid, untrusted';
-        tickColor = const Color(0xFFFF9100).withValues(alpha: 0.65); // Softer orange
+        tickColor = const Color(
+          0xFFFF9100,
+        ).withValues(alpha: 0.65); // Softer orange
         isTrusted = false;
         isInvalid = false;
         break;
       case SignatureStatus.invalid:
         statusText = 'Signature invalid';
-        tickColor = const Color(0xFFFF1744).withValues(alpha: 0.65); // Softer red
+        tickColor = const Color(
+          0xFFFF1744,
+        ).withValues(alpha: 0.65); // Softer red
         isTrusted = false;
         isInvalid = true;
         break;
       case SignatureStatus.unknown:
         statusText = 'Signature could not be verified';
-        tickColor = const Color(0xFF757575).withValues(alpha: 0.65); // Softer grey
+        tickColor = const Color(
+          0xFF757575,
+        ).withValues(alpha: 0.65); // Softer grey
         isTrusted = false;
         isInvalid = false;
         break;
@@ -581,7 +612,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     final checkHeight = rect.height;
     final minDimension = checkWidth < checkHeight ? checkWidth : checkHeight;
 
-    if (isTrusted || verdict.status == SignatureStatus.validNotTrusted || verdict.status == SignatureStatus.unknown) {
+    if (isTrusted ||
+        verdict.status == SignatureStatus.validNotTrusted ||
+        verdict.status == SignatureStatus.unknown) {
       // Large checkmark in the background
       final path = Path()
         ..moveTo(rect.left + checkWidth * 0.35, rect.top + checkHeight * 0.55)
@@ -620,8 +653,16 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         ..strokeWidth = strokeWidth + 1.5
         ..strokeCap = StrokeCap.round;
 
-      canvas.drawLine(Offset(cx - size, cy - size), Offset(cx + size, cy + size), outlinePaint);
-      canvas.drawLine(Offset(cx - size, cy + size), Offset(cx + size, cy - size), outlinePaint);
+      canvas.drawLine(
+        Offset(cx - size, cy - size),
+        Offset(cx + size, cy + size),
+        outlinePaint,
+      );
+      canvas.drawLine(
+        Offset(cx - size, cy + size),
+        Offset(cx + size, cy - size),
+        outlinePaint,
+      );
 
       final crossPaint = Paint()
         ..color = tickColor
@@ -629,8 +670,16 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         ..strokeWidth = strokeWidth
         ..strokeCap = StrokeCap.round;
 
-      canvas.drawLine(Offset(cx - size, cy - size), Offset(cx + size, cy + size), crossPaint);
-      canvas.drawLine(Offset(cx - size, cy + size), Offset(cx + size, cy - size), crossPaint);
+      canvas.drawLine(
+        Offset(cx - size, cy - size),
+        Offset(cx + size, cy + size),
+        crossPaint,
+      );
+      canvas.drawLine(
+        Offset(cx - size, cy + size),
+        Offset(cx + size, cy - size),
+        crossPaint,
+      );
     }
 
     // 4. Draw validation text on top
@@ -643,7 +692,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     final l10n = AppLocalizations.of(context);
     final signerName = verdict.signature.name?.trim().isNotEmpty == true
         ? verdict.signature.name!
-        : (verdict.signature.signerCertificate?.commonName ?? l10n.signatureSignerUnknown);
+        : (verdict.signature.signerCertificate?.commonName ??
+              l10n.signatureSignerUnknown);
 
     final signedAt = verdict.signature.bestSignedAt;
 
@@ -708,7 +758,11 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       )..layout(maxWidth: maxTextWidth);
     }
 
-    final totalTextHeight = line1Painter.height + line2Painter.height + (line3Painter?.height ?? 0.0) + (line3Painter != null ? 4.0 : 2.0);
+    final totalTextHeight =
+        line1Painter.height +
+        line2Painter.height +
+        (line3Painter?.height ?? 0.0) +
+        (line3Painter != null ? 4.0 : 2.0);
     var currentY = rect.top + (rect.height - totalTextHeight) / 2;
 
     line1Painter.paint(canvas, Offset(textLeft, currentY));
@@ -721,17 +775,66 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     }
   }
 
-  /// The per-page interactive layer (ink capture, note markers, text markup).
-  List<Widget> _annotationOverlays(
+  /// The per-page interactive layer (ink capture, note markers, text markup, visual signature stamp inspection).
+  List<Widget> _buildPageOverlays(
     BuildContext context,
     Rect pageRect,
     PdfPage page,
   ) {
+    final overlays = <Widget>[];
+
+    // Annotation overlay layer
     final annotate = _annotate;
-    if (annotate == null) return const [];
-    return [
-      PageAnnotationLayer(controller: annotate, page: page, pageRect: pageRect),
-    ];
+    if (annotate != null) {
+      overlays.add(
+        PageAnnotationLayer(
+          controller: annotate,
+          page: page,
+          pageRect: pageRect,
+        ),
+      );
+    }
+
+    // Interactive visual signature stamps (Feature 3.6: Visual Stamp Inspection)
+    final verdicts = _currentVerdicts;
+    if (verdicts != null && verdicts.isNotEmpty && !_annotateMode) {
+      for (final verdict in verdicts) {
+        final pos = verdict.signature.position;
+        if (pos == null || pos.pageIndex != page.pageNumber - 1) continue;
+
+        final targetRect = PdfRect(
+          pos.x,
+          pos.y + pos.height,
+          pos.x + pos.width,
+          pos.y,
+        ).toRect(page: page, scaledPageSize: pageRect.size);
+
+        overlays.add(
+          Positioned.fromRect(
+            rect: targetRect,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(4),
+                splashColor: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.2),
+                highlightColor: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.1),
+                onTap: () => showSignatureDetailSheet(
+                  context,
+                  verdict: verdict,
+                  documentPath: widget.docRef.cachePath,
+                ),
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return overlays;
   }
 
   void _openSearch() {
@@ -800,9 +903,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
 
-    final hasSignatures = ref
-            .watch(hasSignaturesProvider(widget.docRef.cachePath))
-            .valueOrNull ??
+    final hasSignatures =
+        ref.watch(hasSignaturesProvider(widget.docRef.cachePath)).valueOrNull ??
         false;
 
     ref.listen<TtsService>(ttsServiceProvider, (previous, next) {
@@ -911,10 +1013,24 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final verdictsVal = ref.watch(signatureVerdictsProvider(widget.docRef.cachePath));
+    final verdictsVal = ref.watch(
+      signatureVerdictsProvider(widget.docRef.cachePath),
+    );
     _currentVerdicts = verdictsVal.valueOrNull;
 
     final search = _search;
+    final mediaQuery = MediaQuery.of(context);
+    final isWideOrFoldable =
+        mediaQuery.size.width >= 600 ||
+        mediaQuery.displayFeatures.any(
+          (f) =>
+              f.type == DisplayFeatureType.hinge ||
+              f.type == DisplayFeatureType.fold,
+        );
+    final hingeGap = mediaQuery.displayFeatures
+        .where((f) => f.type == DisplayFeatureType.hinge)
+        .fold(0.0, (sum, f) => sum + f.bounds.width);
+
     final viewer = PdfViewer.file(
       widget.docRef.cachePath,
       key: ValueKey(_reloadKey),
@@ -922,8 +1038,12 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       initialPageNumber: _initialPage,
       passwordProvider: _passwordProvider,
       params: PdfViewerParams(
-        backgroundColor: theme.colorScheme.surfaceContainerHighest,
-        layoutPages: layoutFor(_viewMode),
+        backgroundColor: theme.scaffoldBackgroundColor,
+        layoutPages: layoutFor(
+          _viewMode,
+          isWideOrFoldable: isWideOrFoldable,
+          hingeGap: hingeGap,
+        ),
         onViewerReady: _onViewerReady,
         onPageChanged: _onPageChanged,
         errorBannerBuilder: _errorBanner,
@@ -940,7 +1060,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           if (_annotate != null) _paintAnnotations,
           _paintSignatureOverlays,
         ],
-        pageOverlaysBuilder: _annotate == null ? null : _annotationOverlays,
+        pageOverlaysBuilder: _buildPageOverlays,
       ),
     );
 
@@ -974,7 +1094,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   }
 
   List<Widget> _buildActions(
-      BuildContext context, AppLocalizations l10n, bool hasSignatures) {
+    BuildContext context,
+    AppLocalizations l10n,
+    bool hasSignatures,
+  ) {
     return [
       IconButton(
         icon: const Icon(Icons.search),
@@ -1172,6 +1295,11 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 RadioListTile<PdfViewMode>(
+                  title: Text(l10n.viewModeAuto),
+                  subtitle: Text(l10n.viewModeAutoSubtitle),
+                  value: PdfViewMode.auto,
+                ),
+                RadioListTile<PdfViewMode>(
                   title: Text(l10n.viewModeContinuous),
                   value: PdfViewMode.continuous,
                 ),
@@ -1240,9 +1368,32 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     if (_ttsActive) {
       return _buildTtsBottomBar(l10n);
     }
+
+    final showEstimates = ref.watch(showReadingEstimatesProvider);
+    final velocity = _velocityService?.velocity;
+    String? estimateText;
+    if (showEstimates && velocity != null && _pageCount > 0) {
+      final chMins = velocity.estimateChapterMinutesLeft(
+        _currentPage,
+        _pageCount,
+      );
+      if (chMins > 0) {
+        estimateText = l10n.readingTimeLeftChapter(chMins);
+      } else {
+        final docMins = velocity.estimateTotalMinutesLeft(
+          _currentPage,
+          _pageCount,
+        );
+        if (docMins > 0) {
+          estimateText = l10n.readingTimeLeftDoc(docMins);
+        }
+      }
+    }
+
     final indicator = _pageCount == 0
         ? ''
         : l10n.pageOfPages(_currentPage, _pageCount);
+
     return BottomAppBar(
       height: 56.0,
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -1257,7 +1408,21 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
             child: Center(
               child: TextButton(
                 onPressed: _document == null ? null : _jumpToPage,
-                child: Text(indicator),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(indicator),
+                    if (estimateText != null)
+                      Text(
+                        estimateText,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -1306,7 +1471,18 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       return;
     }
 
-    await tts.speak(text, page: _currentPage);
+    final speechRate = ref.read(ttsSpeechRateProvider);
+    final pitch = ref.read(ttsPitchProvider);
+    final sentencePause = ref.read(ttsSentencePauseProvider);
+
+    await tts.speak(
+      text,
+      page: _currentPage,
+      documentTitle: widget.docRef.displayName,
+      speechRate: speechRate,
+      pitch: pitch,
+      sentencePauseSeconds: sentencePause,
+    );
   }
 
   Widget _buildTtsBottomBar(AppLocalizations l10n) {
@@ -1333,8 +1509,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           Expanded(
             child: Text(
               isSpeaking
-                  ? 'Reading page $speakingPage...'
-                  : (isPaused ? 'Paused' : 'Ready to read page $_currentPage'),
+                  ? l10n.ttsReadingPage(speakingPage ?? _currentPage)
+                  : (isPaused
+                        ? l10n.ttsPaused
+                        : l10n.ttsReadyToRead(_currentPage)),
               style: Theme.of(context).textTheme.bodyMedium,
               overflow: TextOverflow.ellipsis,
             ),

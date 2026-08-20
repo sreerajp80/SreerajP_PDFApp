@@ -6,16 +6,30 @@ import 'package:pdfapp/features/viewer/domain/view_mode.dart';
 
 /// Builds the `pdfrx` page-layout function for a [PdfViewMode].
 ///
+/// - [PdfViewMode.auto] selects dual-page book spreads on wide screens/foldables and
+///   vertical continuous stack on phones.
 /// - [PdfViewMode.continuous] returns null, so `pdfrx` uses its default vertical
 ///   stack (lazy, good for normal reading).
 /// - [PdfViewMode.single] lays pages left-to-right in one row, so the viewer
 ///   scrolls horizontally one page at a time (also used as the large-file
 ///   degraded mode).
 /// - [PdfViewMode.book] stacks pages two-across in vertical spreads.
-PdfPageLayoutFunction? layoutFor(PdfViewMode mode) => switch (mode) {
+PdfPageLayoutFunction? layoutFor(
+  PdfViewMode mode, {
+  bool isWideOrFoldable = false,
+  double hingeGap = 0,
+}) => switch (mode) {
+  PdfViewMode.auto =>
+    isWideOrFoldable
+        ? (pages, params) => _bookSpreads(pages, params, hingeGap: hingeGap)
+        : null,
   PdfViewMode.continuous => null,
   PdfViewMode.single => _singleRow,
-  PdfViewMode.book => _bookSpreads,
+  PdfViewMode.book => (pages, params) => _bookSpreads(
+    pages,
+    params,
+    hingeGap: hingeGap,
+  ),
 };
 
 /// Pages in a single horizontal row, each vertically centered.
@@ -36,11 +50,16 @@ PdfPageLayout _singleRow(List<PdfPage> pages, PdfViewerParams params) {
 }
 
 /// Pages arranged two-across in vertical spreads (a book).
-PdfPageLayout _bookSpreads(List<PdfPage> pages, PdfViewerParams params) {
+PdfPageLayout _bookSpreads(
+  List<PdfPage> pages,
+  PdfViewerParams params, {
+  double hingeGap = 0,
+}) {
   final margin = params.margin;
+  final effectiveMargin = margin + (hingeGap > 0 ? hingeGap / 2 : 0);
   // Widest possible spread = two widest pages side by side.
   final maxPageWidth = pages.fold(0.0, (w, p) => max(w, p.width));
-  final spreadWidth = maxPageWidth * 2 + margin * 3;
+  final spreadWidth = maxPageWidth * 2 + effectiveMargin * 3;
 
   final rects = <Rect>[];
   var y = margin;
@@ -50,12 +69,13 @@ PdfPageLayout _bookSpreads(List<PdfPage> pages, PdfViewerParams params) {
     final rowHeight = max(left.height, right?.height ?? 0);
 
     // Center the pair inside the spread width.
-    final pairWidth = left.width + (right != null ? right.width + margin : 0);
+    final pairWidth =
+        left.width + (right != null ? right.width + effectiveMargin : 0);
     var x = (spreadWidth - pairWidth) / 2;
 
     rects.add(Rect.fromLTWH(x, y, left.width, left.height));
     if (right != null) {
-      x += left.width + margin;
+      x += left.width + effectiveMargin;
       rects.add(Rect.fromLTWH(x, y, right.width, right.height));
     }
     y += rowHeight + margin;

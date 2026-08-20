@@ -33,10 +33,20 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   bool _unsupportedText = false;
 
   bool _saving = false;
+  bool _cleanWebContent = false;
 
   @override
   void initState() {
     super.initState();
+    // Auto-enable web cleaner if incoming text looks like HTML or contains URLs/tags
+    if (widget.content is IncomingText) {
+      final t = (widget.content as IncomingText).text;
+      if (t.contains('<') && t.contains('>') ||
+          t.contains('http://') ||
+          t.contains('https://')) {
+        _cleanWebContent = true;
+      }
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) => _build());
   }
 
@@ -47,7 +57,14 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     try {
       final path = switch (content) {
         IncomingImages() => await builder.fromImages(content),
-        IncomingText() => await builder.fromText(content),
+        IncomingText() => await builder.fromText(
+          _cleanWebContent
+              ? IncomingText(
+                  text: ref.read(webContentCleanerProvider).clean(content.text),
+                  suggestedName: content.suggestedName,
+                )
+              : content,
+        ),
         // A PDF never reaches this screen; Home sends it to the viewer.
         IncomingPdf() => throw const PdfOpenException(
           'A PDF does not need to be made into a PDF.',
@@ -58,6 +75,8 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       setState(() {
         _outputPath = path;
         _sizeBytes = size;
+        _error = null;
+        _unsupportedText = false;
       });
     } on PdfUnsupportedTextException {
       if (!mounted) return;
@@ -185,7 +204,19 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
               style: theme.textTheme.bodySmall,
             ),
           ],
-          const SizedBox(height: 24),
+          if (widget.content is IncomingText) ...[
+            const SizedBox(height: 12),
+            SwitchListTile.adaptive(
+              title: Text(l10n.cleanWebContentTitle),
+              subtitle: Text(l10n.cleanWebContentSubtitle),
+              value: _cleanWebContent,
+              onChanged: (val) {
+                setState(() => _cleanWebContent = val);
+                _build();
+              },
+            ),
+          ],
+          const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: _saving ? null : _save,
             icon: const Icon(Icons.save_alt),

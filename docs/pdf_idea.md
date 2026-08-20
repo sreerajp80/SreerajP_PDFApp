@@ -1,6 +1,6 @@
-# PDF App
+# PDF App Idea & Concepts — SreerajP_PDFApp
 
-# What is this app
+## What is this app
 This is an Android app built in Flutter for **everything PDF**: opening, reading, navigating,
 annotating, extracting from, and reorganizing PDF files — including whatever editing is
 possible on Android. It also works as a **PDF printer for Android**: other apps can "print
@@ -8,17 +8,17 @@ to PDF" / send content to this app to be saved as a PDF. It is one of five separ
 split out from the original single "File Reader" idea (the others cover text/data files,
 code files, HTML, and EPUB).
 
-# Development Tools versions
+## Development Tools versions
 Flutter 3.44.8 or higher
 Dart 3.12.2 or higher
 
-# Licensing constraint
+## Licensing constraint
 Every library used by this app must be **open source**. Commercial or source-available SDKs
 are not allowed, even when they have a free community license (for example Syncfusion,
 PSPDFKit, Apryse). See [PDF library decision](#pdf-library-decision-open-source-only) for
 what this means for the feature set.
 
-# Shared Capabilities (build once, reuse everywhere)
+## Shared Capabilities (build once, reuse everywhere)
 - **Search** — find text, highlight matches, and jump between matches across the document
   (needs a text layer; see scanned-PDF note below). Search is **Unicode-aware for complex
   Indic scripts (Malayalam and Sanskrit)**: the same word can be stored in a PDF in several
@@ -44,23 +44,23 @@ what this means for the feature set.
   fingerprint (see [Non-Functional Requirements](#non-functional-requirements)).
 - **Copy** — select and copy text from pages (needs a text layer).
 
-# Features
+## Features
 
-## Viewing & navigation
+### Viewing & navigation
 Open PDF files. Render and scroll pages (single page, continuous, two-page / book view).
 Zoom in/out, pinch-to-zoom, fit-to-width / fit-to-page. Jump to a specific page number.
 Table of contents / bookmarks (outline) — navigate via the PDF's built-in chapter tree.
 Thumbnail grid to jump around quickly. Remember last-read page (reading position).
 Night/dark mode or sepia tint (invert colors for comfort).
 
-## Reading, search & speech
+### Reading, search & speech
 Text search — find and highlight a word/phrase across the document. Select and copy text.
 Text-to-speech — read the PDF aloud (English and Malayalam; complex-script extraction is a
 risk — see [Risks & Hard Features](#risks--hard-features)). **Scanned (image-only) PDFs:** if
 the PDF has no text layer, the app shows a notice ("this PDF has no selectable text") and
 gracefully disables search, copy, text extraction, and TTS; **OCR is out of scope**.
 
-## Annotation (app-side overlay layer)
+### Annotation (app-side overlay layer)
 Add bookmarks to pages. Highlight, underline, strikethrough text. Add sticky notes /
 comments. Draw / freehand ink markup. **(Advanced — built as an app-side overlay layer:
 annotations are stored in the app's own database and drawn on top of the rendered page.
@@ -68,11 +68,11 @@ Optional export writes them into a copy of the file with PdfBox-Android.)** Thes
 saved as a layer or exported — the original content stays intact. (See
 [Risks & Hard Features](#risks--hard-features).)
 
-## Extraction
+### Extraction
 Extract plain text from pages. Extract images embedded in the PDF. Extract metadata (title,
 author, page count, creation date). Read form field values (if it's a fillable form).
 
-## Page operations (always copy-on-write)
+### Page operations (always copy-on-write)
 Merge multiple PDFs into one. Split a PDF into separate files. Reorder / rotate / delete
 pages. Compress to reduce file size (best-effort — open-source tools cannot match commercial
 PDF compressors). Password protect / unlock (encrypt / decrypt). Export a page or range as an
@@ -80,14 +80,14 @@ image (PNG/JPEG). Convert to other formats (PDF → text, PDF → images). **All
 (merge, split, reorder, rotate, delete, compress, encrypt/decrypt) always write a new copy —
 the original file is never modified in place.**
 
-## Digital signature verification (Advanced — highest-risk feature)
+### Digital signature verification (Advanced — highest-risk feature)
 Allow adding a PDF signature certificate to the app's trust store and, once added, show the
 signature as trusted with a **green tick** on the signature part. If the signature is
 globally trusted, show the green tick without adding. Note: this is real cryptography
 (PKCS#7 / CMS, certificate-chain and revocation checks) and likely needs native
 platform-channel code. See [Risks & Hard Features](#risks--hard-features).
 
-## PDF printer for Android ("print to PDF")
+### PDF printer for Android ("print to PDF")
 The app acts as a **print / PDF target** for the rest of the device:
 - Register as an Android **print service / print target** and as a **share/"Open with"
   target for printable content**, so from another app's Print or Share menu the user can
@@ -100,7 +100,7 @@ The app acts as a **print / PDF target** for the rest of the device:
   that part is treated as a risk / later-phase item; the simpler share-to-save-as-PDF path
   is the first target.
 
-# Risks & Hard Features
+## Risks & Hard Features
 
 - **PDF digital signature verification with a custom trust store** — *highest risk.* Real
   cryptography: PKCS#7 / CMS parsing, certificate-chain validation, and revocation checks.
@@ -187,7 +187,7 @@ Two honest trade-offs come with this stack:
 2. **Compression is best-effort only** — open-source tools cannot match commercial
    compressors.
 
-# Non-Functional Requirements
+## Non-Functional Requirements
 
 - **Large files** — PDFs up to **a few hundred MB** should open (pdfium loads pages lazily).
   Above the limit, show a clear warning and a degraded mode (e.g. a raw paged view) instead

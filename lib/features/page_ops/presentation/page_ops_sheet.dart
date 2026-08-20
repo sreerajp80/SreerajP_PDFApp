@@ -2,13 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:pdfapp/features/page_ops/data/page_ops_service.dart';
+import 'package:pdfapp/features/page_ops/presentation/widgets/batch_operations_dialog.dart';
+import 'package:pdfapp/features/page_ops/presentation/widgets/booklet_dialog.dart';
 import 'package:pdfapp/features/page_ops/presentation/widgets/organize_pages_screen.dart';
 import 'package:pdfapp/features/page_ops/presentation/widgets/page_ops_result_dialog.dart';
 import 'package:pdfapp/features/page_ops/presentation/widgets/protect_dialog.dart';
+import 'package:pdfapp/features/page_ops/presentation/widgets/smart_trim_dialog.dart';
 import 'package:pdfapp/features/page_ops/presentation/widgets/unlock_dialog.dart';
+import 'package:pdfapp/features/page_ops/presentation/widgets/watermark_dialog.dart';
+import 'package:pdfapp/features/printer/presentation/widgets/n_up_dialog.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
-/// Opens the Phase 4 "Page tools" bottom sheet for the open document.
+/// Opens the Phase 4 & Phase 11 "Page tools" bottom sheet for the open document.
 Future<void> showPageOpsSheet(
   BuildContext context, {
   required String path,
@@ -41,7 +46,86 @@ class _PageOpsSheet extends ConsumerWidget {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-              child: Text(l10n.pageToolsTitle, style: theme.textTheme.titleLarge),
+              child: Text(
+                l10n.pageToolsTitle,
+                style: theme.textTheme.titleLarge,
+              ),
+            ),
+            _tile(
+              context,
+              icon: Icons.branding_watermark,
+              title: l10n.watermarkAction,
+              subtitle: l10n.watermarkDescription,
+              onTap: () {
+                Navigator.of(context).pop();
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => WatermarkDialog(
+                    path: path,
+                    pageCount: document.pages.length,
+                  ),
+                );
+              },
+            ),
+            _tile(
+              context,
+              icon: Icons.grid_4x4,
+              title: l10n.nUpAction,
+              subtitle: l10n.nUpDescription,
+              onTap: () {
+                Navigator.of(context).pop();
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => NUpDialog(
+                    path: path,
+                    jobName: 'document_nup',
+                    pageCount: document.pages.length,
+                  ),
+                );
+              },
+            ),
+            _tile(
+              context,
+              icon: Icons.dynamic_feed,
+              title: l10n.batchOperationsTitle,
+              subtitle: l10n.batchOperationsDescription,
+              onTap: () {
+                Navigator.of(context).pop();
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => const BatchOperationsDialog(),
+                );
+              },
+            ),
+            const Divider(height: 1),
+            _tile(
+              context,
+              icon: Icons.crop,
+              title: l10n.trimMarginsAction,
+              subtitle: l10n.trimMarginsDescription,
+              onTap: () {
+                Navigator.of(context).pop();
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => SmartTrimDialog(path: path),
+                );
+              },
+            ),
+            _tile(
+              context,
+              icon: Icons.menu_book,
+              title: l10n.bookletAction,
+              subtitle: l10n.bookletDescription,
+              onTap: () {
+                Navigator.of(context).pop();
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => BookletDialog(
+                    path: path,
+                    pageCount: document.pages.length,
+                  ),
+                );
+              },
             ),
             _tile(
               context,
@@ -95,7 +179,7 @@ class _PageOpsSheet extends ConsumerWidget {
             _tile(
               context,
               icon: Icons.lock_open,
-              title: l10n.unlockAction,
+              title: l10n.removePasswordAction,
               subtitle: l10n.unlockDescription,
               onTap: () {
                 Navigator.of(context).pop();

@@ -181,24 +181,43 @@ void main() {
       expect(chosen?.ignoreAccents, isFalse);
     });
 
-    testWidgets('turning on ignore-accents keeps the other option', (
+    testWidgets('toggling sandhi compound option reports the new options', (
       tester,
     ) async {
       SearchOptions? chosen;
       await pumpBar(
         tester,
         const SearchState(),
-        options: const SearchOptions(strict: true),
         onOptionsChanged: (o) => chosen = o,
       );
 
       await tester.tap(find.byIcon(Icons.tune));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Ignore accent marks'));
+      await tester.tap(
+        find.text('Sandhi compound search'),
+        warnIfMissed: false,
+      );
       await tester.pumpAndSettle();
 
-      expect(chosen?.strict, isTrue);
-      expect(chosen?.ignoreAccents, isTrue);
+      expect(chosen?.sandhi, isFalse);
+    });
+
+    testWidgets('toggling phonetic option reports the new options', (
+      tester,
+    ) async {
+      SearchOptions? chosen;
+      await pumpBar(
+        tester,
+        const SearchState(),
+        onOptionsChanged: (o) => chosen = o,
+      );
+
+      await tester.tap(find.byIcon(Icons.tune));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Phonetic matching'), warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      expect(chosen?.phonetic, isFalse);
     });
   });
 }

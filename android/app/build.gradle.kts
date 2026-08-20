@@ -108,7 +108,7 @@ afterEvaluate {
                     "══════════════════════════════════════════════════════════\n" +
                     "  android/key.properties not found.                       \n" +
                     "  Create the file with your release keystore credentials. \n" +
-                    "  See docs/release-signing.md                             \n" +
+                    "  See docs/release_process.md                             \n" +
                     "  Section: Android Signing Configuration                  \n" +
                     "══════════════════════════════════════════════════════════\n"
                 )

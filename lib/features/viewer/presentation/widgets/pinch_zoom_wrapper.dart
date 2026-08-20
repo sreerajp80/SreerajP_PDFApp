@@ -148,9 +148,7 @@ class _PinchZoomWrapperState extends State<PinchZoomWrapper> {
   }
 
   void _updatePinch() {
-    if (_initialSpan == null ||
-        _baseZoom == null ||
-        _docFocal == null) {
+    if (_initialSpan == null || _baseZoom == null || _docFocal == null) {
       return;
     }
     if (!widget.controller.isReady) {

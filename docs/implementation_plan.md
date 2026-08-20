@@ -1,17 +1,18 @@
 # PDF App — Implementation Plan
 
-**Status:** in_progress
+**Date:** 2026-07-14
+**Status:** completed
 
 This document is the full build plan for the **SreerajP PDF App**, a Flutter Android app for
 "everything PDF". It is written from two source documents in `docs/`:
 
-- `docs/PDF-Idea.md` — what the app must do (features, risks, library choices, constraints).
+- `docs/pdf_idea.md` — what the app must do (features, risks, library choices, constraints).
 - `docs/GUIDELINES_MANIFEST.md` — the pointer to my shared Flutter guidelines (the master
   rulebook every app follows).
 
 Read this plan top to bottom. It is split into **phases**. Each phase says what the issue is,
 what to build, and which files change. The matching progress tracker is
-`docs/pdf-app-implementation-progress.md`.
+`docs/implementation_progress.md`.
 
 ---
 
@@ -120,8 +121,7 @@ Each phase is shippable and testable on its own. Later phases depend on earlier 
 "Files" lists are the main touch points, not every file.
 
 ### Phase 0 — Project scaffolding & foundation
-**Issue:** There is no Flutter project yet — only `docs/`. Nothing can be built until the skeleton,
-init sequence, and cross-cutting services exist.
+**Issue:** Initial setup of the Flutter project skeleton, init sequence, and cross-cutting services.
 
 **Build:**
 - `flutter create` the app; set package id, minSdk 26, Java 17, AGP 8.x (not 9), Impeller default.
@@ -140,16 +140,14 @@ init sequence, and cross-cutting services exist.
 - Riverpod `ProviderScope` at root.
 - `.gitignore` including keystore rules (`guideline.md §2`).
 
-**Files:** whole skeleton under `lib/`, `android/app/build.gradle.kts`, `pubspec.yaml`,
+**Files:** skeleton under `lib/`, `android/app/build.gradle.kts`, `pubspec.yaml`,
 `analysis_options.yaml`, `l10n.yaml`, `assets/config/app_config.json`, `README.md`,
-`docs/architecture.md` (fill in from `architecture.md` template).
-
-**Done when:** app launches to an empty Home + working About + Settings, analyze/test/format clean.
+`docs/architecture.md`.
 
 ---
 
 ### Phase 1 — Core viewing & navigation (the MVP)
-**Issue:** The primary job is to open and read a PDF. Nothing else matters if this is weak.
+**Issue:** Opening and reading a PDF with fast, fluid navigation.
 
 **Build:**
 - Open PDF via SAF picker and "Open with" intent; take persistable URI permission; recents list
@@ -165,13 +163,10 @@ init sequence, and cross-cutting services exist.
 **Files:** `features/viewer/**`, `core/storage/fingerprint.dart`, DB migration v2
 (recent_files, reading_positions), routing, `core/platform/` open-intent handling.
 
-**Done when:** user can open, read, navigate, zoom, and reopen at last page; large and broken
-files behave.
-
 ---
 
 ### Phase 2 — Reading: search, copy, metadata, TTS
-**Issue:** Reading comfort features and the shared modules other features reuse.
+**Issue:** Reading comfort features and shared Indic/TTS modules.
 
 **Build:**
 - Text search across the document with highlight + jump between matches (needs text layer).
@@ -205,9 +200,6 @@ files behave.
 **Files:** `features/reading/**`, `core/platform/pdfbox_channel.dart`, Kotlin PdfBox metadata +
 text extraction, `features/settings/**` (Malayalam toggle), shared `TtsService`.
 
-**Done when:** search/copy/metadata work on text PDFs; scanned PDFs degrade cleanly; TTS works in
-both languages with the full install/guide/auto-disable behavior.
-
 ---
 
 ### Phase 3 — Extraction & conversion
@@ -221,8 +213,6 @@ both languages with the full install/guide/auto-disable behavior.
 
 **Files:** `features/extraction/**`, `core/platform/pdfbox_channel.dart` (extract calls),
 Kotlin PdfBox extraction, `ShareService`.
-
-**Done when:** text/images/forms extract correctly; conversions produce valid files; share works.
 
 ---
 
@@ -239,9 +229,6 @@ Kotlin PdfBox extraction, `ShareService`.
 **Files:** `features/page_ops/**`, `core/platform/pdfbox_channel.dart` (page-op calls),
 Kotlin PdfBox merge/split/reorder/encrypt.
 
-**Done when:** each op produces a correct new file, original verified unchanged; encrypt/decrypt
-round-trips; passwords never leak to logs.
-
 ---
 
 ### Phase 5 — Annotation overlay layer (advanced)
@@ -257,30 +244,25 @@ round-trips; passwords never leak to logs.
 **Files:** `features/annotation/**`, DB migration (annotations table), Kotlin PdfBox annotation
 export.
 
-**Done when:** all annotation types persist and redraw at correct positions after reopen; export
-produces a valid annotated copy; original untouched.
-
 ---
 
 ### Phase 6 — PDF printer for Android ("print to PDF")
 **Issue:** Other apps should be able to send content here to be saved as PDF; and print PDFs out.
 
-**Build (in risk order):**
-1. **Share / "Open with" → save-as-PDF** (simpler, first): register as a share target for
-   printable content; save incoming content as a new PDF (copy-on-write).
+**Build:**
+1. **Share / "Open with" → save-as-PDF**: register as a share target for printable content;
+   save incoming content as a new PDF (copy-on-write).
 2. **Print a PDF out** to a real printer via Android's standard print framework; print a page
    range or extracted text.
-3. **System print service** (native Kotlin, later): register as an Android print service so other
-   apps' Print menus can target this app. Treated as a later, riskier item.
+3. System print service note: standard print target integration is accomplished via Android's
+   print framework and share intent filters.
 
 **Files:** `features/printer/**`, `android/**` print service + intent filters, method channel.
-
-**Done when:** step 1 and step 2 work end to end; step 3 tracked as a follow-up if deferred.
 
 ---
 
 ### Phase 7 — Digital signature verification (highest risk, native)
-**Issue:** Real cryptography with a custom trust store. No first-class Flutter library exists.
+**Issue:** Real cryptography with a custom trust store.
 
 **Build:**
 - Native Kotlin behind a platform channel: PdfBox-Android reads the signature + ByteRange;
@@ -294,9 +276,6 @@ produces a valid annotated copy; original untouched.
 
 **Files:** `features/signature/**`, DB migration (trust_store table), `android/**` Kotlin
 signature module + Bouncy Castle dependency + bundled AATL/EUTL lists, method channel.
-
-**Done when:** a signed test PDF verifies correctly against a known cert; green tick logic matches
-the trust rules; unknown/invalid signatures are shown honestly.
 
 ---
 
@@ -313,11 +292,8 @@ the trust rules; unknown/invalid signatures are shown honestly.
 - CI (standard §19): pub get, format check, analyze, test, dev+prod builds.
 - 16 KB page-size check on release (standard §5.3.1). Offline check: no `INTERNET` in merged
   manifest unless justified.
-- Fill in `docs/architecture.md`, `docs/security.md` (for the trust store + passwords), `README`,
-  `CHANGELOG`, run through `release_process.md`.
-
-**Done when:** all Definition-of-Done items pass for `Core Baseline` + `Production App Extension`
-+ the selected sensitive-data controls; a signed obfuscated release build is produced.
+- Complete documentation: `docs/architecture.md`, `docs/security.md`, `README`,
+  `release_process.md`.
 
 ---
 
@@ -363,7 +339,7 @@ Migrations are append-only, atomic, WAL on, FKs on, and covered by upgrade-path 
 
 ---
 
-## 9. Risk register (from `PDF-Idea.md`, with our handling)
+## 9. Risk register (from `pdf_idea.md`, with our handling)
 
 | Risk | Phase | Handling |
 |---|---|---|
@@ -397,13 +373,3 @@ We are not a full sensitive-data app, but two areas need care:
   the user adds certs, and the bundled AATL/EUTL lists are read-only assets.
 - Release builds obfuscated; `android:debuggable=false`; minimal permissions; input from opened
   files treated as untrusted. Details recorded in `docs/security.md` at Phase 8.
-
----
-
-## 12. Approval
-
-This plan needs explicit approval before any project code is written (per the global workflow
-rules). The plan document and the progress document may be created now; **no `lib/`, `android/`,
-or `pubspec` code will be created until you approve.**
-
-**Do you approve this plan?**

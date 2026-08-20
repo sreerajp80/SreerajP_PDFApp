@@ -57,6 +57,11 @@ class RecentFilesDao {
     );
   }
 
+  /// Clears all recent files.
+  Future<void> clearAll() async {
+    await _db.delete(AppConstants.tableRecentFiles);
+  }
+
   // Keeps the table bounded: delete everything past the newest N.
   Future<void> _trim() async {
     await _db.rawDelete(

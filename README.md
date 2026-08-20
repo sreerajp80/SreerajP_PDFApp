@@ -25,8 +25,8 @@ flutter run --flavor dev  # dev flavor -> app id in.sreerajp.pdfapp.dev
 
 ## Flavors
 
-- `dev` — application id `in.sreerajp.pdfapp.dev`, label "PDF App Dev".
-- `prod` — application id `in.sreerajp.pdfapp`, label "PDF App".
+- `dev` — application id `in.sreerajp.pdfapp.dev`, label "SreerajP PDF App Dev".
+- `prod` — application id `in.sreerajp.pdfapp`, label "SreerajP PDF App".
 
 Android/iOS use `--flavor`; the Flutter tool injects `FLUTTER_APP_FLAVOR`. (There are no desktop
 targets, so the `APP_FLAVOR` dart-define path is not used here.)

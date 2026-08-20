@@ -121,6 +121,43 @@ void main() {
       expect(out, contains('unlocked_'));
     });
 
+    test('trimMargins forwards padding and symmetric flags', () async {
+      mockPdfBox((call) async {
+        expect(call.method, 'trimPdfMargins');
+        expect(call.arguments['path'], '/doc.pdf');
+        expect(call.arguments['padding'], 16.0);
+        expect(call.arguments['symmetric'], isFalse);
+        return call.arguments['outputPath'] as String;
+      });
+
+      final out = await sut.trimMargins(
+        '/doc.pdf',
+        padding: 16.0,
+        symmetric: false,
+      );
+      expect(out, contains('trimmed_'));
+    });
+
+    test('generateBooklet forwards booklet parameters', () async {
+      mockPdfBox((call) async {
+        expect(call.method, 'generateBooklet');
+        expect(call.arguments['path'], '/doc.pdf');
+        expect(call.arguments['binding'], 'rtl');
+        expect(call.arguments['sheetSize'], 'a4');
+        expect(call.arguments['addFoldGuide'], isTrue);
+        expect(call.arguments['gutter'], 5.0);
+        return call.arguments['outputPath'] as String;
+      });
+
+      final out = await sut.generateBooklet(
+        '/doc.pdf',
+        binding: 'rtl',
+        sheetSize: 'a4',
+        gutter: 5.0,
+      );
+      expect(out, contains('booklet_'));
+    });
+
     test('a locked source maps to PdfPasswordRequiredException', () async {
       mockPdfBox((call) async {
         throw PlatformException(code: 'password_required', message: 'locked');

@@ -10,7 +10,7 @@ import 'package:pdfapp/core/constants/app_constants.dart';
 /// **What it is not.** It is deliberately *not* the Android system CA store.
 /// That store exists for TLS — for proving a website is who it says it is — and
 /// using it to vouch for document signers would trust a completely different set
-/// of people for a completely different purpose. `docs/security-rules.md` calls
+/// of people for a completely different purpose. `docs/security.md` calls
 /// this out because it is an easy and serious mistake.
 ///
 /// **Adobe's AATL is not bundled**, on purpose. It is distributed through

@@ -71,6 +71,10 @@ class PdfRepository {
   Future<void> removeRecent(String fingerprint) =>
       recentFilesDao.remove(fingerprint);
 
+  Future<void> clearRecents() => recentFilesDao.clearAll();
+
+  Future<void> clearReadingPositions() => readingPositionDao.clearAll();
+
   Future<void> recordPageCount(String fingerprint, int pageCount) =>
       recentFilesDao.setPageCount(fingerprint, pageCount);
 

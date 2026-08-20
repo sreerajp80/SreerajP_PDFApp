@@ -5,6 +5,8 @@ import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/core/constants/app_constants.dart';
 import 'package:pdfapp/core/platform/pdfbox_channel.dart';
 import 'package:pdfapp/core/platform/tts_channel.dart';
+import 'package:pdfapp/features/reading/data/pdf_text_source.dart';
+import 'package:pdfapp/features/reading/data/reading_velocity_service.dart';
 import 'package:pdfapp/features/reading/data/tts_engine.dart';
 import 'package:pdfapp/features/reading/data/tts_service.dart';
 
@@ -12,27 +14,20 @@ import 'package:pdfapp/features/reading/data/tts_service.dart';
 final pdfBoxChannelProvider = Provider<PdfBoxChannel>((ref) => PdfBoxChannel());
 
 /// Document information for the PDF at a given cache path.
-///
-/// Keyed by cache path (a plain String) so the family compares cheaply. Errors
-/// are left on the `AsyncValue` on purpose: a locked or unreadable PDF still has
-/// file facts worth showing, so the sheet renders the failure as
-/// "details unavailable" instead of hiding everything.
 final pdfMetadataProvider = FutureProvider.family<PdfMetadata, String>(
   (ref, cachePath) => ref.watch(pdfBoxChannelProvider).readMetadata(cachePath),
 );
 
-/// The doors to installing a missing speech voice.
+/// The doors to installing a missing speech voice and managing notifications.
 final ttsChannelProvider = Provider<TtsChannel>((ref) => TtsChannel());
 
 /// The read-aloud module, shared by the reader and Settings.
-///
-/// App-wide on purpose: only one thing can speak at a time, and the Malayalam
-/// setting has to mean the same thing in both places. It checks its voices once
-/// on creation, so whoever asks first gets a real answer.
 final ttsServiceProvider = ChangeNotifierProvider<TtsService>((ref) {
   final prefs = ref.watch(sharedPreferencesProvider);
+  final channel = ref.watch(ttsChannelProvider);
   final service = TtsService(
     engine: FlutterTtsEngine(),
+    ttsChannel: channel,
     malayalamEnabled: prefs.getBool(AppConstants.prefMalayalamTts) ?? false,
     saveMalayalamEnabled: ({required enabled}) =>
         prefs.setBool(AppConstants.prefMalayalamTts, enabled),
@@ -40,3 +35,9 @@ final ttsServiceProvider = ChangeNotifierProvider<TtsService>((ref) {
   unawaited(service.refreshVoices());
   return service;
 });
+
+/// Reading velocity tracker provider for real-time speed & time calculation.
+final readingVelocityProvider = ChangeNotifierProvider.autoDispose
+    .family<ReadingVelocityService, PdfTextSource?>((ref, textSource) {
+      return ReadingVelocityService(textSource: textSource);
+    });

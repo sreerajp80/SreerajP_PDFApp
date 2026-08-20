@@ -37,7 +37,7 @@ class AppFlavorConfig {
   bool get isDev => flavor == AppFlavor.dev;
   bool get isProd => flavor == AppFlavor.prod;
 
-  String get appName => isDev ? 'PDF App Dev' : 'PDF App';
+  String get appName => isDev ? 'SreerajP PDF App Dev' : 'SreerajP PDF App';
   bool get showEnvironmentBanner => isDev;
   bool get enableVerboseLogging => isDev;
 }

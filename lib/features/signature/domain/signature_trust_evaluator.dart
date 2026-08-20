@@ -10,7 +10,7 @@ import 'package:pdfapp/features/signature/domain/signature_status.dart';
 /// of Kotlin and put somewhere every rule can be unit-tested. If you change a
 /// rule here, change its test.
 ///
-/// The governing rule from `docs/security-rules.md`: **never fake trust**. When
+/// The governing rule from `docs/security.md`: **never fake trust**. When
 /// the answer is unclear, the honest output is a lesser status plus a note —
 /// never a green tick with the doubt hidden.
 class SignatureTrustEvaluator {

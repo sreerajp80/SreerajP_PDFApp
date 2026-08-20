@@ -27,7 +27,34 @@ class AppConstants {
 
   // shared_preferences keys (non-secret settings).
   static const String prefThemeMode = 'settings.theme_mode';
+  static const String prefAccentLight = 'settings.accent_light';
+  static const String prefAccentDark = 'settings.accent_dark';
+  static const String prefAppFont = 'settings.app_font';
+  static const String prefTextScale = 'settings.text_scale';
+  static const String prefAppLocale = 'settings.app_locale';
   static const String prefMalayalamTts = 'settings.malayalam_tts'; // Phase 2
+  static const String prefTtsSpeechRate = 'settings.tts_speech_rate';
+  static const String prefTtsPitch = 'settings.tts_pitch';
+  static const String prefTtsSentencePause = 'settings.tts_sentence_pause';
+  static const String prefTtsAutoScroll = 'settings.tts_auto_scroll';
+  static const String prefRememberReadingPosition =
+      'settings.remember_reading_position';
+  static const String prefShowReadingEstimates =
+      'settings.show_reading_estimates';
+  static const String prefDefaultPageLayout = 'settings.default_page_layout';
+  static const String prefShowPageIndicator = 'settings.show_page_indicator';
+  static const String prefPdfInvertColors = 'settings.pdf_invert_colors';
+  static const String prefDoubleTapZoom = 'settings.double_tap_zoom';
+  static const String prefPdfPrinterEnabled = 'settings.printer_enabled';
+  static const String prefDefaultPaperSize = 'settings.default_paper_size';
+  static const String prefDefaultPrintColorMode =
+      'settings.default_print_color_mode';
+  static const String prefDefaultPrintOrientation =
+      'settings.default_print_orientation';
+  static const String prefRememberRecentFiles =
+      'settings.remember_recent_files';
+  static const String prefAutoVerifySignatures =
+      'settings.auto_verify_signatures';
 
   // Size thresholds (bytes). Above this a PDF is treated as "large" (Phase 1).
   static const int largePdfThresholdBytes = 50 * 1024 * 1024; // 50 MB

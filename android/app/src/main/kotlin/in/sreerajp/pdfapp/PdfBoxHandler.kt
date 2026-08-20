@@ -3,8 +3,13 @@ package `in`.sreerajp.pdfapp
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.pdf.PdfDocument
 import android.os.Handler
 import android.os.Looper
+import android.text.Layout
+import android.text.StaticLayout
+import android.text.TextPaint
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.pdmodel.PDPage
@@ -25,6 +30,7 @@ import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOut
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
+import java.io.FileOutputStream
 import java.util.Calendar
 import java.util.concurrent.Executors
 
@@ -207,7 +213,71 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
                     if (text == null) {
                         result.error("bad_args", "Missing text.", null)
                     } else {
-                        result.success(isLatin1Writable(text))
+                        result.success(text.isNotBlank())
+                    }
+                }
+                "trimPdfMargins" -> {
+                    val path = call.argument<String>("path")
+                    val password = call.argument<String>("password")
+                    val outputPath = call.argument<String>("outputPath")
+                    val padding = (call.argument<Double>("padding") ?: 12.0).toFloat()
+                    val symmetric = call.argument<Boolean>("symmetric") ?: true
+                    if (path.isNullOrEmpty() || outputPath.isNullOrEmpty()) {
+                        result.error("bad_args", "Missing path or outputPath.", null)
+                    } else {
+                        trimPdfMargins(path, password, outputPath, padding, symmetric, result)
+                    }
+                }
+                "generateBooklet" -> {
+                    val path = call.argument<String>("path")
+                    val password = call.argument<String>("password")
+                    val outputPath = call.argument<String>("outputPath")
+                    val binding = call.argument<String>("binding") ?: "ltr"
+                    val sheetSize = call.argument<String>("sheetSize") ?: "auto"
+                    val addFoldGuide = call.argument<Boolean>("addFoldGuide") ?: true
+                    val gutter = (call.argument<Double>("gutter") ?: 0.0).toFloat()
+                    if (path.isNullOrEmpty() || outputPath.isNullOrEmpty()) {
+                        result.error("bad_args", "Missing path or outputPath.", null)
+                    } else {
+                        generateBooklet(path, password, outputPath, binding, sheetSize, addFoldGuide, gutter, result)
+                    }
+                }
+                "applyWatermark" -> {
+                    val path = call.argument<String>("path")
+                    val password = call.argument<String>("password")
+                    val outputPath = call.argument<String>("outputPath")
+                    val text = call.argument<String>("text")
+                    val imagePath = call.argument<String>("imagePath")
+                    val opacity = (call.argument<Double>("opacity") ?: 0.3).toFloat()
+                    val rotation = (call.argument<Double>("rotation") ?: 45.0).toFloat()
+                    val fontSize = (call.argument<Double>("fontSize") ?: 36.0).toFloat()
+                    val colorHex = call.argument<String>("colorHex")
+                    val isTiled = call.argument<Boolean>("isTiled") ?: false
+                    val tileSpacingX = (call.argument<Double>("tileSpacingX") ?: 150.0).toFloat()
+                    val tileSpacingY = (call.argument<Double>("tileSpacingY") ?: 150.0).toFloat()
+                    val pageRange = call.argument<String>("pageRange")
+                    if (path.isNullOrEmpty() || outputPath.isNullOrEmpty()) {
+                        result.error("bad_args", "Missing path or outputPath.", null)
+                    } else {
+                        applyWatermark(
+                            path, password, outputPath, text, imagePath, opacity,
+                            rotation, fontSize, colorHex, isTiled, tileSpacingX, tileSpacingY, pageRange, result
+                        )
+                    }
+                }
+                "generateNUpPdf" -> {
+                    val path = call.argument<String>("path")
+                    val password = call.argument<String>("password")
+                    val outputPath = call.argument<String>("outputPath")
+                    val gridCount = call.argument<Int>("gridCount") ?: 4
+                    val sheetSize = call.argument<String>("sheetSize") ?: "a4"
+                    val orientation = call.argument<String>("orientation") ?: "auto"
+                    val addBorders = call.argument<Boolean>("addBorders") ?: true
+                    val margin = (call.argument<Double>("margin") ?: 12.0).toFloat()
+                    if (path.isNullOrEmpty() || outputPath.isNullOrEmpty()) {
+                        result.error("bad_args", "Missing path or outputPath.", null)
+                    } else {
+                        generateNUpPdf(path, password, outputPath, gridCount, sheetSize, orientation, addBorders, margin, result)
                     }
                 }
                 else -> result.notImplemented()
@@ -889,56 +959,86 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
     /**
      * Builds a new PDF at [outputPath] holding [text], wrapped onto A4 pages.
      *
-     * PdfBox's built-in fonts only cover Latin-1, and PdfBox has no shaping engine for complex
-     * scripts, so Malayalam or Devanagari text cannot be written here — it would throw or come
-     * out as broken glyphs. We check first and answer with a typed `unsupported_text` error so
-     * Dart can say so plainly instead of saving nonsense.
+     * Uses Android's native [PdfDocument] with [StaticLayout] and [TextPaint]. This utilizes
+     * the system font engine (HarfBuzz) to provide full complex script shaping (Malayalam,
+     * Devanagari, Tamil, etc.), bidirectional text, font fallback, and TrueType subset embedding
+     * with valid /ToUnicode CMaps so the generated text is fully searchable and copyable.
      */
     private fun textToPdf(text: String, outputPath: String, result: MethodChannel.Result) {
         io.execute {
             try {
-                check(resourcesReady)
                 if (text.isBlank()) throw IllegalStateException("There is no text to save.")
-                if (!isLatin1Writable(text)) {
-                    main.post {
-                        result.error("unsupported_text", "These letters cannot be written to a PDF.", null)
-                    }
-                    return@execute
+
+                val cleaned = text.replace("\r\n", "\n").replace("\r", "\n").replace("\t", "    ")
+                val textPaint = TextPaint().apply {
+                    isAntiAlias = true
+                    textSize = TEXT_FONT_SIZE
+                    color = Color.BLACK
                 }
 
-                val font = PDType1Font.HELVETICA
-                val maxWidth = PDRectangle.A4.width - PAGE_MARGIN * 2
-                val lines = wrapText(text, font, TEXT_FONT_SIZE, maxWidth)
-                val linesPerPage = ((PDRectangle.A4.height - PAGE_MARGIN * 2) / TEXT_LEADING).toInt()
-                if (linesPerPage <= 0) throw IllegalStateException("The page is too small for text.")
-                val pageCount = (lines.size + linesPerPage - 1) / linesPerPage
-                if (pageCount > MAX_TEXT_PAGES) {
+                val pageWidth = PDRectangle.A4.width.toInt()
+                val pageHeight = PDRectangle.A4.height.toInt()
+                val printableWidth = (pageWidth - PAGE_MARGIN * 2).toInt()
+                val printableHeight = pageHeight - PAGE_MARGIN * 2
+
+                val layout = StaticLayout.Builder.obtain(
+                    cleaned,
+                    0,
+                    cleaned.length,
+                    textPaint,
+                    printableWidth
+                )
+                    .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+                    .setLineSpacing(0f, 1.25f)
+                    .setIncludePad(false)
+                    .build()
+
+                val lineCount = layout.lineCount
+                val pdfDoc = PdfDocument()
+
+                var startLine = 0
+                var pageNum = 1
+
+                while (startLine < lineCount && pageNum <= MAX_TEXT_PAGES) {
+                    val startY = layout.getLineTop(startLine)
+                    var endLine = startLine
+                    while (endLine < lineCount && (layout.getLineBottom(endLine) - startY) <= printableHeight) {
+                        endLine++
+                    }
+                    if (endLine == startLine) {
+                        endLine = startLine + 1
+                    }
+
+                    val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageNum).create()
+                    val page = pdfDoc.startPage(pageInfo)
+                    val canvas = page.canvas
+
+                    canvas.save()
+                    canvas.clipRect(
+                        PAGE_MARGIN,
+                        PAGE_MARGIN,
+                        PAGE_MARGIN + printableWidth,
+                        PAGE_MARGIN + printableHeight
+                    )
+                    canvas.translate(PAGE_MARGIN, PAGE_MARGIN - startY)
+                    layout.draw(canvas)
+                    canvas.restore()
+
+                    pdfDoc.finishPage(page)
+                    pageNum++
+                    startLine = endLine
+                }
+
+                if (startLine < lineCount) {
+                    pdfDoc.close()
                     throw IllegalStateException("This text is too long to save as a PDF.")
                 }
 
-                PDDocument().use { doc ->
-                    for (pageIndex in 0 until maxOf(pageCount, 1)) {
-                        val page = PDPage(PDRectangle.A4)
-                        doc.addPage(page)
-                        PDPageContentStream(doc, page).use { cs ->
-                            cs.beginText()
-                            cs.setFont(font, TEXT_FONT_SIZE)
-                            cs.setLeading(TEXT_LEADING.toDouble())
-                            cs.newLineAtOffset(
-                                PAGE_MARGIN,
-                                page.mediaBox.height - PAGE_MARGIN - TEXT_FONT_SIZE,
-                            )
-                            val from = pageIndex * linesPerPage
-                            val to = minOf(from + linesPerPage, lines.size)
-                            for (i in from until to) {
-                                cs.showText(lines[i])
-                                cs.newLine()
-                            }
-                            cs.endText()
-                        }
-                    }
-                    doc.save(outputPath)
+                FileOutputStream(outputPath).use { out ->
+                    pdfDoc.writeTo(out)
                 }
+                pdfDoc.close()
+
                 main.post { result.success(outputPath) }
             } catch (e: Exception) {
                 main.post { result.error("op_failed", "Could not save this text as a PDF: ${e.message}", null) }
@@ -948,61 +1048,562 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
         }
     }
 
-    /** True when every letter in [text] can be written with a built-in Latin-1 font. */
-    private fun isLatin1Writable(text: String): Boolean {
-        val encoder = java.nio.charset.Charset.forName("windows-1252").newEncoder()
-        return text.all { ch ->
-            // Line breaks and tabs never reach the font — they drive layout instead.
-            ch == '\n' || ch == '\r' || ch == '\t' || encoder.canEncode(ch)
-        }
-    }
+    // --- Phase 11 / Feature 2.7: Smart Margin Trimming & Foldable Booklet Imposition ---
 
-    /** Breaks [text] into lines that fit [maxWidth], keeping the author's own line breaks. */
-    private fun wrapText(text: String, font: PDType1Font, size: Float, maxWidth: Float): List<String> {
-        val out = ArrayList<String>()
-        val cleaned = text.replace("\r\n", "\n").replace("\r", "\n").replace("\t", "    ")
-        for (paragraph in cleaned.split("\n")) {
-            if (paragraph.isEmpty()) {
-                out.add("")
-                continue
-            }
-            var line = StringBuilder()
-            for (word in paragraph.split(" ")) {
-                val candidate = if (line.isEmpty()) word else "$line $word"
-                if (widthOf(candidate, font, size) <= maxWidth) {
-                    line = StringBuilder(candidate)
-                    continue
-                }
-                if (line.isNotEmpty()) {
-                    out.add(line.toString())
-                    line = StringBuilder()
-                }
-                // A single word longer than the page still has to land somewhere: cut it.
-                if (widthOf(word, font, size) > maxWidth) {
-                    var chunk = StringBuilder()
-                    for (ch in word) {
-                        if (widthOf("$chunk$ch", font, size) > maxWidth && chunk.isNotEmpty()) {
-                            out.add(chunk.toString())
-                            chunk = StringBuilder()
+    /**
+     * Crops blank page margins from [path] by finding non-white content bounding boxes,
+     * writing a new copy-on-write PDF to [outputPath] with updated CropBox.
+     */
+    private fun trimPdfMargins(
+        path: String,
+        password: String?,
+        outputPath: String,
+        padding: Float,
+        symmetric: Boolean,
+        result: MethodChannel.Result
+    ) {
+        io.execute {
+            try {
+                check(resourcesReady)
+                val file = File(path)
+                PDDocument.load(file, password ?: "").use { doc ->
+                    val renderer = com.tom_roush.pdfbox.rendering.PDFRenderer(doc)
+                    val pageCount = doc.numberOfPages
+
+                    for (i in 0 until pageCount) {
+                        val page = doc.getPage(i)
+                        val mediaBox = page.mediaBox ?: PDRectangle.A4
+                        val mediaW = mediaBox.width
+                        val mediaH = mediaBox.height
+
+                        // Sample at 50 DPI for fast bounding box analysis
+                        val sampleDpi = 50f
+                        val bitmap = renderer.renderImageWithDPI(i, sampleDpi)
+                        val bw = bitmap.width
+                        val bh = bitmap.height
+
+                        var minXPixel = bw
+                        var maxXPixel = 0
+                        var minYPixel = bh
+                        var maxYPixel = 0
+                        var hasContent = false
+
+                        val pixels = IntArray(bw * bh)
+                        bitmap.getPixels(pixels, 0, bw, 0, 0, bw, bh)
+
+                        for (y in 0 until bh) {
+                            val rowOffset = y * bw
+                            for (x in 0 until bw) {
+                                val pixel = pixels[rowOffset + x]
+                                val alpha = (pixel ushr 24) and 0xFF
+                                val r = (pixel ushr 16) and 0xFF
+                                val g = (pixel ushr 8) and 0xFF
+                                val b = pixel and 0xFF
+
+                                if (alpha > 30 && (r < 242 || g < 242 || b < 242)) {
+                                    hasContent = true
+                                    if (x < minXPixel) minXPixel = x
+                                    if (x > maxXPixel) maxXPixel = x
+                                    if (y < minYPixel) minYPixel = y
+                                    if (y > maxYPixel) maxYPixel = y
+                                }
+                            }
                         }
-                        chunk.append(ch)
+
+                        if (!hasContent || minXPixel >= maxXPixel || minYPixel >= maxYPixel) {
+                            page.cropBox = mediaBox
+                            continue
+                        }
+
+                        var leftPt = mediaBox.lowerLeftX + (minXPixel.toFloat() / bw) * mediaW
+                        var rightPt = mediaBox.lowerLeftX + ((maxXPixel + 1).toFloat() / bw) * mediaW
+                        var topPt = mediaBox.upperRightY - (minYPixel.toFloat() / bh) * mediaH
+                        var bottomPt = mediaBox.upperRightY - ((maxYPixel + 1).toFloat() / bh) * mediaH
+
+                        leftPt = (leftPt - padding).coerceAtLeast(mediaBox.lowerLeftX)
+                        rightPt = (rightPt + padding).coerceAtMost(mediaBox.upperRightX)
+                        bottomPt = (bottomPt - padding).coerceAtLeast(mediaBox.lowerLeftY)
+                        topPt = (topPt + padding).coerceAtMost(mediaBox.upperRightY)
+
+                        if (symmetric) {
+                            val leftMargin = leftPt - mediaBox.lowerLeftX
+                            val rightMargin = mediaBox.upperRightX - rightPt
+                            val minHorizontalMargin = minOf(leftMargin, rightMargin)
+                            leftPt = mediaBox.lowerLeftX + minHorizontalMargin
+                            rightPt = mediaBox.upperRightX - minHorizontalMargin
+
+                            val bottomMargin = bottomPt - mediaBox.lowerLeftY
+                            val topMargin = mediaBox.upperRightY - topPt
+                            val minVerticalMargin = minOf(bottomMargin, topMargin)
+                            bottomPt = mediaBox.lowerLeftY + minVerticalMargin
+                            topPt = mediaBox.upperRightY - minVerticalMargin
+                        }
+
+                        val cropW = (rightPt - leftPt).coerceAtLeast(50f)
+                        val cropH = (topPt - bottomPt).coerceAtLeast(50f)
+
+                        page.cropBox = PDRectangle(leftPt, bottomPt, cropW, cropH)
                     }
-                    line = chunk
-                } else {
-                    line = StringBuilder(word)
+
+                    doc.save(outputPath)
                 }
+                main.post { result.success(outputPath) }
+            } catch (e: InvalidPasswordException) {
+                main.post { result.error("password_required", "This PDF is locked.", null) }
+            } catch (e: Exception) {
+                main.post { result.error("op_failed", "Could not trim PDF margins: ${e.message}", null) }
+            } catch (e: OutOfMemoryError) {
+                main.post { result.error("op_failed", "This PDF is too large to process.", null) }
             }
-            if (line.isNotEmpty()) out.add(line.toString())
         }
-        return out
     }
 
-    private fun widthOf(text: String, font: PDType1Font, size: Float): Float = try {
-        font.getStringWidth(text) / 1000f * size
-    } catch (_: Exception) {
-        // An unmeasurable glyph should not sink the whole job; treat it as over-wide so the
-        // line breaks here rather than running off the page.
-        Float.MAX_VALUE
+    /**
+     * Generates a 2-Up foldable booklet imposition PDF from [path], writing to [outputPath].
+     */
+    private fun generateBooklet(
+        path: String,
+        password: String?,
+        outputPath: String,
+        binding: String,
+        sheetSize: String,
+        addFoldGuide: Boolean,
+        gutter: Float,
+        result: MethodChannel.Result
+    ) {
+        io.execute {
+            try {
+                check(resourcesReady)
+                val srcFile = File(path)
+                PDDocument.load(srcFile, password ?: "").use { srcDoc ->
+                    val totalPages = srcDoc.numberOfPages
+                    if (totalPages == 0) {
+                        main.post { result.error("bad_args", "The PDF has no pages.", null) }
+                        return@execute
+                    }
+
+                    PDDocument().use { outDoc ->
+                        val layerUtility = com.tom_roush.pdfbox.multipdf.LayerUtility(outDoc)
+                        val isRtl = binding.equals("rtl", ignoreCase = true)
+
+                        val paddedPages = ((totalPages + 3) / 4) * 4
+                        val totalSheets = paddedPages / 4
+
+                        val firstPageBox = srcDoc.getPage(0).mediaBox ?: PDRectangle.A4
+                        val (sheetWidth, sheetHeight) = when (sheetSize.lowercase()) {
+                            "a4" -> Pair(842f, 595f)
+                            "letter" -> Pair(792f, 612f)
+                            else -> {
+                                val srcW = firstPageBox.width
+                                val srcH = firstPageBox.height
+                                Pair(srcW * 2f, srcH)
+                            }
+                        }
+
+                        for (i in 0 until totalSheets) {
+                            // Sheet i Front (Side 1)
+                            val frontLeftNum = if (isRtl) 1 + (2 * i) else paddedPages - (2 * i)
+                            val frontRightNum = if (isRtl) paddedPages - (2 * i) else 1 + (2 * i)
+
+                            renderBookletSheetFace(
+                                outDoc,
+                                layerUtility,
+                                srcDoc,
+                                sheetWidth,
+                                sheetHeight,
+                                frontLeftNum,
+                                frontRightNum,
+                                totalPages,
+                                addFoldGuide,
+                                gutter
+                            )
+
+                            // Sheet i Back (Side 2)
+                            val backLeftNum = if (isRtl) paddedPages - (2 * i) - 1 else 2 + (2 * i)
+                            val backRightNum = if (isRtl) 2 + (2 * i) else paddedPages - (2 * i) - 1
+
+                            renderBookletSheetFace(
+                                outDoc,
+                                layerUtility,
+                                srcDoc,
+                                sheetWidth,
+                                sheetHeight,
+                                backLeftNum,
+                                backRightNum,
+                                totalPages,
+                                addFoldGuide,
+                                gutter
+                            )
+                        }
+
+                        outDoc.save(outputPath)
+                    }
+                }
+                main.post { result.success(outputPath) }
+            } catch (e: InvalidPasswordException) {
+                main.post { result.error("password_required", "This PDF is locked.", null) }
+            } catch (e: Exception) {
+                main.post { result.error("op_failed", "Could not generate booklet: ${e.message}", null) }
+            } catch (e: OutOfMemoryError) {
+                main.post { result.error("op_failed", "This PDF is too large to process.", null) }
+            }
+        }
+    }
+
+    private fun renderBookletSheetFace(
+        outDoc: PDDocument,
+        layerUtil: com.tom_roush.pdfbox.multipdf.LayerUtility,
+        srcDoc: PDDocument,
+        sheetW: Float,
+        sheetH: Float,
+        leftPageNum: Int,
+        rightPageNum: Int,
+        totalPages: Int,
+        addFoldGuide: Boolean,
+        gutter: Float
+    ) {
+        val sheetPage = PDPage(PDRectangle(sheetW, sheetH))
+        outDoc.addPage(sheetPage)
+
+        val halfW = sheetW / 2f
+
+        PDPageContentStream(outDoc, sheetPage, PDPageContentStream.AppendMode.OVERWRITE, false, false).use { cs ->
+            if (leftPageNum in 1..totalPages) {
+                val form = layerUtil.importPageAsForm(srcDoc, leftPageNum - 1)
+                drawFormInRect(cs, form, 0f + (gutter / 2f), 0f, halfW - gutter, sheetH)
+            }
+
+            if (rightPageNum in 1..totalPages) {
+                val form = layerUtil.importPageAsForm(srcDoc, rightPageNum - 1)
+                drawFormInRect(cs, form, halfW + (gutter / 2f), 0f, halfW - gutter, sheetH)
+            }
+
+            if (addFoldGuide) {
+                cs.setStrokingColor(0.7f, 0.7f, 0.7f)
+                cs.setLineWidth(0.75f)
+                cs.setLineDashPattern(floatArrayOf(4f, 4f), 0f)
+                cs.moveTo(halfW, 0f)
+                cs.lineTo(halfW, sheetH)
+                cs.stroke()
+            }
+        }
+    }
+
+    private fun drawFormInRect(
+        cs: PDPageContentStream,
+        form: com.tom_roush.pdfbox.pdmodel.graphics.form.PDFormXObject,
+        targetX: Float,
+        targetY: Float,
+        targetW: Float,
+        targetH: Float
+    ) {
+        val bBox = form.bBox ?: PDRectangle.A4
+        val srcW = bBox.width
+        val srcH = bBox.height
+        if (srcW <= 0 || srcH <= 0) return
+
+        val scale = minOf(targetW / srcW, targetH / srcH)
+        val renderedW = srcW * scale
+        val renderedH = srcH * scale
+        val offsetX = targetX + (targetW - renderedW) / 2f
+        val offsetY = targetY + (targetH - renderedH) / 2f
+
+        cs.saveGraphicsState()
+        val matrix = com.tom_roush.pdfbox.util.Matrix()
+        matrix.translate(offsetX, offsetY)
+        matrix.scale(scale, scale)
+        cs.transform(matrix)
+        cs.drawForm(form)
+        cs.restoreGraphicsState()
+    }
+
+    private fun applyWatermark(
+        path: String,
+        password: String?,
+        outputPath: String,
+        text: String?,
+        imagePath: String?,
+        opacity: Float,
+        rotationDegrees: Float,
+        fontSize: Float,
+        colorHex: String?,
+        isTiled: Boolean,
+        tileSpacingX: Float,
+        tileSpacingY: Float,
+        pageRange: String?,
+        result: MethodChannel.Result
+    ) {
+        io.execute {
+            try {
+                check(resourcesReady)
+                val srcFile = File(path)
+                PDDocument.load(srcFile, password ?: "").use { doc ->
+                    val totalPages = doc.numberOfPages
+                    if (totalPages == 0) {
+                        main.post { result.error("bad_args", "The PDF has no pages.", null) }
+                        return@execute
+                    }
+
+                    val targetPages = parsePageRange(pageRange, totalPages)
+                    val r: Float
+                    val g: Float
+                    val b: Float
+                    if (!colorHex.isNullOrBlank() && colorHex.startsWith("#") && colorHex.length >= 7) {
+                        val parsed = Color.parseColor(colorHex)
+                        r = Color.red(parsed) / 255f
+                        g = Color.green(parsed) / 255f
+                        b = Color.blue(parsed) / 255f
+                    } else {
+                        r = 0.5f
+                        g = 0.5f
+                        b = 0.5f
+                    }
+
+                    val font = PDType1Font.HELVETICA_BOLD
+                    val rad = Math.toRadians(rotationDegrees.toDouble()).toFloat()
+
+                    val imageObj: PDImageXObject? = if (!imagePath.isNullOrEmpty() && File(imagePath).exists()) {
+                        try {
+                            val bmp = BitmapFactory.decodeFile(imagePath)
+                            if (bmp != null) LosslessFactory.createFromImage(doc, bmp) else null
+                        } catch (_: Exception) { null }
+                    } else null
+
+                    for (pageIdx in targetPages) {
+                        val page = doc.getPage(pageIdx)
+                        val box = page.cropBox ?: page.mediaBox ?: PDRectangle.A4
+                        val pageW = box.width
+                        val pageH = box.height
+
+                        val extGState = PDExtendedGraphicsState().apply {
+                            nonStrokingAlphaConstant = opacity
+                            strokingAlphaConstant = opacity
+                        }
+
+                        PDPageContentStream(doc, page, PDPageContentStream.AppendMode.APPEND, true, true).use { cs ->
+                            cs.setGraphicsStateParameters(extGState)
+
+                            if (imageObj != null) {
+                                val imgW = imageObj.width.toFloat()
+                                val imgH = imageObj.height.toFloat()
+                                val scale = minOf(pageW / (imgW * 2f), pageH / (imgH * 2f)).coerceIn(0.1f, 1.0f)
+                                val drawW = imgW * scale
+                                val drawH = imgH * scale
+
+                                if (isTiled) {
+                                    val stepX = maxOf(drawW + tileSpacingX, 100f)
+                                    val stepY = maxOf(drawH + tileSpacingY, 100f)
+                                    var y = stepY / 2f
+                                    while (y < pageH) {
+                                        var x = stepX / 2f
+                                        while (x < pageW) {
+                                            cs.saveGraphicsState()
+                                            val m = com.tom_roush.pdfbox.util.Matrix()
+                                            m.translate(x, y)
+                                            m.rotate(rad.toDouble())
+                                            m.translate(-drawW / 2f, -drawH / 2f)
+                                            cs.transform(m)
+                                            cs.drawImage(imageObj, 0f, 0f, drawW, drawH)
+                                            cs.restoreGraphicsState()
+                                            x += stepX
+                                        }
+                                        y += stepY
+                                    }
+                                } else {
+                                    cs.saveGraphicsState()
+                                    val m = com.tom_roush.pdfbox.util.Matrix()
+                                    m.translate(pageW / 2f, pageH / 2f)
+                                    m.rotate(rad.toDouble())
+                                    m.translate(-drawW / 2f, -drawH / 2f)
+                                    cs.transform(m)
+                                    cs.drawImage(imageObj, 0f, 0f, drawW, drawH)
+                                    cs.restoreGraphicsState()
+                                }
+                            }
+
+                            if (!text.isNullOrBlank()) {
+                                cs.setNonStrokingColor(r, g, b)
+                                val textWidth = (font.getStringWidth(text) / 1000f) * fontSize
+                                val textHeight = fontSize * 0.75f
+
+                                if (isTiled) {
+                                    val stepX = maxOf(textWidth + tileSpacingX, 120f)
+                                    val stepY = maxOf(fontSize + tileSpacingY, 100f)
+                                    var y = stepY / 2f
+                                    while (y < pageH) {
+                                        var x = stepX / 2f
+                                        while (x < pageW) {
+                                            cs.saveGraphicsState()
+                                            val m = com.tom_roush.pdfbox.util.Matrix()
+                                            m.translate(x, y)
+                                            m.rotate(rad.toDouble())
+                                            m.translate(-textWidth / 2f, -textHeight / 2f)
+                                            cs.transform(m)
+                                            cs.beginText()
+                                            cs.setFont(font, fontSize)
+                                            cs.showText(text)
+                                            cs.endText()
+                                            cs.restoreGraphicsState()
+                                            x += stepX
+                                        }
+                                        y += stepY
+                                    }
+                                } else {
+                                    cs.saveGraphicsState()
+                                    val m = com.tom_roush.pdfbox.util.Matrix()
+                                    m.translate(pageW / 2f, pageH / 2f)
+                                    m.rotate(rad.toDouble())
+                                    m.translate(-textWidth / 2f, -textHeight / 2f)
+                                    cs.transform(m)
+                                    cs.beginText()
+                                    cs.setFont(font, fontSize)
+                                    cs.showText(text)
+                                    cs.endText()
+                                    cs.restoreGraphicsState()
+                                }
+                            }
+                        }
+                    }
+
+                    doc.save(outputPath)
+                }
+                main.post { result.success(outputPath) }
+            } catch (e: InvalidPasswordException) {
+                main.post { result.error("password_required", "This PDF is locked.", null) }
+            } catch (e: Exception) {
+                main.post { result.error("op_failed", "Could not apply watermark: ${e.message}", null) }
+            } catch (e: OutOfMemoryError) {
+                main.post { result.error("op_failed", "This PDF is too large to process.", null) }
+            }
+        }
+    }
+
+    private fun parsePageRange(range: String?, totalPages: Int): List<Int> {
+        if (range.isNullOrBlank() || range.equals("all", ignoreCase = true)) {
+            return (0 until totalPages).toList()
+        }
+        if (range.equals("odd", ignoreCase = true)) {
+            return (0 until totalPages step 2).toList()
+        }
+        if (range.equals("even", ignoreCase = true)) {
+            return (1 until totalPages step 2).toList()
+        }
+        val pages = mutableSetOf<Int>()
+        for (part in range.split(",")) {
+            val trimmed = part.trim()
+            if (trimmed.contains("-")) {
+                val bounds = trimmed.split("-")
+                val start = bounds[0].trim().toIntOrNull() ?: 1
+                val end = bounds.getOrNull(1)?.trim()?.toIntOrNull() ?: totalPages
+                for (p in start..end) {
+                    if (p in 1..totalPages) pages.add(p - 1)
+                }
+            } else {
+                val p = trimmed.toIntOrNull()
+                if (p != null && p in 1..totalPages) {
+                    pages.add(p - 1)
+                }
+            }
+        }
+        return if (pages.isEmpty()) (0 until totalPages).toList() else pages.sorted()
+    }
+
+    private fun generateNUpPdf(
+        path: String,
+        password: String?,
+        outputPath: String,
+        gridCount: Int,
+        sheetSize: String,
+        orientation: String,
+        addBorders: Boolean,
+        margin: Float,
+        result: MethodChannel.Result
+    ) {
+        io.execute {
+            try {
+                check(resourcesReady)
+                val srcFile = File(path)
+                PDDocument.load(srcFile, password ?: "").use { srcDoc ->
+                    val totalPages = srcDoc.numberOfPages
+                    if (totalPages == 0) {
+                        main.post { result.error("bad_args", "The PDF has no pages.", null) }
+                        return@execute
+                    }
+
+                    PDDocument().use { outDoc ->
+                        val layerUtil = com.tom_roush.pdfbox.multipdf.LayerUtility(outDoc)
+
+                        var baseW: Float
+                        var baseH: Float
+                        when (sheetSize.lowercase()) {
+                            "letter" -> { baseW = 612f; baseH = 792f }
+                            else -> { baseW = 595f; baseH = 842f } // A4
+                        }
+
+                        val (cols, rows, sheetLandscape) = when (gridCount) {
+                            2 -> Triple(2, 1, true)
+                            4 -> Triple(2, 2, false)
+                            6 -> Triple(3, 2, true)
+                            9 -> Triple(3, 3, false)
+                            else -> Triple(2, 2, false)
+                        }
+
+                        val forceOrientation = orientation.lowercase()
+                        val isLandscape = when (forceOrientation) {
+                            "landscape" -> true
+                            "portrait" -> false
+                            else -> sheetLandscape
+                        }
+
+                        val sheetW = if (isLandscape) maxOf(baseW, baseH) else minOf(baseW, baseH)
+                        val sheetH = if (isLandscape) minOf(baseW, baseH) else maxOf(baseW, baseH)
+
+                        val cellW = (sheetW - (margin * 2f)) / cols
+                        val cellH = (sheetH - (margin * 2f)) / rows
+
+                        val totalSheets = (totalPages + gridCount - 1) / gridCount
+
+                        for (sheetIdx in 0 until totalSheets) {
+                            val sheetPage = PDPage(PDRectangle(sheetW, sheetH))
+                            outDoc.addPage(sheetPage)
+
+                            PDPageContentStream(outDoc, sheetPage, PDPageContentStream.AppendMode.OVERWRITE, false, false).use { cs ->
+                                for (slot in 0 until gridCount) {
+                                    val pageNum = sheetIdx * gridCount + slot + 1
+                                    if (pageNum > totalPages) break
+
+                                    val col = slot % cols
+                                    val row = slot / cols
+                                    val cellX = margin + (col * cellW)
+                                    val cellY = sheetH - margin - ((row + 1) * cellH)
+
+                                    val form = layerUtil.importPageAsForm(srcDoc, pageNum - 1)
+                                    drawFormInRect(cs, form, cellX + 2f, cellY + 2f, cellW - 4f, cellH - 4f)
+
+                                    if (addBorders) {
+                                        cs.saveGraphicsState()
+                                        cs.setStrokingColor(0.8f, 0.8f, 0.8f)
+                                        cs.setLineWidth(0.5f)
+                                        cs.addRect(cellX, cellY, cellW, cellH)
+                                        cs.stroke()
+                                        cs.restoreGraphicsState()
+                                    }
+                                }
+                            }
+                        }
+
+                        outDoc.save(outputPath)
+                    }
+                }
+                main.post { result.success(outputPath) }
+            } catch (e: InvalidPasswordException) {
+                main.post { result.error("password_required", "This PDF is locked.", null) }
+            } catch (e: Exception) {
+                main.post { result.error("op_failed", "Could not generate N-Up layout: ${e.message}", null) }
+            } catch (e: OutOfMemoryError) {
+                main.post { result.error("op_failed", "This PDF is too large to process.", null) }
+            }
+        }
     }
 
     fun dispose() {

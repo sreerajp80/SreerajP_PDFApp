@@ -38,7 +38,10 @@ void main() {
   testWidgets('renders all theme choices', (tester) async {
     await pumpTheme(tester);
 
-    expect(find.text('Theme'), findsOneWidget); // app bar title
+    expect(
+      find.text('Theme Mode'),
+      findsWidgets,
+    ); // app bar title & section header
     expect(find.text('System'), findsOneWidget);
     expect(find.text('Light'), findsOneWidget);
     expect(find.text('Dark'), findsOneWidget);

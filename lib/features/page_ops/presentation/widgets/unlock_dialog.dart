@@ -115,7 +115,7 @@ class _UnlockDialogState extends ConsumerState<UnlockDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l10n.cancelAction),
         ),
-        FilledButton(onPressed: _run, child: Text(l10n.unlockAction)),
+        FilledButton(onPressed: _run, child: Text(l10n.removePasswordAction)),
       ],
     );
   }

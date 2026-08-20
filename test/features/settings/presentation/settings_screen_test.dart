@@ -9,6 +9,7 @@ import 'package:pdfapp/features/reading/data/tts_service.dart';
 import 'package:pdfapp/features/reading/presentation/providers.dart';
 import 'package:pdfapp/features/reading/presentation/widgets/tts_install_sheet.dart';
 import 'package:pdfapp/features/settings/presentation/settings_screen.dart';
+import 'package:pdfapp/features/settings/presentation/tts_settings_screen.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,6 +30,12 @@ class _FakeTtsEngine implements TtsEngine {
 
   @override
   Future<void> setLanguage(String languageCode) async {}
+
+  @override
+  Future<void> setSpeechRate(double rate) async {}
+
+  @override
+  Future<void> setPitch(double pitch) async {}
 
   @override
   Future<void> speak(String text) async {}
@@ -87,30 +94,93 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('renders Theme and About cards and read-aloud section', (
-    tester,
-  ) async {
-    await pumpSettings(tester);
+  Future<void> pumpTtsSettings(WidgetTester tester) async {
+    final ttsService = TtsService(
+      engine: engine,
+      malayalamEnabled: prefs.getBool(AppConstants.prefMalayalamTts) ?? false,
+      saveMalayalamEnabled: ({required enabled}) async {
+        await prefs.setBool(AppConstants.prefMalayalamTts, enabled);
+      },
+    );
+    await ttsService.refreshVoices();
 
-    expect(find.text('Settings'), findsOneWidget);
-    // Theme is now a card showing the current theme (default: System).
-    expect(find.text('Theme'), findsOneWidget);
-    expect(find.text('System'), findsOneWidget);
-    // The radio choices live on the Theme page, not here.
-    expect(find.text('Light'), findsNothing);
-    expect(find.text('Dark'), findsNothing);
-    expect(find.text('Sepia'), findsNothing);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          ttsServiceProvider.overrideWith((ref) => ttsService),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: TtsSettingsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
 
-    expect(find.text('About'), findsOneWidget);
-    expect(find.text('Read aloud'), findsOneWidget);
-    expect(find.text('Malayalam voice'), findsOneWidget);
-  });
+  testWidgets(
+    'renders Appearance, Language, Reader, Read aloud, Printer, Storage, Permissions, Help, and About cards',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      await pumpSettings(tester);
+
+      expect(find.text('Settings'), findsOneWidget);
+      // Appearance card
+      expect(find.text('Appearance'), findsOneWidget);
+      expect(find.text('Theme mode, typography, and colors'), findsOneWidget);
+
+      // Features card
+      expect(find.text('Features'), findsOneWidget);
+      expect(find.text('Explore all features of SreerajP PDF App'), findsOneWidget);
+
+      // Language card
+      expect(find.text('Language'), findsOneWidget);
+
+      // Reader & Viewer card
+      expect(find.text('Reader & Viewer'), findsOneWidget);
+
+      // Read aloud card
+      expect(find.text('Read Aloud (TTS)'), findsOneWidget);
+
+      // PDF Virtual Printer card
+      expect(find.text('PDF Virtual Printer'), findsOneWidget);
+
+      // Storage & Privacy card
+      expect(find.text('Storage & Privacy'), findsOneWidget);
+
+      // Trusted certificates card
+      expect(find.text('Trusted certificates'), findsOneWidget);
+
+      // Permissions card
+      expect(find.text('Permissions'), findsOneWidget);
+
+      // Help card
+      expect(find.text('Help'), findsOneWidget);
+      expect(find.text('Guides, setup instructions, and tips'), findsOneWidget);
+
+      // About card
+      expect(find.text('About'), findsOneWidget);
+    },
+  );
 
   testWidgets(
     'toggling Malayalam voice on triggers guided install sheet if missing',
     (tester) async {
       engine.mlInstalled = false; // missing
-      await pumpSettings(tester);
+      await pumpTtsSettings(tester);
 
       // Initial subtitle is "off"
       expect(
@@ -119,7 +189,7 @@ void main() {
       );
 
       // Tap switch to turn on
-      await tester.tap(find.byType(Switch));
+      await tester.tap(find.byType(Switch).first);
       await tester.pump(); // Start toggle animation / action
       await tester.pumpAndSettle();
 
@@ -136,10 +206,10 @@ void main() {
     'toggling Malayalam voice on does not trigger sheet if voice is ready',
     (tester) async {
       engine.mlInstalled = true; // ready
-      await pumpSettings(tester);
+      await pumpTtsSettings(tester);
 
       // Tap switch to turn on
-      await tester.tap(find.byType(Switch));
+      await tester.tap(find.byType(Switch).first);
       await tester.pumpAndSettle();
 
       // Verify it saved to preferences

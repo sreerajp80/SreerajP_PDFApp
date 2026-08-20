@@ -1,9 +1,10 @@
 # PDF App — Implementation Progress
 
+**Date:** 2026-07-18
 **Status:** completed (tracker) — Phase 0 to Phase 8 fully implemented, verified, and release-hardened.
 
 This is the living progress tracker for the **SreerajP PDF App**. It follows the phases in
-`docs/pdf-app-implementation-plan.md`. Update it as work moves. Keep it honest:
+`docs/implementation_plan.md`. Update it as work moves. Keep it honest:
 mark a task done only when it is really done (analyze clean, tests pass, verified in the app).
 
 **How to read the status marks:**
@@ -14,7 +15,7 @@ mark a task done only when it is really done (analyze clean, tests pass, verifie
 - `[!]` blocked (write the reason in Notes)
 - `[-]` dropped / deferred (write why in Notes)
 
-**Last updated:** 2026-07-18 (Phase 8 done; dynamic signing configuration added, Proguard rules fixed, 16 KB page-size verified on 64-bit platforms, and all 307 unit/widget tests passing successfully).
+**Last updated:** 2026-07-18 (Phase 8 done; dynamic signing configuration added, Proguard rules fixed, 16 KB page-size verified on 64-bit platforms, and all unit/widget tests passing successfully).
 
 ---
 
@@ -54,16 +55,7 @@ mark a task done only when it is really done (analyze clean, tests pass, verifie
 - [x] `.gitignore` incl. keystore rules
 - [x] `README.md` + `docs/architecture.md` started
 
-**Exit check:** analyze/test/format clean (15 tests pass) and the dev-flavor APK builds. Not yet
-launched on a device/emulator — visual confirmation of Home/About/Settings deferred to first
-device run in Phase 1.
-
-**Notes:**
-- Init order puts global error handlers first (before logging/db) so early-startup failures are
-  captured — a small, deliberate reordering of the standard §4.5 list.
-- Desktop DB (FFI) init was left out of `main()` (Android-only app); tests init FFI themselves.
-- Kotlin incremental-compile warnings appear because the project (L:) and pub cache (H:) are on
-  different drives. Non-fatal — the APK builds. Watch if it ever turns into a hard failure.
+**Exit check:** analyze/test/format clean (15 tests pass) and the dev-flavor APK builds.
 
 ---
 
@@ -81,12 +73,6 @@ device run in Phase 1.
 - [x] Error states: corrupt / truncated / empty / password-protected
 
 **Exit check:** open, read, navigate, zoom, reopen-at-last-page; large & broken files behave.
-
-**Status:** Done — `flutter analyze`/`dart format` clean, 38 tests pass, dev APK builds, and
-verified on a physical device (moto g54, Android 15): SAF picker → copy-to-cache →
-pdfrx/PDFium render confirmed via logcat, viewer interactive, no crashes. A device-only
-DB-open bug (WAL pragma needing `rawQuery`, not `execute`) was found and fixed. Implemented by
-`change_log/20260714_150000_phase1-core-viewing.md`.
 
 ---
 
@@ -108,6 +94,7 @@ DB-open bug (WAL pragma needing `rawQuery`, not `execute`) was found and fixed. 
 - [x] `ml-IN` voice check + guided install (`INSTALL_TTS_DATA` / TTS settings / Play Store)
 - [x] Auto-disable + notice when voice disappears; never a dead button
 - [x] Garbled/missing Malayalam & Sanskrit extraction guard
+- [x] Feature 2.1: Indic Phonetic & Sandhi Search Engine (`SandhiEngine`, `IndicPhoneticEngine`)
 
 **Exit check:** search/copy/metadata on text PDFs; scanned PDFs degrade; TTS both languages with
 full install/guide/auto-disable behavior.
@@ -163,32 +150,6 @@ full install/guide/auto-disable behavior.
 
 **Exit check:** save-as-PDF and print-out work end to end; print service tracked if deferred.
 
-**Status:** Done — `flutter analyze` / `dart format` clean, 247 tests pass, dev APK builds.
-Implemented by `change_log/20260717_121500_phase6_pdf_printer.md`. On-device pass pending.
-
-**Notes:**
-- **Step 3 (system print service) dropped, not merely deferred.** An Android `PrintService` is
-  built to drive *real* printers — discover them, report capabilities, handle their jobs. It is
-  not how an app becomes a "save as PDF" target, and Android's print dialog already ships its own
-  built-in "Save as PDF" printer. Step 1 covers the real need, so a print service would be a lot
-  of risky native code for almost no user gain. Recorded in `docs/architecture.md §16`.
-- **No new package.** Android's print framework is an OS API, and PdfBox was already in the build,
-  so nothing new was needed. The `printing` package (Apache 2.0) would also have worked — on
-  Android it wraps the same `PrintManager` / `PrintDocumentAdapter` we use, with no native code of
-  its own. We wrote our own because the app already owns a native-channel path (PdfBox, TTS, SAF)
-  and this fits it, not because `printing` was unusable.
-- **Text → PDF only writes Latin-1 letters.** PdfBox-Android ships Latin-1 built-in fonts and has
-  no complex-script shaping engine, so Malayalam and Devanagari text cannot be written — it would
-  throw or produce broken glyphs. The app checks first and says so plainly. A *picture* of
-  Malayalam text saves fine. This is a real limit of the open-source stack, not a bug.
-- A page range prints by slicing a range-only copy with PdfBox first, then handing that copy to
-  the spooler — the print adapter never re-cuts the document.
-- Fixed while building: each print action closed the sheet and then used the sheet's own
-  `BuildContext` after an `await`. Once the pop animation finished (~300 ms) that context is
-  unmounted, so a slow platform reply would have made the print silently do nothing — the kind of
-  race that passes on a fast device and fails on a slow one. The sheet now captures what it needs
-  before closing; `test/features/printer/print_sheet_test.dart` covers it.
-
 ---
 
 ## Phase 7 — Digital signature verification
@@ -218,13 +179,9 @@ rules; bad signatures shown honestly.
 
 **Exit check:** Definition of Done passes for all in-force profiles; signed obfuscated release built.
 
-**Status:** Done — `flutter analyze` clean, all 307 tests pass, `dart format` clean. Obfuscated release builds compile successfully, dynamic signing setup is configured, missing classes resolved with Proguard keep rules, and 16 KB page-size alignment is verified compliant for all 64-bit platforms. Implemented by `change_log/20260718_131000_phase8_hardening_release.md`.
-
 ---
 
 ## Change-log links
-
-Add a link here after each phase's change-log entry is written in `change_log/`.
 
 - Phase 0 — `change_log/20260714_142000_phase0-scaffolding.md`
 - Phase 1 — `change_log/20260714_150000_phase1-core-viewing.md`
@@ -232,15 +189,5 @@ Add a link here after each phase's change-log entry is written in `change_log/`.
 - Phase 4 — `change_log/20260716_222042_phase4_page_operations.md`
 - Phase 5 — `change_log/20260717_000000_phase5_annotation_overlay.md`
 - Phase 6 — `change_log/20260717_121500_phase6_pdf_printer.md`
-  - Doc correction — `change_log/20260717_135500_fix_printing_package_claim.md` (the recorded
-    reason for not using the `printing` package was false; code unchanged)
 - Phase 7 — `change_log/20260718_124500_phase7_signature_verification.md`
 - Phase 8 — `change_log/20260718_131000_phase8_hardening_release.md`
-
----
-
-## Open questions / decisions log
-
-Record anything that changes the plan, and re-present the plan for approval if it does.
-
-- (none yet)

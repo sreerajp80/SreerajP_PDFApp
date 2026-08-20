@@ -3,7 +3,7 @@ description: "SreerajP PDF App — an offline Android app for everything PDF."
 publish_to: 'none'
 
 # version/build. Keep in sync with assets/config/app_config.json (ConfigService checks this).
-version: 2.2.8+12
+version: 2.7.1+21
 
 environment:
   sdk: ^3.12.2
@@ -58,5 +58,23 @@ flutter:
 
   assets:
     - assets/config/
+    - assets/fonts/
     # Bundled signing certificates for signature checking (Phase 7). Read-only.
     - assets/trust/
+
+  fonts:
+    - family: Manjari
+      fonts:
+        - asset: assets/fonts/Manjari-Regular.ttf
+        - asset: assets/fonts/Manjari-Bold.ttf
+          weight: 700
+    - family: Anek Malayalam
+      fonts:
+        - asset: assets/fonts/AnekMalayalam-Regular.ttf
+        - asset: assets/fonts/AnekMalayalam-Bold.ttf
+          weight: 700
+    - family: Noto Sans Malayalam
+      fonts:
+        - asset: assets/fonts/NotoSansMalayalam-Regular.ttf
+        - asset: assets/fonts/NotoSansMalayalam-Bold.ttf
+          weight: 700

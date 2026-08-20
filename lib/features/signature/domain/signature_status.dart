@@ -1,7 +1,7 @@
 /// What the app is willing to say about a signature (Phase 7).
 ///
 /// Only four answers are possible, and they are deliberately blunt. The guiding
-/// rule from `docs/security-rules.md` is **never fake trust**: a green tick that
+/// rule from `docs/security.md` is **never fake trust**: a green tick that
 /// was not earned is worse than an honest question mark, because the user will
 /// believe it.
 enum SignatureStatus {

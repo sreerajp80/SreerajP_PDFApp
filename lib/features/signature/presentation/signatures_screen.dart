@@ -90,18 +90,23 @@ class SignaturesScreen extends ConsumerWidget {
           }
 
           final evaluator = ref.read(signatureRepositoryProvider).evaluator;
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            itemCount: list.length,
-            itemBuilder: (context, i) {
-              final verdict = list[i];
-              final canTrust = evaluator.canOfferTrust(verdict);
-              return SignatureCard(
-                verdict: verdict,
-                canTrust: canTrust,
-                onTrust: canTrust ? () => _trustSigner(context, ref, i) : null,
-              );
-            },
+          return SafeArea(
+            top: false,
+            child: ListView.builder(
+              padding: const EdgeInsets.fromLTRB(0, 8, 0, 48),
+              itemCount: list.length,
+              itemBuilder: (context, i) {
+                final verdict = list[i];
+                final canTrust = evaluator.canOfferTrust(verdict);
+                return SignatureCard(
+                  verdict: verdict,
+                  canTrust: canTrust,
+                  onTrust: canTrust
+                      ? () => _trustSigner(context, ref, i)
+                      : null,
+                );
+              },
+            ),
           );
         },
       ),

@@ -88,8 +88,7 @@ class PdfSearchController extends ChangeNotifier {
   /// Changes how text is compared (strict / accent-insensitive) and runs the
   /// current query again, because the old results were found under the old rules.
   Future<void> setOptions(SearchOptions options, {int startPage = 1}) async {
-    if (options.strict == _options.strict &&
-        options.ignoreAccents == _options.ignoreAccents) {
+    if (options == _options) {
       return;
     }
     _options = options;

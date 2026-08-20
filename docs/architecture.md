@@ -9,11 +9,11 @@ explains how the app is structured, which open-source packages to use, and how t
 This file is also the project's **engineering-standard architecture record**
 (`flutter_project_engineering_standard.md §21`): where the design is forward-looking, it notes
 what is built now versus planned. Phase-by-phase status lives in
-[pdf-app-implementation-progress.md](pdf-app-implementation-progress.md).
+[implementation_progress.md](implementation_progress.md).
 
 Read [CLAUDE.md](../CLAUDE.md) first for the project rules. See
-[PDF-Idea.md](PDF-Idea.md) for the full product idea and
-[pdf-app-implementation-plan.md](pdf-app-implementation-plan.md) for the phased build plan.
+[pdf_idea.md](pdf_idea.md) for the full product idea and
+[implementation_plan.md](implementation_plan.md) for the phased build plan.
 
 **Applicability profiles in force:** Core Baseline + Production App Extension, plus selected
 Sensitive Data controls (PDF passwords, signature trust store — see the implementation plan §11).
@@ -365,7 +365,7 @@ About content is a config edit, not a code change.
 
 ## 12. Security architecture
 
-Full rules are in [security-rules.md](security-rules.md). In summary:
+Full rules are in [security.md](security.md). In summary:
 
 - **Untrusted input everywhere** — every opened PDF is validated before use; parsers have
   failure paths; the app never crashes on bad data.
@@ -433,7 +433,7 @@ Full rules are in [security-rules.md](security-rules.md). In summary:
 ## 16. Known risks / follow-ups
 
 - Real release signing config (keystore + `key.properties`) is added in Phase 8 — see
-  [release-signing.md](release-signing.md).
+  [release_process.md](release_process.md).
 - Log rotation / disk log output is not yet implemented (§14.4).
 - **System print service — dropped (Phase 6, step 3).** An Android `PrintService` exists to drive
   *real* printers: it must discover them, report their capabilities, and handle their jobs. It is

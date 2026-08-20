@@ -35,7 +35,7 @@ Future<void> main() async {
 
   // 2. Logging (needs the flavor; independent of DB/config).
   AppLogger.init();
-  AppLogger.info('Starting PDF App.');
+  AppLogger.info('Starting SreerajP PDF App.');
 
   // 3. Database open + migrate.
   final database = AppDatabase();

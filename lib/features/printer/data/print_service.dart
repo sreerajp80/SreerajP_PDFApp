@@ -47,4 +47,27 @@ class PrintService {
     );
     await _channel.printPdf(path, jobName);
   }
+
+  /// Generates an N-Up imposition PDF and prints that.
+  Future<void> printNUp(
+    String path,
+    String jobName, {
+    String? password,
+    int gridCount = 4,
+    String sheetSize = 'a4',
+    String orientation = 'auto',
+    bool addBorders = true,
+    double margin = 12.0,
+  }) async {
+    final nupPath = await _pageOps.generateNUp(
+      path,
+      password: password,
+      gridCount: gridCount,
+      sheetSize: sheetSize,
+      orientation: orientation,
+      addBorders: addBorders,
+      margin: margin,
+    );
+    await _channel.printPdf(nupPath, jobName);
+  }
 }

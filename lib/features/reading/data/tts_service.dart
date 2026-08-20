@@ -1,33 +1,32 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:pdfapp/core/logging/app_logger.dart';
+import 'package:pdfapp/core/platform/tts_channel.dart';
 import 'package:pdfapp/core/search/script_detector.dart';
 import 'package:pdfapp/features/reading/data/tts_engine.dart';
 import 'package:pdfapp/features/reading/domain/tts_state.dart';
 
 /// Reads text aloud, and always knows whether it can.
 ///
-/// The shared read-aloud module (project rule §6: never a dead button). Reader
-/// screens ask it for [status] and draw whatever it reports — ready, needs
-/// installing, or not possible — instead of offering a control that quietly
-/// fails.
-///
-/// Malayalam is off unless the reader turns it on, because the voice is an extra
-/// download on most phones. When it is on but the voice has since been removed,
-/// the toggle **turns itself off** and says so, rather than staying on and doing
-/// nothing.
+/// Features pitch adjustment, sentence-boundary pause insertions for natural
+/// cadence, and persistent background notification player controls.
 class TtsService extends ChangeNotifier {
   TtsService({
     required this.engine,
     required this.saveMalayalamEnabled,
+    this.ttsChannel,
     bool malayalamEnabled = false,
   }) {
     _status = TtsStatus(malayalamEnabled: malayalamEnabled);
-    engine.onComplete = _onComplete;
+    engine.onComplete = _onSentenceComplete;
     engine.onError = _onError;
+    ttsChannel?.onActionReceived = _handleNotificationAction;
   }
 
   final TtsEngine engine;
   final Future<void> Function({required bool enabled}) saveMalayalamEnabled;
+  final TtsChannel? ttsChannel;
 
   TtsStatus _status = const TtsStatus();
   TtsStatus get status => _status;
@@ -41,14 +40,34 @@ class TtsService extends ChangeNotifier {
     return lost;
   }
 
+  // Sentence queue & pause control
+  List<String> _sentenceQueue = [];
+  int _currentSentenceIndex = 0;
+  double _sentencePauseSeconds = 0.4;
+  Timer? _pauseTimer;
+  Completer<void>? _currentSentenceCompleter;
+  String _activeDocTitle = '';
+
+  void _handleNotificationAction(String action) {
+    switch (action.toLowerCase()) {
+      case 'play':
+        if (_status.isPaused) resume();
+        break;
+      case 'pause':
+        if (_status.isSpeaking) pause();
+        break;
+      case 'stop':
+        stop();
+        break;
+    }
+  }
+
   /// Asks the engine which voices exist. Call once at startup and again after
   /// the reader comes back from installing one.
   Future<void> refreshVoices() async {
     final english = await _check(TtsLanguage.english);
     final malayalam = await _check(TtsLanguage.malayalam);
 
-    // The reader switched Malayalam on, and the voice has since gone. Turn the
-    // switch off rather than leave it on and silent.
     final lost = _status.malayalamEnabled && malayalam != TtsVoiceState.ready;
     if (lost) {
       _voiceLostNotice = true;
@@ -67,10 +86,6 @@ class TtsService extends ChangeNotifier {
     );
   }
 
-  /// Works out the state of one language.
-  ///
-  /// "Installed" and "the engine has heard of it" are different things, and the
-  /// difference decides what we offer: a download, or an honest "not possible".
   Future<TtsVoiceState> _check(TtsLanguage language) async {
     final languages = await engine.availableLanguages();
     if (languages.isEmpty) return TtsVoiceState.unavailable;
@@ -78,7 +93,6 @@ class TtsService extends ChangeNotifier {
     final code = language.code.toLowerCase();
     final known =
         languages.contains(code) ||
-        // Engines report tags loosely: 'ml' may stand in for 'ml-IN'.
         languages.any((l) => l.startsWith('${code.split('-').first}-')) ||
         languages.contains(code.split('-').first);
     if (!known) return TtsVoiceState.unavailable;
@@ -88,11 +102,6 @@ class TtsService extends ChangeNotifier {
         : TtsVoiceState.needsInstall;
   }
 
-  /// Turns the Malayalam voice on or off and remembers the choice.
-  ///
-  /// Returns the voice's state, so the caller can offer the install flow when it
-  /// is [TtsVoiceState.needsInstall]. The switch still goes on: the reader asked
-  /// for it, and it starts working the moment the voice arrives.
   Future<TtsVoiceState> setMalayalamEnabled({required bool enabled}) async {
     await saveMalayalamEnabled(enabled: enabled);
     _set(_status.copyWith(malayalamEnabled: enabled));
@@ -104,43 +113,91 @@ class TtsService extends ChangeNotifier {
     return state;
   }
 
-  /// Reads [text] aloud, picking the voice from the script it is written in.
-  ///
-  /// Does nothing (and says why through [status]) when there is no usable voice
-  /// — the caller should not have offered the control in that case anyway.
-  Future<void> speak(String text, {int? page}) async {
-    final words = text.trim();
-    if (words.isEmpty) return;
+  /// Reads [text] aloud sentence by sentence, inserting [sentencePauseSeconds]
+  /// pause between sentences for natural prosody.
+  Future<void> speak(
+    String text, {
+    int? page,
+    String? documentTitle,
+    double? speechRate,
+    double? pitch,
+    double? sentencePauseSeconds,
+  }) async {
+    final raw = text.trim();
+    if (raw.isEmpty) return;
 
-    final language = _languageFor(words);
+    final language = _languageFor(raw);
     if (_stateOf(language) != TtsVoiceState.ready) return;
 
     await stop();
+
+    _activeDocTitle = documentTitle ?? 'PDF Document';
+    _sentencePauseSeconds = sentencePauseSeconds ?? 0.4;
+    _sentenceQueue = _splitIntoSentences(raw);
+    _currentSentenceIndex = 0;
+
     try {
       await engine.setLanguage(language.code);
+      if (speechRate != null) await engine.setSpeechRate(speechRate);
+      if (pitch != null) await engine.setPitch(pitch);
+
       _set(
         _status.copyWith(
           playback: TtsPlaybackState.speaking,
           speakingPage: page,
         ),
       );
-      await engine.speak(words);
+
+      _updateNotification(isPlaying: true);
+      unawaited(_playNextSentence());
     } catch (e) {
       AppLogger.warning('Read aloud failed.', error: e);
-      _set(
-        _status.copyWith(
-          playback: TtsPlaybackState.idle,
-          clearSpeakingPage: true,
-        ),
-      );
+      await stop();
     }
   }
 
-  /// Picks the voice for [text].
-  ///
-  /// Malayalam text is only read in Malayalam when the reader switched it on and
-  /// the voice is there; otherwise English is used, which is honest for the
-  /// Latin text in the same document and simply skips what it cannot say.
+  List<String> _splitIntoSentences(String text) {
+    final matches = text.split(RegExp(r'(?<=[.!?।|\n])\s+'));
+    return matches.map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+  }
+
+  Future<void> _playNextSentence() async {
+    if (_status.playback != TtsPlaybackState.speaking) return;
+
+    if (_currentSentenceIndex >= _sentenceQueue.length) {
+      await stop();
+      return;
+    }
+
+    final sentence = _sentenceQueue[_currentSentenceIndex];
+    _currentSentenceIndex++;
+
+    _currentSentenceCompleter = Completer<void>();
+    await engine.speak(sentence);
+    await _currentSentenceCompleter?.future;
+
+    if (_status.playback != TtsPlaybackState.speaking) return;
+
+    if (_currentSentenceIndex < _sentenceQueue.length &&
+        _sentencePauseSeconds > 0) {
+      _pauseTimer?.cancel();
+      await Future<void>.delayed(
+        Duration(milliseconds: (_sentencePauseSeconds * 1000).round()),
+      );
+    }
+
+    if (_status.playback == TtsPlaybackState.speaking) {
+      await _playNextSentence();
+    }
+  }
+
+  void _onSentenceComplete() {
+    if (_currentSentenceCompleter != null &&
+        !_currentSentenceCompleter!.isCompleted) {
+      _currentSentenceCompleter!.complete();
+    }
+  }
+
   TtsLanguage _languageFor(String text) {
     final malayalam =
         ScriptDetector.dominantScript(text) == PdfScript.malayalam;
@@ -154,39 +211,60 @@ class TtsService extends ChangeNotifier {
     TtsLanguage.malayalam => _status.malayalam,
   };
 
-  /// Pauses if the engine can; stops if it cannot, so the control always does
-  /// something the reader can see.
+  /// Pauses mid-playback.
   Future<void> pause() async {
     if (!_status.isSpeaking) return;
-    if (await engine.pause()) {
-      _set(_status.copyWith(playback: TtsPlaybackState.paused));
-    } else {
-      await stop();
+    _pauseTimer?.cancel();
+    if (_currentSentenceCompleter != null &&
+        !_currentSentenceCompleter!.isCompleted) {
+      _currentSentenceCompleter!.complete();
     }
+    await engine.pause();
+    _set(_status.copyWith(playback: TtsPlaybackState.paused));
+    _updateNotification(isPlaying: false);
+  }
+
+  /// Resumes playback from pause.
+  Future<void> resume() async {
+    if (!_status.isPaused) return;
+    _set(_status.copyWith(playback: TtsPlaybackState.speaking));
+    _updateNotification(isPlaying: true);
+    await _playNextSentence();
   }
 
   Future<void> stop() async {
-    if (_status.isIdle) return;
-    await engine.stop();
-    _set(
-      _status.copyWith(
-        playback: TtsPlaybackState.idle,
-        clearSpeakingPage: true,
-      ),
-    );
-  }
+    _pauseTimer?.cancel();
+    _sentenceQueue.clear();
+    _currentSentenceIndex = 0;
+    if (_currentSentenceCompleter != null &&
+        !_currentSentenceCompleter!.isCompleted) {
+      _currentSentenceCompleter!.complete();
+    }
 
-  void _onComplete() => _set(
-    _status.copyWith(playback: TtsPlaybackState.idle, clearSpeakingPage: true),
-  );
+    if (!_status.isIdle) {
+      await engine.stop();
+      _set(
+        _status.copyWith(
+          playback: TtsPlaybackState.idle,
+          clearSpeakingPage: true,
+        ),
+      );
+    }
+    unawaited(ttsChannel?.cancelNotification());
+  }
 
   void _onError(String message) {
     AppLogger.warning('The speech engine reported: $message');
-    _set(
-      _status.copyWith(
-        playback: TtsPlaybackState.idle,
-        clearSpeakingPage: true,
-      ),
+    stop();
+  }
+
+  void _updateNotification({required bool isPlaying}) {
+    final page = _status.speakingPage;
+    final content = page != null ? 'Reading page $page' : 'Reading aloud';
+    ttsChannel?.showNotification(
+      title: _activeDocTitle.isNotEmpty ? _activeDocTitle : 'SreerajP PDF App',
+      content: content,
+      isPlaying: isPlaying,
     );
   }
 
@@ -197,8 +275,9 @@ class TtsService extends ChangeNotifier {
 
   @override
   void dispose() {
-    // Speech outlives the screen otherwise — it is played by the system.
+    _pauseTimer?.cancel();
     engine.stop();
+    ttsChannel?.cancelNotification();
     super.dispose();
   }
 }

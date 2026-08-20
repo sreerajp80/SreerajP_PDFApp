@@ -88,4 +88,43 @@ class SignatureRepository {
   Future<List<CertificateInfo>> trustedCertificates() => trustStore.all();
 
   Future<bool> isTrusted(String sha256) => trustStore.contains(sha256);
+
+  /// Exports a single [certificate] as a PEM file in the cache. Returns the file path.
+  Future<String> exportCertificate(CertificateInfo certificate) async {
+    final tempDir = await Directory.systemTemp.createTemp('cert_export');
+    final safeName = certificate.commonName.replaceAll(
+      RegExp(r'[^A-Za-z0-9._-]'),
+      '_',
+    );
+    final file = File('${tempDir.path}/$safeName.crt');
+    final pem = _formatPem(certificate.der);
+    await file.writeAsString(pem);
+    return file.path;
+  }
+
+  /// Exports all user-trusted certificates as a PEM bundle. Returns the file path.
+  Future<String> exportAllCertificates() async {
+    final certs = await trustedCertificates();
+    final tempDir = await Directory.systemTemp.createTemp('cert_export');
+    final file = File('${tempDir.path}/trusted_certificates_bundle.pem');
+    final buffer = StringBuffer();
+    for (final cert in certs) {
+      buffer.writeln('# Subject: ${cert.subject}');
+      buffer.writeln('# Issuer: ${cert.issuer}');
+      buffer.writeln(_formatPem(cert.der));
+      buffer.writeln();
+    }
+    await file.writeAsString(buffer.toString());
+    return file.path;
+  }
+
+  String _formatPem(String derBase64) {
+    final clean = derBase64.replaceAll(RegExp(r'\s+'), '');
+    final chunks = <String>[];
+    for (var i = 0; i < clean.length; i += 64) {
+      final end = (i + 64 < clean.length) ? i + 64 : clean.length;
+      chunks.add(clean.substring(i, end));
+    }
+    return '-----BEGIN CERTIFICATE-----\n${chunks.join('\n')}\n-----END CERTIFICATE-----';
+  }
 }

@@ -101,13 +101,13 @@ abstract class AppLocalizations {
   /// The application title
   ///
   /// In en, this message translates to:
-  /// **'PDF App'**
+  /// **'SreerajP PDF App'**
   String get appTitle;
 
   /// Title of the Home screen
   ///
   /// In en, this message translates to:
-  /// **'PDF App'**
+  /// **'SreerajP PDF App'**
   String get homeTitle;
 
   /// Empty-state message on Home
@@ -151,6 +151,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sepia'**
   String get themeSepia;
+
+  /// OLED pure pitch-black theme option
+  ///
+  /// In en, this message translates to:
+  /// **'OLED Pitch-Black'**
+  String get themeOled;
 
   /// Title of the About screen
   ///
@@ -344,10 +350,10 @@ abstract class AppLocalizations {
   /// **'Password'**
   String get passwordHint;
 
-  /// Action to remove a PDF password
+  /// Confirm the password
   ///
   /// In en, this message translates to:
-  /// **'Remove password'**
+  /// **'Unlock'**
   String get unlockAction;
 
   /// Retry opening the file
@@ -625,6 +631,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Useful for Sanskrit chant accents'**
   String get searchOptionIgnoreAccentsNote;
+
+  /// Sandhi compound search option
+  ///
+  /// In en, this message translates to:
+  /// **'Sandhi compound search'**
+  String get searchOptionSandhi;
+
+  /// Explains Sandhi search mode
+  ///
+  /// In en, this message translates to:
+  /// **'Find joined or split compound words (Malayalam & Sanskrit)'**
+  String get searchOptionSandhiNote;
+
+  /// Phonetic sound-alike search option
+  ///
+  /// In en, this message translates to:
+  /// **'Phonetic matching'**
+  String get searchOptionPhonetic;
+
+  /// Explains phonetic search mode
+  ///
+  /// In en, this message translates to:
+  /// **'Match sound-alike letters, anusvara nasals, and chillu variations'**
+  String get searchOptionPhoneticNote;
 
   /// Title of the scanned-PDF notice
   ///
@@ -1075,6 +1105,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'PDF protected'**
   String get protectDoneTitle;
+
+  /// Action to remove a PDF password
+  ///
+  /// In en, this message translates to:
+  /// **'Remove password'**
+  String get removePasswordAction;
 
   /// Subtitle for the unlock action
   ///
@@ -1825,6 +1861,2118 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This certificate has expired.'**
   String get trustStoreExpiredWarning;
+
+  /// Action to crop blank page margins
+  ///
+  /// In en, this message translates to:
+  /// **'Trim margins'**
+  String get trimMarginsAction;
+
+  /// Title of the smart margin trim dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Margin Trim'**
+  String get trimMarginsTitle;
+
+  /// Description of smart margin trimming
+  ///
+  /// In en, this message translates to:
+  /// **'Crops blank page margins for mobile reading.'**
+  String get trimMarginsDescription;
+
+  /// Progress message while trimming margins
+  ///
+  /// In en, this message translates to:
+  /// **'Trimming blank page margins…'**
+  String get trimMarginsWorking;
+
+  /// Title shown when margin trim succeeds
+  ///
+  /// In en, this message translates to:
+  /// **'Margins trimmed'**
+  String get trimMarginsDoneTitle;
+
+  /// Note on trimmed PDF result
+  ///
+  /// In en, this message translates to:
+  /// **'Blank margins cropped to fit mobile screens.'**
+  String get trimMarginsDoneNote;
+
+  /// Label for margin padding selector
+  ///
+  /// In en, this message translates to:
+  /// **'Margin padding'**
+  String get trimPaddingLabel;
+
+  /// Tight padding option
+  ///
+  /// In en, this message translates to:
+  /// **'Tight (4 pt)'**
+  String get trimPaddingTight;
+
+  /// Standard padding option
+  ///
+  /// In en, this message translates to:
+  /// **'Standard (12 pt)'**
+  String get trimPaddingStandard;
+
+  /// Comfortable padding option
+  ///
+  /// In en, this message translates to:
+  /// **'Comfortable (24 pt)'**
+  String get trimPaddingComfortable;
+
+  /// Label for symmetric margin toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Symmetric margins'**
+  String get trimSymmetricLabel;
+
+  /// Help text for symmetric margin toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Keeps left and right margins balanced.'**
+  String get trimSymmetricHelp;
+
+  /// Action to create a foldable booklet
+  ///
+  /// In en, this message translates to:
+  /// **'Create booklet'**
+  String get bookletAction;
+
+  /// Title of the booklet imposition dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Foldable Booklet (2-Up)'**
+  String get bookletTitle;
+
+  /// Description of booklet imposition
+  ///
+  /// In en, this message translates to:
+  /// **'Generates a 2-Up foldable booklet imposition layout for double-sided printing.'**
+  String get bookletDescription;
+
+  /// Progress message while generating booklet
+  ///
+  /// In en, this message translates to:
+  /// **'Generating booklet layout…'**
+  String get bookletWorking;
+
+  /// Title shown when booklet generation succeeds
+  ///
+  /// In en, this message translates to:
+  /// **'Booklet generated'**
+  String get bookletDoneTitle;
+
+  /// Printing and folding advice for generated booklet
+  ///
+  /// In en, this message translates to:
+  /// **'Print double-sided (flip on short edge) and fold in half along the center spine.'**
+  String get bookletDoneNote;
+
+  /// Title for booklet plan summary card
+  ///
+  /// In en, this message translates to:
+  /// **'Booklet layout summary'**
+  String get bookletSummaryTitle;
+
+  /// Page count mapping in booklet summary
+  ///
+  /// In en, this message translates to:
+  /// **'{source} original pages -> {padded} booklet pages'**
+  String bookletSummaryPages(int source, int padded);
+
+  /// Sheet and face count in booklet summary
+  ///
+  /// In en, this message translates to:
+  /// **'{sheets, plural, =1{1 physical landscape sheet} other{{sheets} physical landscape sheets}} ({faces} printable sides)'**
+  String bookletSummarySheets(int sheets, int faces);
+
+  /// Blank page count in booklet summary
+  ///
+  /// In en, this message translates to:
+  /// **'{blanks, plural, =1{1 blank filler page added at end} other{{blanks} blank filler pages added at end}}'**
+  String bookletSummaryBlanks(int blanks);
+
+  /// Label for binding direction selector
+  ///
+  /// In en, this message translates to:
+  /// **'Binding direction'**
+  String get bookletBindingLabel;
+
+  /// LTR binding direction option
+  ///
+  /// In en, this message translates to:
+  /// **'Left to Right (LTR)'**
+  String get bookletBindingLtr;
+
+  /// RTL binding direction option
+  ///
+  /// In en, this message translates to:
+  /// **'Right to Left (RTL)'**
+  String get bookletBindingRtl;
+
+  /// Label for booklet sheet size selector
+  ///
+  /// In en, this message translates to:
+  /// **'Paper size'**
+  String get bookletPaperSizeLabel;
+
+  /// Auto paper size option
+  ///
+  /// In en, this message translates to:
+  /// **'Match source'**
+  String get bookletPaperAuto;
+
+  /// A4 landscape paper size option
+  ///
+  /// In en, this message translates to:
+  /// **'A4 Landscape'**
+  String get bookletPaperA4;
+
+  /// US Letter landscape paper size option
+  ///
+  /// In en, this message translates to:
+  /// **'US Letter'**
+  String get bookletPaperLetter;
+
+  /// Label for fold line guideline switch
+  ///
+  /// In en, this message translates to:
+  /// **'Center fold guide'**
+  String get bookletFoldGuideLabel;
+
+  /// Help text for fold line guideline switch
+  ///
+  /// In en, this message translates to:
+  /// **'Draws a faint dotted guideline showing where to fold the booklet.'**
+  String get bookletFoldGuideHelp;
+
+  /// Title of the Appearance screen
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearanceTitle;
+
+  /// Subtitle of the Appearance card
+  ///
+  /// In en, this message translates to:
+  /// **'Theme mode, typography, and colors'**
+  String get appearanceSubtitle;
+
+  /// Title of the Theme mode section
+  ///
+  /// In en, this message translates to:
+  /// **'Theme Mode'**
+  String get themeModeTitle;
+
+  /// Subtitle of the Theme mode card
+  ///
+  /// In en, this message translates to:
+  /// **'Choose between Light, Dark, System, or Sepia mode'**
+  String get themeModeSubtitle;
+
+  /// Brief subtitle for the theme mode card
+  ///
+  /// In en, this message translates to:
+  /// **'Select Light, Dark, or System'**
+  String get themeModeCardSubtitle;
+
+  /// Information explaining theme modes
+  ///
+  /// In en, this message translates to:
+  /// **'System mode automatically follows your device\'s system-wide dark mode setting. Sepia mode provides a warm, eye-comfort reading background.'**
+  String get themeModeDescription;
+
+  /// Title of Typography & Text Size section
+  ///
+  /// In en, this message translates to:
+  /// **'Typography & Text Size'**
+  String get typographyTitle;
+
+  /// Subtitle for Typography & Text Size card
+  ///
+  /// In en, this message translates to:
+  /// **'App font family and text size'**
+  String get typographySubtitle;
+
+  /// Description of typography settings
+  ///
+  /// In en, this message translates to:
+  /// **'Customize the app font family and reading text size for better readability across screens.'**
+  String get typographyDescription;
+
+  /// Label for font family picker
+  ///
+  /// In en, this message translates to:
+  /// **'Font'**
+  String get typographyFontLabel;
+
+  /// Label for text size segmented button
+  ///
+  /// In en, this message translates to:
+  /// **'Text Size'**
+  String get typographyTextSizeLabel;
+
+  /// Default system font family
+  ///
+  /// In en, this message translates to:
+  /// **'System Default'**
+  String get fontSystemDefault;
+
+  /// Manjari font family
+  ///
+  /// In en, this message translates to:
+  /// **'Manjari'**
+  String get fontManjari;
+
+  /// Anek Malayalam font family
+  ///
+  /// In en, this message translates to:
+  /// **'Anek Malayalam'**
+  String get fontAnekMalayalam;
+
+  /// Noto Sans Malayalam font family
+  ///
+  /// In en, this message translates to:
+  /// **'Noto Sans Malayalam'**
+  String get fontNotoSansMalayalam;
+
+  /// Small text size label
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get textSizeSmall;
+
+  /// Default text size label
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get textSizeDefault;
+
+  /// Large text size label
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get textSizeLarge;
+
+  /// Larger text size label
+  ///
+  /// In en, this message translates to:
+  /// **'Larger'**
+  String get textSizeLarger;
+
+  /// Latin sample text for typography preview
+  ///
+  /// In en, this message translates to:
+  /// **'The quick brown fox 0123'**
+  String get typographySampleLatin;
+
+  /// Malayalam sample text for typography preview
+  ///
+  /// In en, this message translates to:
+  /// **'മലയാളം സുന്ദരമാണ്'**
+  String get typographySampleMalayalam;
+
+  /// Title of the Accent color screen
+  ///
+  /// In en, this message translates to:
+  /// **'Accent Color'**
+  String get accentColorTitle;
+
+  /// Subtitle of the Accent color card
+  ///
+  /// In en, this message translates to:
+  /// **'Presets, color wheel, live preview'**
+  String get accentColorSubtitle;
+
+  /// Note telling which theme the edited accent applies to.
+  ///
+  /// In en, this message translates to:
+  /// **'This color is used while the app is in light mode.'**
+  String get accentAppliesToLight;
+
+  /// Note telling which theme the edited accent applies to.
+  ///
+  /// In en, this message translates to:
+  /// **'This color is used while the app is in dark mode.'**
+  String get accentAppliesToDark;
+
+  /// Live preview section label
+  ///
+  /// In en, this message translates to:
+  /// **'LIVE PREVIEW'**
+  String get livePreviewLabel;
+
+  /// Sample text on preview chip
+  ///
+  /// In en, this message translates to:
+  /// **'Sample text'**
+  String get sampleText;
+
+  /// Presets section label
+  ///
+  /// In en, this message translates to:
+  /// **'PRESETS'**
+  String get presetsLabel;
+
+  /// Custom color wheel label
+  ///
+  /// In en, this message translates to:
+  /// **'CUSTOM COLOR WHEEL'**
+  String get customColorWheelLabel;
+
+  /// Button to reset color
+  ///
+  /// In en, this message translates to:
+  /// **'Reset to default'**
+  String get resetToDefault;
+
+  /// Button to reset Light theme accent
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Light to default'**
+  String get resetLightToDefault;
+
+  /// Button to reset Dark theme accent
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Dark to default'**
+  String get resetDarkToDefault;
+
+  /// Notice for automatic contrast adjustment
+  ///
+  /// In en, this message translates to:
+  /// **'Text contrast is adjusted automatically for readability.'**
+  String get contrastNotice;
+
+  /// Title of the Permissions screen
+  ///
+  /// In en, this message translates to:
+  /// **'Permissions'**
+  String get permissionsTitle;
+
+  /// Subtitle of the Permissions card
+  ///
+  /// In en, this message translates to:
+  /// **'Storage, virtual print service and privacy capabilities'**
+  String get permissionsSubtitle;
+
+  /// Tooltip to open system app settings
+  ///
+  /// In en, this message translates to:
+  /// **'Open system settings'**
+  String get permissionsOpenSettings;
+
+  /// Header for explicit system capabilities
+  ///
+  /// In en, this message translates to:
+  /// **'Capabilities'**
+  String get permissionsExplicitHeader;
+
+  /// Subtitle for explicit capabilities
+  ///
+  /// In en, this message translates to:
+  /// **'Features and system roles designed for safe document access.'**
+  String get permissionsExplicitSubtitle;
+
+  /// Header for implicit privacy items
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & System Declarations'**
+  String get permissionsImplicitHeader;
+
+  /// Subtitle for implicit declarations
+  ///
+  /// In en, this message translates to:
+  /// **'Declared in the manifest; 100% safe offline processing.'**
+  String get permissionsImplicitSubtitle;
+
+  /// Title for scoped storage
+  ///
+  /// In en, this message translates to:
+  /// **'Scoped Storage (SAF)'**
+  String get permScopedStorageTitle;
+
+  /// Reason for scoped storage
+  ///
+  /// In en, this message translates to:
+  /// **'Open and save documents securely via the Android system file picker without broad device storage permissions.'**
+  String get permScopedStorageReason;
+
+  /// Title for virtual print service
+  ///
+  /// In en, this message translates to:
+  /// **'Virtual Print Service'**
+  String get permPrintServiceTitle;
+
+  /// Reason for virtual print service
+  ///
+  /// In en, this message translates to:
+  /// **'Allows other Android apps to print documents directly to SreerajP PDF App.'**
+  String get permPrintServiceReason;
+
+  /// Title for offline guarantee
+  ///
+  /// In en, this message translates to:
+  /// **'100% Offline & Private'**
+  String get permOfflineTitle;
+
+  /// Reason for offline guarantee
+  ///
+  /// In en, this message translates to:
+  /// **'Zero internet permissions. Your documents and data never leave this device.'**
+  String get permOfflineReason;
+
+  /// Title for TTS query
+  ///
+  /// In en, this message translates to:
+  /// **'Text-to-Speech Engine'**
+  String get permTtsTitle;
+
+  /// Reason for TTS query
+  ///
+  /// In en, this message translates to:
+  /// **'Queries installed speech engines for reading documents aloud in English and Malayalam.'**
+  String get permTtsReason;
+
+  /// Title for process text capability
+  ///
+  /// In en, this message translates to:
+  /// **'Process Text Action'**
+  String get permProcessTextTitle;
+
+  /// Reason for process text capability
+  ///
+  /// In en, this message translates to:
+  /// **'Enables quick searching and text actions when selecting text in other applications.'**
+  String get permProcessTextReason;
+
+  /// Status badge for active feature
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get statusActive;
+
+  /// Status badge for system-managed item
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get statusSystem;
+
+  /// Status badge for offline guarantee
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get statusOffline;
+
+  /// Subtitle for trust store card
+  ///
+  /// In en, this message translates to:
+  /// **'Manage digital signature root certificates'**
+  String get trustStoreSubtitle;
+
+  /// Subtitle for about card
+  ///
+  /// In en, this message translates to:
+  /// **'App version, licenses, and legal info'**
+  String get aboutSubtitle;
+
+  /// Title of the Help screen and Settings card
+  ///
+  /// In en, this message translates to:
+  /// **'Help'**
+  String get helpTitle;
+
+  /// Subtitle for Help card in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Guides, setup instructions, and tips'**
+  String get helpSubtitle;
+
+  /// Title of PDF Printer topic in Help
+  ///
+  /// In en, this message translates to:
+  /// **'PDF Printer Setup'**
+  String get helpPdfPrinterTitle;
+
+  /// Subtitle of PDF Printer card in Help
+  ///
+  /// In en, this message translates to:
+  /// **'How to enable and use the virtual print service'**
+  String get helpPdfPrinterSubtitle;
+
+  /// Header for PDF Printer enable guide
+  ///
+  /// In en, this message translates to:
+  /// **'1. How to Enable the PDF Printer on Android'**
+  String get helpPdfPrinterTopicHeader;
+
+  /// Intro explanation for enabling PDF printer
+  ///
+  /// In en, this message translates to:
+  /// **'On Android, virtual print services are managed at the system level. To enable SreerajP PDF App as a system-wide printer:'**
+  String get helpPdfPrinterIntro;
+
+  /// Step 1 to enable PDF printer
+  ///
+  /// In en, this message translates to:
+  /// **'Open your Android device\'s Settings.'**
+  String get helpPdfPrinterStep1;
+
+  /// Step 2 to enable PDF printer
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Connected devices → Connection preferences → Printing (or search for \"Printing\" in your Settings search bar).'**
+  String get helpPdfPrinterStep2;
+
+  /// Step 3 to enable PDF printer
+  ///
+  /// In en, this message translates to:
+  /// **'Under Print services, find SreerajP PDF App (or your app\'s name).'**
+  String get helpPdfPrinterStep3;
+
+  /// Step 4 to enable PDF printer
+  ///
+  /// In en, this message translates to:
+  /// **'Tap it and switch the toggle to On.'**
+  String get helpPdfPrinterStep4;
+
+  /// Button to jump directly to Android print settings
+  ///
+  /// In en, this message translates to:
+  /// **'Open Print Settings'**
+  String get helpOpenPrintSettings;
+
+  /// Title of Unicode PDF Printing topic in Help
+  ///
+  /// In en, this message translates to:
+  /// **'Unicode & Malayalam PDF Printing'**
+  String get helpUnicodePrintingTitle;
+
+  /// Subtitle of Unicode PDF Printing card in Help
+  ///
+  /// In en, this message translates to:
+  /// **'Printing complex Indic scripts without broken characters'**
+  String get helpUnicodePrintingSubtitle;
+
+  /// Header for Unicode PDF Printing guide
+  ///
+  /// In en, this message translates to:
+  /// **'Printing Unicode & Malayalam Text Accurately'**
+  String get helpUnicodePrintingTopicHeader;
+
+  /// Intro explanation for Unicode PDF printing
+  ///
+  /// In en, this message translates to:
+  /// **'Standard Android printing can sometimes garble complex scripts (such as Malayalam, Hindi, or Sanskrit), resulting in broken chillu characters, disconnected conjuncts, or missing fonts. SreerajP PDF App handles complex script shaping and font embedding to generate pristine PDFs.'**
+  String get helpUnicodePrintingIntro;
+
+  /// Step 1 for Unicode PDF printing
+  ///
+  /// In en, this message translates to:
+  /// **'Enable the PDF Virtual Printer in Android Settings if you haven\'t already.'**
+  String get helpUnicodePrintingStep1;
+
+  /// Step 2 for Unicode PDF printing
+  ///
+  /// In en, this message translates to:
+  /// **'In any app (such as Chrome, WhatsApp, or Office), select Print from the menu.'**
+  String get helpUnicodePrintingStep2;
+
+  /// Step 3 for Unicode PDF printing
+  ///
+  /// In en, this message translates to:
+  /// **'Select \'SreerajP PDF App\' as the target printer instead of the standard Android \'Save as PDF\'.'**
+  String get helpUnicodePrintingStep3;
+
+  /// Step 4 for Unicode PDF printing
+  ///
+  /// In en, this message translates to:
+  /// **'The app captures the print spool, resolves Unicode glyphs and fonts, and creates a crisp, readable PDF file.'**
+  String get helpUnicodePrintingStep4;
+
+  /// Helpful tip for Unicode PDF printing
+  ///
+  /// In en, this message translates to:
+  /// **'Tip: For web articles with complex layouts, enable \'Clean Web Content\' in Printer Settings to strip unwanted ads and headers automatically.'**
+  String get helpUnicodePrintingTip;
+
+  /// Button to jump to Printer Settings
+  ///
+  /// In en, this message translates to:
+  /// **'Open Printer Settings'**
+  String get helpOpenPrinterSettings;
+
+  /// Title of TTS topic in Help
+  ///
+  /// In en, this message translates to:
+  /// **'Read Aloud (TTS) & Malayalam Voice'**
+  String get helpTtsTitle;
+
+  /// Subtitle of TTS card in Help
+  ///
+  /// In en, this message translates to:
+  /// **'Configure speech engine, voice speed, and Malayalam support'**
+  String get helpTtsSubtitle;
+
+  /// Header for TTS guide
+  ///
+  /// In en, this message translates to:
+  /// **'How to Use Read Aloud and Install Malayalam Voices'**
+  String get helpTtsTopicHeader;
+
+  /// Intro explanation for TTS
+  ///
+  /// In en, this message translates to:
+  /// **'The app can read PDF text aloud using your device\'s Text-to-Speech (TTS) engine. It supports both English and Malayalam.'**
+  String get helpTtsIntro;
+
+  /// Step 1 for TTS
+  ///
+  /// In en, this message translates to:
+  /// **'Open any text-based PDF and tap the \'Read Aloud\' (speaker) button in the top bar.'**
+  String get helpTtsStep1;
+
+  /// Step 2 for TTS
+  ///
+  /// In en, this message translates to:
+  /// **'If the Malayalam voice is not installed, go to Settings → Read Aloud (TTS) and tap \'Get the Malayalam voice\'.'**
+  String get helpTtsStep2;
+
+  /// Step 3 for TTS
+  ///
+  /// In en, this message translates to:
+  /// **'You can customize speech speed, voice pitch, sentence-ending pauses, and auto-scrolling to match your reading style.'**
+  String get helpTtsStep3;
+
+  /// Tip for TTS regarding scanned documents
+  ///
+  /// In en, this message translates to:
+  /// **'Note: Scanned documents containing only images without a selectable text layer cannot be read aloud. OCR is not supported.'**
+  String get helpTtsTip;
+
+  /// Button to jump to TTS Settings
+  ///
+  /// In en, this message translates to:
+  /// **'Open TTS Settings'**
+  String get helpOpenTtsSettings;
+
+  /// Title of Organizing Pages topic in Help
+  ///
+  /// In en, this message translates to:
+  /// **'Organizing & Modifying Pages'**
+  String get helpPageOpsTitle;
+
+  /// Subtitle of Organizing Pages card in Help
+  ///
+  /// In en, this message translates to:
+  /// **'Merge, split, reorder, rotate, booklet, and N-Up layouts'**
+  String get helpPageOpsSubtitle;
+
+  /// Header for Page Operations guide
+  ///
+  /// In en, this message translates to:
+  /// **'Page Operations & Copy-on-Write Safety'**
+  String get helpPageOpsTopicHeader;
+
+  /// Intro explanation for Page Operations
+  ///
+  /// In en, this message translates to:
+  /// **'Easily reorganize or transform pages in your PDF documents. Every operation strictly adheres to Copy-on-Write — your original document is never modified in place.'**
+  String get helpPageOpsIntro;
+
+  /// Step 1 for Page Operations
+  ///
+  /// In en, this message translates to:
+  /// **'Open a document and tap the Page Operations menu (or use the Organizer view).'**
+  String get helpPageOpsStep1;
+
+  /// Step 2 for Page Operations
+  ///
+  /// In en, this message translates to:
+  /// **'Select desired actions: Reorder pages by dragging, Rotate individual or all pages, or Delete unwanted pages.'**
+  String get helpPageOpsStep2;
+
+  /// Step 3 for Page Operations
+  ///
+  /// In en, this message translates to:
+  /// **'Use \'Booklet Creation\' for foldable 2-up booklets or \'N-Up Layout\' to fit multiple pages (2, 4, 6, 9) onto a single sheet.'**
+  String get helpPageOpsStep3;
+
+  /// Step 4 for Page Operations
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Save / Export to generate a brand new PDF file in your chosen location.'**
+  String get helpPageOpsStep4;
+
+  /// Tip for Page Operations
+  ///
+  /// In en, this message translates to:
+  /// **'Safety Guarantee: Because operations create a new file, you can experiment freely without risking loss or damage to your original PDFs.'**
+  String get helpPageOpsTip;
+
+  /// Title of Digital Signatures topic in Help
+  ///
+  /// In en, this message translates to:
+  /// **'Digital Signatures & Trust Store'**
+  String get helpSignaturesTitle;
+
+  /// Subtitle of Digital Signatures card in Help
+  ///
+  /// In en, this message translates to:
+  /// **'Offline cryptographic verification and certificate management'**
+  String get helpSignaturesSubtitle;
+
+  /// Header for Digital Signatures guide
+  ///
+  /// In en, this message translates to:
+  /// **'Verifying Digital Signatures Offline'**
+  String get helpSignaturesTopicHeader;
+
+  /// Intro explanation for Digital Signatures
+  ///
+  /// In en, this message translates to:
+  /// **'SreerajP PDF App verifies digital signatures completely offline using cryptographic algorithms (SHA-256 digests and X.509 certificate chains) with zero network requests.'**
+  String get helpSignaturesIntro;
+
+  /// Step 1 for Digital Signatures
+  ///
+  /// In en, this message translates to:
+  /// **'When opening a signed PDF, tap the Signature Badge in the top bar to inspect signer details and byte coverage.'**
+  String get helpSignaturesStep1;
+
+  /// Step 2 for Digital Signatures
+  ///
+  /// In en, this message translates to:
+  /// **'The app checks if the document has been altered or tampered with since it was signed.'**
+  String get helpSignaturesStep2;
+
+  /// Step 3 for Digital Signatures
+  ///
+  /// In en, this message translates to:
+  /// **'If a certificate shows as untrusted, you can inspect the certificate chain and add trusted root certificates in the Trust Store.'**
+  String get helpSignaturesStep3;
+
+  /// Tip for Digital Signatures
+  ///
+  /// In en, this message translates to:
+  /// **'Security Note: All cryptographic checking runs locally in Kotlin using Bouncy Castle and CertPathValidator without sending documents to any remote server.'**
+  String get helpSignaturesTip;
+
+  /// Button to jump to Trust Store
+  ///
+  /// In en, this message translates to:
+  /// **'Open Trust Store'**
+  String get helpOpenTrustStore;
+
+  /// Title of Privacy & Storage topic in Help
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & Scoped Storage'**
+  String get helpPrivacyStorageTitle;
+
+  /// Subtitle of Privacy & Storage card in Help
+  ///
+  /// In en, this message translates to:
+  /// **'Zero internet permissions and Scoped Storage security'**
+  String get helpPrivacyStorageSubtitle;
+
+  /// Header for Privacy & Storage guide
+  ///
+  /// In en, this message translates to:
+  /// **'100% Offline Privacy Guarantee'**
+  String get helpPrivacyStorageTopicHeader;
+
+  /// Intro explanation for Privacy & Storage
+  ///
+  /// In en, this message translates to:
+  /// **'Your privacy is paramount. SreerajP PDF App is built from the ground up to operate in total isolation without internet connectivity.'**
+  String get helpPrivacyStorageIntro;
+
+  /// Step 1 for Privacy & Storage
+  ///
+  /// In en, this message translates to:
+  /// **'Zero Internet: The app\'s manifest contains no INTERNET permission. It cannot transmit data or collect analytics.'**
+  String get helpPrivacyStorageStep1;
+
+  /// Step 2 for Privacy & Storage
+  ///
+  /// In en, this message translates to:
+  /// **'Scoped Storage (SAF): The app only accesses files you explicitly pick via Android\'s system file picker.'**
+  String get helpPrivacyStorageStep2;
+
+  /// Step 3 for Privacy & Storage
+  ///
+  /// In en, this message translates to:
+  /// **'Temporary Cache Management: Render caches and printer spool files can be cleared at any time from Storage Settings.'**
+  String get helpPrivacyStorageStep3;
+
+  /// Tip for Privacy & Storage
+  ///
+  /// In en, this message translates to:
+  /// **'Password Safety: Passwords entered for encrypted PDFs are kept in volatile memory only and are never saved to disk or logged.'**
+  String get helpPrivacyStorageTip;
+
+  /// Button to jump to Storage Settings
+  ///
+  /// In en, this message translates to:
+  /// **'Open Storage & Privacy Settings'**
+  String get helpOpenStorageSettings;
+
+  /// Title of Language settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get languageTitle;
+
+  /// Subtitle of Language settings card
+  ///
+  /// In en, this message translates to:
+  /// **'Choose app language'**
+  String get languageSubtitle;
+
+  /// Option to follow system language
+  ///
+  /// In en, this message translates to:
+  /// **'System Default'**
+  String get languageSystem;
+
+  /// English language option
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// Malayalam language option
+  ///
+  /// In en, this message translates to:
+  /// **'മലയാളം (Malayalam)'**
+  String get languageMalayalam;
+
+  /// Heading for language selection
+  ///
+  /// In en, this message translates to:
+  /// **'App Language'**
+  String get languageSelectTitle;
+
+  /// Description for language selection
+  ///
+  /// In en, this message translates to:
+  /// **'Changes apply immediately across the entire application.'**
+  String get languageSelectSubtitle;
+
+  /// Title of Reader settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Reader & Viewer'**
+  String get readerSettingsTitle;
+
+  /// Subtitle of Reader settings card
+  ///
+  /// In en, this message translates to:
+  /// **'Reading position, layout, zoom, and display'**
+  String get readerSettingsSubtitle;
+
+  /// Title for saving reading position
+  ///
+  /// In en, this message translates to:
+  /// **'Remember Reading Position'**
+  String get saveLastPositionTitle;
+
+  /// Subtitle for saving reading position
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically resume from the last viewed page and zoom level'**
+  String get saveLastPositionSubtitle;
+
+  /// Title for default page layout setting
+  ///
+  /// In en, this message translates to:
+  /// **'Default Page Layout'**
+  String get defaultPageLayoutTitle;
+
+  /// Subtitle for default page layout setting
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how pages are presented when opening documents'**
+  String get defaultPageLayoutSubtitle;
+
+  /// Continuous vertical scrolling option
+  ///
+  /// In en, this message translates to:
+  /// **'Continuous Scroll'**
+  String get layoutContinuous;
+
+  /// Single page horizontal swiping option
+  ///
+  /// In en, this message translates to:
+  /// **'Single Page'**
+  String get layoutSinglePage;
+
+  /// Title for double-tap zoom setting
+  ///
+  /// In en, this message translates to:
+  /// **'Double-Tap Zoom'**
+  String get doubleTapZoomTitle;
+
+  /// Subtitle for double-tap zoom setting
+  ///
+  /// In en, this message translates to:
+  /// **'Action performed on double-tapping a PDF page'**
+  String get doubleTapZoomSubtitle;
+
+  /// Fit to width zoom option
+  ///
+  /// In en, this message translates to:
+  /// **'Fit to Width'**
+  String get zoomFitWidth;
+
+  /// 200% zoom option
+  ///
+  /// In en, this message translates to:
+  /// **'Zoom to 200%'**
+  String get zoom200;
+
+  /// Title for page indicator toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Page Number Indicator'**
+  String get showPageIndicatorTitle;
+
+  /// Subtitle for page indicator toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Display page indicator pill overlay while reading'**
+  String get showPageIndicatorSubtitle;
+
+  /// Title for PDF color inversion
+  ///
+  /// In en, this message translates to:
+  /// **'Invert PDF Colors'**
+  String get invertColorsTitle;
+
+  /// Subtitle for PDF color inversion
+  ///
+  /// In en, this message translates to:
+  /// **'Inverts document colors for night-time reading'**
+  String get invertColorsSubtitle;
+
+  /// Title of TTS settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Read Aloud (TTS)'**
+  String get ttsSettingsTitle;
+
+  /// Subtitle of TTS settings card
+  ///
+  /// In en, this message translates to:
+  /// **'Voice, speech speed, pitch, and playback options'**
+  String get ttsSettingsSubtitle;
+
+  /// Title for speech speed slider
+  ///
+  /// In en, this message translates to:
+  /// **'Speech Rate'**
+  String get ttsSpeechRateTitle;
+
+  /// Speech speed display
+  ///
+  /// In en, this message translates to:
+  /// **'{rate}x speed'**
+  String ttsSpeechRateSubtitle(String rate);
+
+  /// Title for speech pitch slider
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Pitch'**
+  String get ttsPitchTitle;
+
+  /// Speech pitch display
+  ///
+  /// In en, this message translates to:
+  /// **'{pitch}x pitch'**
+  String ttsPitchSubtitle(String pitch);
+
+  /// Title for auto-scroll toggle during TTS
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-Scroll with Speech'**
+  String get ttsAutoScrollTitle;
+
+  /// Subtitle for auto-scroll toggle during TTS
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically scroll the document as sentences are spoken'**
+  String get ttsAutoScrollSubtitle;
+
+  /// Title of PDF Printer settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'PDF Virtual Printer'**
+  String get printerSettingsTitle;
+
+  /// Subtitle of PDF Printer settings card
+  ///
+  /// In en, this message translates to:
+  /// **'Print service integration, paper size, and cache'**
+  String get printerSettingsSubtitle;
+
+  /// Title for virtual printer toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Enable PDF Printer Integration'**
+  String get printerEnableTitle;
+
+  /// Subtitle for virtual printer toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Accept print jobs from other apps and save them as PDF'**
+  String get printerEnableSubtitle;
+
+  /// Title for default paper size
+  ///
+  /// In en, this message translates to:
+  /// **'Default Paper Size'**
+  String get defaultPaperSizeTitle;
+
+  /// Subtitle for default paper size
+  ///
+  /// In en, this message translates to:
+  /// **'Default page dimensions for generated PDFs'**
+  String get defaultPaperSizeSubtitle;
+
+  /// Title for default color mode
+  ///
+  /// In en, this message translates to:
+  /// **'Default Color Mode'**
+  String get defaultColorModeTitle;
+
+  /// Subtitle for default color mode
+  ///
+  /// In en, this message translates to:
+  /// **'Color output for printed documents'**
+  String get defaultColorModeSubtitle;
+
+  /// Full color option
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get colorModeColor;
+
+  /// Grayscale option
+  ///
+  /// In en, this message translates to:
+  /// **'Grayscale'**
+  String get colorModeGrayscale;
+
+  /// Monochrome option
+  ///
+  /// In en, this message translates to:
+  /// **'Monochrome (Black & White)'**
+  String get colorModeMonochrome;
+
+  /// Title for default orientation
+  ///
+  /// In en, this message translates to:
+  /// **'Default Orientation'**
+  String get defaultOrientationTitle;
+
+  /// Subtitle for default orientation
+  ///
+  /// In en, this message translates to:
+  /// **'Page orientation for print jobs'**
+  String get defaultOrientationSubtitle;
+
+  /// Auto orientation option
+  ///
+  /// In en, this message translates to:
+  /// **'Auto (Match Source)'**
+  String get orientationAuto;
+
+  /// Portrait orientation option
+  ///
+  /// In en, this message translates to:
+  /// **'Portrait'**
+  String get orientationPortrait;
+
+  /// Landscape orientation option
+  ///
+  /// In en, this message translates to:
+  /// **'Landscape'**
+  String get orientationLandscape;
+
+  /// Title for clearing printer cache
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Printer Cache'**
+  String get clearPrinterCacheTitle;
+
+  /// Subtitle for clearing printer cache
+  ///
+  /// In en, this message translates to:
+  /// **'Purge temporary PDF spool files ({size})'**
+  String clearPrinterCacheSubtitle(String size);
+
+  /// Notification when printer cache is cleared
+  ///
+  /// In en, this message translates to:
+  /// **'Printer cache cleared.'**
+  String get printerCacheCleared;
+
+  /// Title of Storage & Privacy settings screen
+  ///
+  /// In en, this message translates to:
+  /// **'Storage & Privacy'**
+  String get storageSettingsTitle;
+
+  /// Subtitle of Storage & Privacy settings card
+  ///
+  /// In en, this message translates to:
+  /// **'Recent files history and cache cleanup'**
+  String get storageSettingsSubtitle;
+
+  /// Title for remember recent files toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Remember Recent Files'**
+  String get rememberRecentFilesTitle;
+
+  /// Subtitle for remember recent files toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Save opened documents to the recents list on Home'**
+  String get rememberRecentFilesSubtitle;
+
+  /// Title for clearing recent files history
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Recent Files History'**
+  String get clearRecentFilesTitle;
+
+  /// Subtitle for clearing recent files history
+  ///
+  /// In en, this message translates to:
+  /// **'Remove all opened document records and saved positions'**
+  String get clearRecentFilesSubtitle;
+
+  /// Confirmation title for clearing recents
+  ///
+  /// In en, this message translates to:
+  /// **'Clear recent files?'**
+  String get clearRecentFilesConfirmTitle;
+
+  /// Confirmation message for clearing recents
+  ///
+  /// In en, this message translates to:
+  /// **'This will clear your recent files list and reading progress. The original PDF files on your device will NOT be deleted.'**
+  String get clearRecentFilesConfirmMessage;
+
+  /// Button to confirm clearing recents
+  ///
+  /// In en, this message translates to:
+  /// **'Clear History'**
+  String get clearRecentFilesAction;
+
+  /// Notification when recents are cleared
+  ///
+  /// In en, this message translates to:
+  /// **'Recent files history cleared.'**
+  String get recentFilesCleared;
+
+  /// Title for clearing all app cache
+  ///
+  /// In en, this message translates to:
+  /// **'Clear App Cache'**
+  String get clearTempCacheTitle;
+
+  /// Subtitle for clearing app cache
+  ///
+  /// In en, this message translates to:
+  /// **'Free up temporary space without losing data ({size})'**
+  String clearTempCacheSubtitle(String size);
+
+  /// Notification when app cache is cleared
+  ///
+  /// In en, this message translates to:
+  /// **'Temporary cache cleared.'**
+  String get tempCacheCleared;
+
+  /// Title for Security & Signatures card
+  ///
+  /// In en, this message translates to:
+  /// **'Signatures & Trust'**
+  String get securitySettingsTitle;
+
+  /// Subtitle for Security & Signatures card
+  ///
+  /// In en, this message translates to:
+  /// **'Digital signature verification and custom certificates'**
+  String get securitySettingsSubtitle;
+
+  /// Title for auto-verify signatures toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-Verify Signatures'**
+  String get autoVerifySignaturesTitle;
+
+  /// Subtitle for auto-verify signatures toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically check digital signatures when opening signed PDFs'**
+  String get autoVerifySignaturesSubtitle;
+
+  /// Title for FileProvider capability
+  ///
+  /// In en, this message translates to:
+  /// **'Secure File Provider'**
+  String get permFileProviderTitle;
+
+  /// Reason for FileProvider
+  ///
+  /// In en, this message translates to:
+  /// **'Shares temporary PDFs and extracted files with external apps without exposing private file paths.'**
+  String get permFileProviderReason;
+
+  /// What FileProvider achieves
+  ///
+  /// In en, this message translates to:
+  /// **'Enables safe sharing and printing of PDFs to external apps without compromising storage security.'**
+  String get permFileProviderWhatItAchieves;
+
+  /// Title for TTS voice data installer query
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Data Installer'**
+  String get permTtsInstallTitle;
+
+  /// Reason for TTS voice data installer query
+  ///
+  /// In en, this message translates to:
+  /// **'Opens system voice package download screens if required language voices are missing.'**
+  String get permTtsInstallReason;
+
+  /// What TTS installer achieves
+  ///
+  /// In en, this message translates to:
+  /// **'Enables guided installation of Malayalam and English speech voices without dead-ends.'**
+  String get permTtsInstallWhatItAchieves;
+
+  /// Title for Send/Share intent filter
+  ///
+  /// In en, this message translates to:
+  /// **'Receive Shares & \'Open with\''**
+  String get permSendShareTitle;
+
+  /// Reason for Send/Share intent filter
+  ///
+  /// In en, this message translates to:
+  /// **'Receives images, plain text, and PDF files shared from other applications.'**
+  String get permSendShareReason;
+
+  /// What Send/Share intent achieves
+  ///
+  /// In en, this message translates to:
+  /// **'Enables direct conversion of shared images and text into PDFs and opening PDFs from any app.'**
+  String get permSendShareWhatItAchieves;
+
+  /// Title for zero internet guarantee
+  ///
+  /// In en, this message translates to:
+  /// **'Zero Internet Guarantee'**
+  String get permZeroInternetTitle;
+
+  /// Reason for zero internet guarantee
+  ///
+  /// In en, this message translates to:
+  /// **'No android.permission.INTERNET is requested. The app runs 100% offline.'**
+  String get permZeroInternetReason;
+
+  /// What zero internet achieves
+  ///
+  /// In en, this message translates to:
+  /// **'Guarantees complete privacy with zero data leakage, tracking, or remote telemetry.'**
+  String get permZeroInternetWhatItAchieves;
+
+  /// What scoped storage achieves
+  ///
+  /// In en, this message translates to:
+  /// **'Allows reading and saving PDFs selected by the user while keeping the rest of the device private.'**
+  String get permScopedStorageWhatItAchieves;
+
+  /// What print service achieves
+  ///
+  /// In en, this message translates to:
+  /// **'Allows other Android apps to send print jobs directly to SreerajP PDF App to save as PDF.'**
+  String get permPrintServiceWhatItAchieves;
+
+  /// What offline guarantee achieves
+  ///
+  /// In en, this message translates to:
+  /// **'Ensures document contents and personal information never leave your device.'**
+  String get permOfflineWhatItAchieves;
+
+  /// What TTS engine query achieves
+  ///
+  /// In en, this message translates to:
+  /// **'Discovers installed speech engines to read documents aloud in English and Malayalam.'**
+  String get permTtsWhatItAchieves;
+
+  /// What process text achieves
+  ///
+  /// In en, this message translates to:
+  /// **'Allows selected text in any app to be processed or searched directly in SreerajP PDF App.'**
+  String get permProcessTextWhatItAchieves;
+
+  /// Header for permission reason
+  ///
+  /// In en, this message translates to:
+  /// **'Why it is needed'**
+  String get permWhyNeededHeader;
+
+  /// Header for what permission achieves
+  ///
+  /// In en, this message translates to:
+  /// **'What this achieves'**
+  String get permWhatItAchievesHeader;
+
+  /// Badge for explicit permission
+  ///
+  /// In en, this message translates to:
+  /// **'Explicit Capability'**
+  String get permTypeExplicit;
+
+  /// Badge for implicit permission
+  ///
+  /// In en, this message translates to:
+  /// **'Implicit / System Query'**
+  String get permTypeImplicit;
+
+  /// Badge for privacy guarantee
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Guarantee'**
+  String get permTypePrivacy;
+
+  /// Title for reading velocity section
+  ///
+  /// In en, this message translates to:
+  /// **'Reading Velocity & Time Estimates'**
+  String get readingVelocityTitle;
+
+  /// Subtitle for reading velocity section
+  ///
+  /// In en, this message translates to:
+  /// **'Calculates remaining reading time based on your reading speed'**
+  String get readingVelocitySubtitle;
+
+  /// Reading speed in words per minute
+  ///
+  /// In en, this message translates to:
+  /// **'{wpm} wpm'**
+  String readingSpeedLabel(int wpm);
+
+  /// Remaining reading time in current chapter
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min left in chapter'**
+  String readingTimeLeftChapter(int minutes);
+
+  /// Remaining reading time in document
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min left'**
+  String readingTimeLeftDoc(int minutes);
+
+  /// Less than a minute left to read
+  ///
+  /// In en, this message translates to:
+  /// **'< 1 min left'**
+  String get readingTimeLessMinute;
+
+  /// Toggle to show remaining reading time
+  ///
+  /// In en, this message translates to:
+  /// **'Reading Time Estimates'**
+  String get readingTimeEstimatesToggle;
+
+  /// Subtitle for reading time estimate toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Display remaining chapter and document reading time in the reader bar'**
+  String get readingTimeEstimatesToggleSubtitle;
+
+  /// Automatic responsive view mode option
+  ///
+  /// In en, this message translates to:
+  /// **'Auto (Dual-page on wide / foldables)'**
+  String get viewModeAuto;
+
+  /// Description for auto responsive view mode
+  ///
+  /// In en, this message translates to:
+  /// **'Single-page on phones; dual-page book view on foldables and tablets'**
+  String get viewModeAutoSubtitle;
+
+  /// Title for Malayalam transliteration input helper
+  ///
+  /// In en, this message translates to:
+  /// **'Malayalam Keyboard Helper'**
+  String get malayalamHelperTitle;
+
+  /// Tooltip for Malayalam input helper button
+  ///
+  /// In en, this message translates to:
+  /// **'Malayalam input helper (Manglish typing & keypad)'**
+  String get malayalamHelperTooltip;
+
+  /// Manglish transliteration tab label
+  ///
+  /// In en, this message translates to:
+  /// **'Manglish'**
+  String get malayalamKeypadTabTranslit;
+
+  /// Malayalam vowels tab label
+  ///
+  /// In en, this message translates to:
+  /// **'Vowels'**
+  String get malayalamKeypadTabVowels;
+
+  /// Malayalam consonants tab label
+  ///
+  /// In en, this message translates to:
+  /// **'Consonants'**
+  String get malayalamKeypadTabConsonants;
+
+  /// Malayalam signs and chillu letters tab label
+  ///
+  /// In en, this message translates to:
+  /// **'Signs & Chillu'**
+  String get malayalamKeypadTabSigns;
+
+  /// Title for sentence pause setting
+  ///
+  /// In en, this message translates to:
+  /// **'Sentence-Ending Pause'**
+  String get ttsSentencePauseTitle;
+
+  /// Subtitle for sentence pause setting
+  ///
+  /// In en, this message translates to:
+  /// **'{seconds}s pause between sentences'**
+  String ttsSentencePauseSubtitle(String seconds);
+
+  /// TTS currently reading a page
+  ///
+  /// In en, this message translates to:
+  /// **'Reading page {page}...'**
+  String ttsReadingPage(int page);
+
+  /// TTS playback paused
+  ///
+  /// In en, this message translates to:
+  /// **'Paused'**
+  String get ttsPaused;
+
+  /// TTS ready to read a page
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to read page {page}'**
+  String ttsReadyToRead(int page);
+
+  /// Menu title for applying watermark
+  ///
+  /// In en, this message translates to:
+  /// **'Custom watermark'**
+  String get watermarkAction;
+
+  /// Menu description for watermark
+  ///
+  /// In en, this message translates to:
+  /// **'Add text or image watermark onto pages'**
+  String get watermarkDescription;
+
+  /// Title of watermark dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Watermark'**
+  String get watermarkDialogTitle;
+
+  /// Label for watermark text input
+  ///
+  /// In en, this message translates to:
+  /// **'Watermark Text'**
+  String get watermarkTextLabel;
+
+  /// Error when watermark text is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter watermark text.'**
+  String get watermarkEmptyTextError;
+
+  /// Title when watermarked PDF is done
+  ///
+  /// In en, this message translates to:
+  /// **'Watermarked PDF Created'**
+  String get watermarkDoneTitle;
+
+  /// Label for opacity slider
+  ///
+  /// In en, this message translates to:
+  /// **'Opacity'**
+  String get watermarkOpacityLabel;
+
+  /// Label for rotation slider
+  ///
+  /// In en, this message translates to:
+  /// **'Rotation Angle'**
+  String get watermarkRotationLabel;
+
+  /// Label for font size slider
+  ///
+  /// In en, this message translates to:
+  /// **'Font Size'**
+  String get watermarkFontSizeLabel;
+
+  /// Label for color selection
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get watermarkColorLabel;
+
+  /// Switch label for tiled watermark
+  ///
+  /// In en, this message translates to:
+  /// **'Tile across page'**
+  String get watermarkTiledLabel;
+
+  /// Description for tiled watermark
+  ///
+  /// In en, this message translates to:
+  /// **'Repeats watermark pattern across entire page'**
+  String get watermarkTiledDescription;
+
+  /// Dropdown label for page range
+  ///
+  /// In en, this message translates to:
+  /// **'Apply to'**
+  String get watermarkPageRangeLabel;
+
+  /// All pages option
+  ///
+  /// In en, this message translates to:
+  /// **'All pages'**
+  String get watermarkAllPages;
+
+  /// Odd pages option
+  ///
+  /// In en, this message translates to:
+  /// **'Odd pages only'**
+  String get watermarkOddPages;
+
+  /// Even pages option
+  ///
+  /// In en, this message translates to:
+  /// **'Even pages only'**
+  String get watermarkEvenPages;
+
+  /// Button to apply watermark
+  ///
+  /// In en, this message translates to:
+  /// **'Apply Watermark'**
+  String get watermarkApplyAction;
+
+  /// Title for batch operations
+  ///
+  /// In en, this message translates to:
+  /// **'Batch Operations'**
+  String get batchOperationsTitle;
+
+  /// Description for batch operations
+  ///
+  /// In en, this message translates to:
+  /// **'Process multiple PDF files at once'**
+  String get batchOperationsDescription;
+
+  /// Label for batch operation dropdown
+  ///
+  /// In en, this message translates to:
+  /// **'Select Operation'**
+  String get batchOperationLabel;
+
+  /// Batch encrypt option
+  ///
+  /// In en, this message translates to:
+  /// **'Batch Encrypt / Protect'**
+  String get batchOpEncrypt;
+
+  /// Batch merge option
+  ///
+  /// In en, this message translates to:
+  /// **'Batch Merge'**
+  String get batchOpMerge;
+
+  /// Batch extract text option
+  ///
+  /// In en, this message translates to:
+  /// **'Batch Extract Text (.txt)'**
+  String get batchOpExtractText;
+
+  /// Batch trim margins option
+  ///
+  /// In en, this message translates to:
+  /// **'Batch Trim Margins'**
+  String get batchOpTrimMargins;
+
+  /// Batch compress option
+  ///
+  /// In en, this message translates to:
+  /// **'Batch Compress'**
+  String get batchOpCompress;
+
+  /// Header for count of selected batch files
+  ///
+  /// In en, this message translates to:
+  /// **'Selected Files ({count})'**
+  String batchSelectedFilesCount(int count);
+
+  /// Button to add more files to batch
+  ///
+  /// In en, this message translates to:
+  /// **'Add Files'**
+  String get batchAddFilesAction;
+
+  /// Empty state for batch files
+  ///
+  /// In en, this message translates to:
+  /// **'No PDF files selected. Tap Add Files to select PDFs.'**
+  String get batchNoFilesSelected;
+
+  /// Progress label for batch operation
+  ///
+  /// In en, this message translates to:
+  /// **'Processing {current} of {total}: {name}'**
+  String batchProgressLabel(int current, int total, String name);
+
+  /// Button to start batch operation
+  ///
+  /// In en, this message translates to:
+  /// **'Start Batch Operation'**
+  String get batchStartAction;
+
+  /// Summary note after batch operation completes
+  ///
+  /// In en, this message translates to:
+  /// **'Successfully processed {success} of {total} documents.'**
+  String batchDoneSummary(int success, int total);
+
+  /// Error when all batch files failed
+  ///
+  /// In en, this message translates to:
+  /// **'Batch processing failed for all documents.'**
+  String get batchFailedAll;
+
+  /// Title for N-Up multi-page layout
+  ///
+  /// In en, this message translates to:
+  /// **'N-Up multi-page layout'**
+  String get nUpAction;
+
+  /// Description for N-Up layout
+  ///
+  /// In en, this message translates to:
+  /// **'Fit 2, 4, 6, or 9 pages onto each sheet'**
+  String get nUpDescription;
+
+  /// Title of N-Up dialog
+  ///
+  /// In en, this message translates to:
+  /// **'N-Up Multi-Page Layout'**
+  String get nUpDialogTitle;
+
+  /// Label for grid layout selector
+  ///
+  /// In en, this message translates to:
+  /// **'Grid Layout'**
+  String get nUpGridLabel;
+
+  /// Label for sheet size
+  ///
+  /// In en, this message translates to:
+  /// **'Sheet Size'**
+  String get nUpSheetSizeLabel;
+
+  /// A4 sheet size
+  ///
+  /// In en, this message translates to:
+  /// **'A4'**
+  String get nUpSheetA4;
+
+  /// US Letter sheet size
+  ///
+  /// In en, this message translates to:
+  /// **'US Letter'**
+  String get nUpSheetLetter;
+
+  /// Label for sheet orientation
+  ///
+  /// In en, this message translates to:
+  /// **'Sheet Orientation'**
+  String get nUpOrientationLabel;
+
+  /// Auto orientation
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get nUpOrientationAuto;
+
+  /// Portrait orientation
+  ///
+  /// In en, this message translates to:
+  /// **'Portrait'**
+  String get nUpOrientationPortrait;
+
+  /// Landscape orientation
+  ///
+  /// In en, this message translates to:
+  /// **'Landscape'**
+  String get nUpOrientationLandscape;
+
+  /// Label for border lines toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Draw Page Borders'**
+  String get nUpBordersLabel;
+
+  /// Description for border lines toggle
+  ///
+  /// In en, this message translates to:
+  /// **'Draws subtle grid boundary line around each page slot'**
+  String get nUpBordersDescription;
+
+  /// Label for margin slider
+  ///
+  /// In en, this message translates to:
+  /// **'Margin Padding'**
+  String get nUpMarginLabel;
+
+  /// Title when N-Up PDF is created
+  ///
+  /// In en, this message translates to:
+  /// **'N-Up Multi-Page PDF Created'**
+  String get nUpDoneTitle;
+
+  /// Action to print N-Up layout
+  ///
+  /// In en, this message translates to:
+  /// **'Print N-Up multi-page grid'**
+  String get printNUpAction;
+
+  /// Description for print N-Up
+  ///
+  /// In en, this message translates to:
+  /// **'Print multiple pages per sheet (2-in-1, 4-in-1, etc.)'**
+  String get printNUpDescription;
+
+  /// Switch title for web content cleaner
+  ///
+  /// In en, this message translates to:
+  /// **'Clean Web Content (Reader Mode)'**
+  String get cleanWebContentTitle;
+
+  /// Switch subtitle for web content cleaner
+  ///
+  /// In en, this message translates to:
+  /// **'Removes headers, footers, sidebars, scripts, and ads before saving'**
+  String get cleanWebContentSubtitle;
+
+  /// Notice for multiple pages deleted
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 page deleted} other{{count} pages deleted}}'**
+  String pagesDeletedCount(int count);
+
+  /// Selected count in organizer
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String organizeSelectedCount(int count);
+
+  /// Select all pages action
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get selectAllAction;
+
+  /// Deselect all pages action
+  ///
+  /// In en, this message translates to:
+  /// **'Deselect'**
+  String get deselectAllAction;
+
+  /// Invert page selection action
+  ///
+  /// In en, this message translates to:
+  /// **'Invert'**
+  String get invertSelectionAction;
+
+  /// Action to export a certificate
+  ///
+  /// In en, this message translates to:
+  /// **'Export Certificate'**
+  String get trustStoreExportAction;
+
+  /// Action to export all certificates
+  ///
+  /// In en, this message translates to:
+  /// **'Export All Certificates'**
+  String get trustStoreExportAllAction;
+
+  /// Toast when certificate export succeeds
+  ///
+  /// In en, this message translates to:
+  /// **'Certificate exported to {name}'**
+  String trustStoreExportSuccess(String name);
+
+  /// Action to trust signer certificate
+  ///
+  /// In en, this message translates to:
+  /// **'Trust Signer'**
+  String get signatureTrustSignerAction;
+
+  /// Label for unnamed signature
+  ///
+  /// In en, this message translates to:
+  /// **'Digital Signature'**
+  String get signatureUnnamed;
+
+  /// Label for signature time
+  ///
+  /// In en, this message translates to:
+  /// **'Signing Time'**
+  String get signatureTimeLabel;
+
+  /// Note when signing time is a claim
+  ///
+  /// In en, this message translates to:
+  /// **'unverified claim'**
+  String get signatureTimeClaimOnly;
+
+  /// Label for document integrity
+  ///
+  /// In en, this message translates to:
+  /// **'Document Integrity'**
+  String get signatureIntegrityLabel;
+
+  /// Integrity valid description
+  ///
+  /// In en, this message translates to:
+  /// **'Document unmodified since signing'**
+  String get signatureIntegrityValid;
+
+  /// Integrity invalid description
+  ///
+  /// In en, this message translates to:
+  /// **'Document modified after signing'**
+  String get signatureIntegrityInvalid;
+
+  /// Integrity unknown description
+  ///
+  /// In en, this message translates to:
+  /// **'Integrity could not be verified'**
+  String get signatureIntegrityUnknown;
+
+  /// Label for byte coverage
+  ///
+  /// In en, this message translates to:
+  /// **'Byte Coverage'**
+  String get signatureCoverageLabel;
+
+  /// Whole document coverage description
+  ///
+  /// In en, this message translates to:
+  /// **'Signature covers the entire document'**
+  String get signatureCoversWholeFile;
+
+  /// Partial document coverage description
+  ///
+  /// In en, this message translates to:
+  /// **'Signature covers only part of the document'**
+  String get signatureCoversPartialFile;
+
+  /// Header for signer certificate section
+  ///
+  /// In en, this message translates to:
+  /// **'Signer Certificate Details'**
+  String get signatureCertificateHeader;
+
+  /// Title of the Features screen and Settings card
+  ///
+  /// In en, this message translates to:
+  /// **'Features'**
+  String get featuresTitle;
+
+  /// Subtitle for Features card in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Explore all features of SreerajP PDF App'**
+  String get featuresSubtitle;
+
+  /// Header title of the Features screen
+  ///
+  /// In en, this message translates to:
+  /// **'SreerajP PDF App Features'**
+  String get featuresHeaderTitle;
+
+  /// Header subtitle of the Features screen
+  ///
+  /// In en, this message translates to:
+  /// **'Explore every intelligent tool, privacy safeguard, and PDF feature designed for you.'**
+  String get featuresHeaderSubtitle;
+
+  /// Category title for viewing features
+  ///
+  /// In en, this message translates to:
+  /// **'PDF Viewing & Navigation Engine'**
+  String get featuresCategoryViewing;
+
+  /// Category subtitle for viewing features
+  ///
+  /// In en, this message translates to:
+  /// **'High-performance rendering, continuous scrolling, book view, and smart navigation'**
+  String get featuresCategoryViewingSubtitle;
+
+  /// Category title for search and speech features
+  ///
+  /// In en, this message translates to:
+  /// **'Search, Indic Phonetics & Speech'**
+  String get featuresCategorySearch;
+
+  /// Category subtitle for search and speech features
+  ///
+  /// In en, this message translates to:
+  /// **'Sandhi-aware Indic search, Malayalam transliteration, and text-to-speech'**
+  String get featuresCategorySearchSubtitle;
+
+  /// Category title for annotations
+  ///
+  /// In en, this message translates to:
+  /// **'Annotation Overlay & Markups'**
+  String get featuresCategoryAnnotations;
+
+  /// Category subtitle for annotations
+  ///
+  /// In en, this message translates to:
+  /// **'Non-destructive markups, ink drawing, notes, and PDF flattening'**
+  String get featuresCategoryAnnotationsSubtitle;
+
+  /// Category title for page operations
+  ///
+  /// In en, this message translates to:
+  /// **'Page Operations & Reorganization'**
+  String get featuresCategoryPageOps;
+
+  /// Category subtitle for page operations
+  ///
+  /// In en, this message translates to:
+  /// **'Visual page organizer, booklet imposition, watermarks, and batch tools'**
+  String get featuresCategoryPageOpsSubtitle;
+
+  /// Category title for data extraction
+  ///
+  /// In en, this message translates to:
+  /// **'Data Extraction & Utilities'**
+  String get featuresCategoryExtraction;
+
+  /// Category subtitle for data extraction
+  ///
+  /// In en, this message translates to:
+  /// **'Extract plain text, embedded images, form fields, and metadata'**
+  String get featuresCategoryExtractionSubtitle;
+
+  /// Category title for printer and importer
+  ///
+  /// In en, this message translates to:
+  /// **'Virtual Printer & Share Hub'**
+  String get featuresCategoryPrinter;
+
+  /// Category subtitle for printer and importer
+  ///
+  /// In en, this message translates to:
+  /// **'System-wide virtual PDF printer, web cleaner, and image/text conversion'**
+  String get featuresCategoryPrinterSubtitle;
+
+  /// Category title for signatures
+  ///
+  /// In en, this message translates to:
+  /// **'Digital Signatures & Trust Store'**
+  String get featuresCategorySignatures;
+
+  /// Category subtitle for signatures
+  ///
+  /// In en, this message translates to:
+  /// **'Native cryptographic verification, visual stamp badges, and custom trust store'**
+  String get featuresCategorySignaturesSubtitle;
+
+  /// Category title for themes
+  ///
+  /// In en, this message translates to:
+  /// **'Themes & Customization'**
+  String get featuresCategoryThemes;
+
+  /// Category subtitle for themes
+  ///
+  /// In en, this message translates to:
+  /// **'OLED dark mode, custom typography, HSV accent color picker, and settings hubs'**
+  String get featuresCategoryThemesSubtitle;
+
+  /// Category title for help guides
+  ///
+  /// In en, this message translates to:
+  /// **'Built-In User Guides'**
+  String get featuresCategoryGuides;
+
+  /// Category subtitle for help guides
+  ///
+  /// In en, this message translates to:
+  /// **'Comprehensive offline tutorials and troubleshooting guides'**
+  String get featuresCategoryGuidesSubtitle;
+
+  /// Header title of the Help screen
+  ///
+  /// In en, this message translates to:
+  /// **'Help Center & Knowledge Base'**
+  String get helpHeaderTitle;
+
+  /// Header subtitle of the Help screen
+  ///
+  /// In en, this message translates to:
+  /// **'Browse in-depth guides and solutions for all features of SreerajP PDF App.'**
+  String get helpHeaderSubtitle;
+
+  /// Help section header for printing
+  ///
+  /// In en, this message translates to:
+  /// **'Printing & Conversion'**
+  String get helpSectionPrinting;
+
+  /// Help section header for reading
+  ///
+  /// In en, this message translates to:
+  /// **'Reading & Speech'**
+  String get helpSectionReading;
+
+  /// Help section header for page operations
+  ///
+  /// In en, this message translates to:
+  /// **'Document Operations'**
+  String get helpSectionPageOps;
+
+  /// Help section header for security
+  ///
+  /// In en, this message translates to:
+  /// **'Security & Privacy'**
+  String get helpSectionSecurity;
 }
 
 class _AppLocalizationsDelegate
