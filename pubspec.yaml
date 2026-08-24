@@ -3,7 +3,7 @@ description: "SreerajP PDF App — an offline Android app for everything PDF."
 publish_to: 'none'
 
 # version/build. Keep in sync with assets/config/app_config.json (ConfigService checks this).
-version: 2.7.1+21
+version: 2.7.2+22
 
 environment:
   sdk: ^3.12.2

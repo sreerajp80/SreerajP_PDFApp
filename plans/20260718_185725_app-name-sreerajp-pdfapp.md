@@ -1,6 +1,9 @@
 # Change Android app display name to SreerajP_PDFApp
 
-**Status:** approval_pending
+**Status:** dropped
+
+> Dropped: superseded by [20260818_212300_update_app_name.md](20260818_212300_update_app_name.md),
+> which set the display name to 'SreerajP PDF App'. No change log exists for this plan.
 
 ## Issue
 

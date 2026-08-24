@@ -10,7 +10,7 @@
 We resolved the issue where signatures using the legacy `adbe.pkcs7.sha1` subfilter were incorrectly verified as cryptographically invalid.
 
 1. **Subfilter-aware CMS Parsing**
-   - Updated [SignatureHandler.kt](file:///l:/Android/SreerajP_PDFApp/android/app/src/main/kotlin/in/sreerajp/pdfapp/SignatureHandler.kt) to check the signature `SubFilter`.
+   - Updated [SignatureHandler.kt](android/app/src/main/kotlin/in/sreerajp/pdfapp/SignatureHandler.kt) to check the signature `SubFilter`.
    - If the subfilter is `adbe.pkcs7.sha1`, the CMS container is parsed without passing the document bytes (since the digest is encapsulated inside the CMS object, unlike detached signatures).
 
 2. **Manual Digest Validation**

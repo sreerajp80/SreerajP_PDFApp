@@ -1,6 +1,6 @@
 # Plan: Settings Screen Redesign with Section Cards, Appearance (Theme & Accent Color), and Permissions
 
-**Status:** Proposed
+**Status:** completed
 
 ## 1. Overview
 The Settings screen will be updated to use modern card-based sections modeled after the reference application design. Additionally, the Appearance configuration will be expanded to include Theme Mode selection and customizable Accent Color (with presets, live preview, and custom HSV color wheel), and a dedicated Permissions screen will be introduced to explain scoped storage, system virtual print service, and offline privacy capabilities.

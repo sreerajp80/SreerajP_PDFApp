@@ -1443,5 +1443,24 @@
   "helpSectionPageOps": "Document Operations",
   "@helpSectionPageOps": { "description": "Help section header for page operations" },
   "helpSectionSecurity": "Security & Privacy",
-  "@helpSectionSecurity": { "description": "Help section header for security" }
+  "@helpSectionSecurity": { "description": "Help section header for security" },
+  "aboutVersionLabel": "Version",
+  "@aboutVersionLabel": { "description": "Label for the version row on the About screen" },
+  "imageFormatPngLossless": "PNG (Lossless)",
+  "@imageFormatPngLossless": { "description": "PNG option in the page-image export format picker" },
+  "imageFormatJpeg": "JPEG",
+  "@imageFormatJpeg": { "description": "JPEG option in the page-image export format picker" },
+  "nUpPagesPerSheet": "{count}-in-1",
+  "@nUpPagesPerSheet": {
+    "description": "N-up grid option label, e.g. 2-in-1 means two pages on one sheet",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "pageJumpRangeHint": "{min} \u2013 {max}",
+  "@pageJumpRangeHint": {
+    "description": "Allowed page-number range shown under the go-to-page input",
+    "placeholders": {
+      "min": { "type": "int" },
+      "max": { "type": "int" }
+    }
+  }
 }

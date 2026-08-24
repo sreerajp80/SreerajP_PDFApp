@@ -144,7 +144,10 @@ void main() {
 
       // Features card
       expect(find.text('Features'), findsOneWidget);
-      expect(find.text('Explore all features of SreerajP PDF App'), findsOneWidget);
+      expect(
+        find.text('Explore all features of SreerajP PDF App'),
+        findsOneWidget,
+      );
 
       // Language card
       expect(find.text('Language'), findsOneWidget);

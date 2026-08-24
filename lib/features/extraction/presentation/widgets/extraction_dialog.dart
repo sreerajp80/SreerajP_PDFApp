@@ -339,9 +339,15 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
               ),
               const SizedBox(height: 8),
               SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: 'png', label: Text('PNG (Lossless)')),
-                  ButtonSegment(value: 'jpeg', label: Text('JPEG')),
+                segments: [
+                  ButtonSegment(
+                    value: 'png',
+                    label: Text(l10n.imageFormatPngLossless),
+                  ),
+                  ButtonSegment(
+                    value: 'jpeg',
+                    label: Text(l10n.imageFormatJpeg),
+                  ),
                 ],
                 selected: {_imageFormat},
                 onSelectionChanged: (set) {

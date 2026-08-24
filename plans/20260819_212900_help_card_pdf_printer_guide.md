@@ -1,6 +1,6 @@
 # Plan: Help Section in Settings and PDF Printer Setup Guide
 
-**Status:** Proposed
+**Status:** completed
 
 ## 1. Overview
 This plan introduces a dedicated **Help** section in the Settings screen, structured to host user guides and troubleshooting topics. Under Help, a **PDF Printer** topic card will guide users step-by-step on how to enable the virtual print service in Android system settings.

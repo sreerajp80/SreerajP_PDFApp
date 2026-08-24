@@ -2231,4 +2231,23 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get helpSectionSecurity => 'സുരക്ഷയും സ്വകാര്യതയും';
+
+  @override
+  String get aboutVersionLabel => 'പതിപ്പ്';
+
+  @override
+  String get imageFormatPngLossless => 'PNG (നഷ്ടരഹിതം)';
+
+  @override
+  String get imageFormatJpeg => 'JPEG';
+
+  @override
+  String nUpPagesPerSheet(int count) {
+    return 'ഒന്നിൽ $count';
+  }
+
+  @override
+  String pageJumpRangeHint(int min, int max) {
+    return '$min – $max';
+  }
 }

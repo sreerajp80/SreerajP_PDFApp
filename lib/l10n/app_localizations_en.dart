@@ -2214,4 +2214,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpSectionSecurity => 'Security & Privacy';
+
+  @override
+  String get aboutVersionLabel => 'Version';
+
+  @override
+  String get imageFormatPngLossless => 'PNG (Lossless)';
+
+  @override
+  String get imageFormatJpeg => 'JPEG';
+
+  @override
+  String nUpPagesPerSheet(int count) {
+    return '$count-in-1';
+  }
+
+  @override
+  String pageJumpRangeHint(int min, int max) {
+    return '$min – $max';
+  }
 }

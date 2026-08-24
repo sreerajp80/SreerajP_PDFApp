@@ -1,6 +1,6 @@
 # Fix features.md — add missing features, fix two inaccurate claims
 
-**Status:** approval_pending
+**Status:** completed
 
 ## Files to change
 

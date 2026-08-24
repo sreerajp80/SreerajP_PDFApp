@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Date/Time:** 2026-07-18 18:06:00 (Local Time)
-- **Plan Reference:** [plans/20260718_180500_fix_signature_menu_visibility.md](file:///l:/Android/SreerajP_PDFApp/plans/20260718_180500_fix_signature_menu_visibility.md)
+- **Plan Reference:** [plans/20260718_180500_fix_signature_menu_visibility.md](plans/20260718_180500_fix_signature_menu_visibility.md)
 
 ## Summary of Changes
 Fixed the bug where the "Signatures" option would not show up in the PDF viewer dotted menu on the first tap, but would appear on the second.

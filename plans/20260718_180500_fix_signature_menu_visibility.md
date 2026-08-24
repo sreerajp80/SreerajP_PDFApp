@@ -19,7 +19,7 @@ Since `itemBuilder` only executes when the menu button is tapped, the provider s
 4. Use `hasSignatures` directly in the `PopupMenuButton` item list.
 
 ## Files to be changed
-- [viewer_screen.dart](file:///l:/Android/SreerajP_PDFApp/lib/features/viewer/presentation/viewer_screen.dart)
+- [viewer_screen.dart](lib/features/viewer/presentation/viewer_screen.dart)
 
 ## Verification Plan
 - Launch the application and open a PDF containing digital signatures.

@@ -16,11 +16,7 @@ class TtsHelpScreen extends StatelessWidget {
     final accent = theme.colorScheme.primary;
     final muted = colors?.mutedText ?? theme.colorScheme.onSurfaceVariant;
 
-    final steps = [
-      l10n.helpTtsStep1,
-      l10n.helpTtsStep2,
-      l10n.helpTtsStep3,
-    ];
+    final steps = [l10n.helpTtsStep1, l10n.helpTtsStep2, l10n.helpTtsStep3];
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.helpTtsTitle)),
@@ -46,7 +42,10 @@ class TtsHelpScreen extends StatelessWidget {
                             color: accent.withValues(alpha: 0.14),
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: Icon(Icons.record_voice_over_outlined, color: accent),
+                          child: Icon(
+                            Icons.record_voice_over_outlined,
+                            color: accent,
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -137,10 +136,14 @@ class TtsHelpScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                color: theme.colorScheme.surfaceContainerHighest.withValues(
+                  alpha: 0.5,
+                ),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: theme.colorScheme.outlineVariant.withValues(alpha: 0.4),
+                  color: theme.colorScheme.outlineVariant.withValues(
+                    alpha: 0.4,
+                  ),
                 ),
               ),
               child: Row(

@@ -3,7 +3,7 @@
 **Status:** completed
 
 ## Files to be changed
-* [AndroidManifest.xml](file:///l:/Android/SreerajP_PDFApp/android/app/src/main/AndroidManifest.xml)
+* [AndroidManifest.xml](android/app/src/main/AndroidManifest.xml)
 
 ## Issue
 Currently, the application only registers an intent filter for the `VIEW` action with MIME type `application/pdf` and schemes `content` and `file`. This causes the app to miss PDF files that are shared or opened:

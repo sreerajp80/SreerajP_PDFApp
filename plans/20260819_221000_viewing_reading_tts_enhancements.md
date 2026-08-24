@@ -1,6 +1,6 @@
 # Viewing, Reading & TTS Enhancements Plan
 
-**Status:** Completed
+**Status:** completed
 
 ## Overview
 This plan implements five major enhancements requested for the PDF App across Viewing & Navigation and Reading, Search & Speech:

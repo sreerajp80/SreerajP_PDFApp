@@ -2,7 +2,7 @@
 
 **Status:** completed
 
-Implements Phase 8 of [pdf-app-implementation-plan.md](file:///l:/Android/SreerajP_PDFApp/docs/pdf-app-implementation-plan.md) (§5, §11). This is the final phase of the project, focusing on production-readiness, accessibility compliance, performance checks, security verification, and release tooling.
+Implements Phase 8 of [pdf-app-implementation-plan.md](docs/pdf-app-implementation-plan.md) (§5, §11). This is the final phase of the project, focusing on production-readiness, accessibility compliance, performance checks, security verification, and release tooling.
 
 ---
 
@@ -22,18 +22,18 @@ The application functionality is complete up to Phase 7. To prepare it for relea
 
 ### Build & Release Configuration
 
-#### [MODIFY] [build.gradle.kts](file:///l:/Android/SreerajP_PDFApp/android/app/build.gradle.kts)
+#### [MODIFY] [build.gradle.kts](android/app/build.gradle.kts)
 - Implement dynamic loading of `key.properties` at the top level of the file.
 - Configure `signingConfigs.release` to read parameters if `key.properties` exists.
 - Configure the `release` build type to use the `release` signing config if available, falling back to the `debug` signing config so local development builds continue to run.
 - Add an `afterEvaluate` task checking if the task contains `assembleProdRelease` or `bundleProdRelease`. If `key.properties` is missing, fail the build with a descriptive `GradleException` explaining how to configure signing.
 
-#### [NEW] [key.properties.example](file:///l:/Android/SreerajP_PDFApp/android/key.properties.example)
+#### [NEW] [key.properties.example](android/key.properties.example)
 - Create a template containing dummy/example keys (`storeFile`, `storePassword`, `keyAlias`, `keyPassword`) to serve as a guide for developers without exposing production secrets.
 
 ### Database Test Fixes
 
-#### [MODIFY] [migration_v3_test.dart](file:///l:/Android/SreerajP_PDFApp/test/core/storage/migration_v3_test.dart)
+#### [MODIFY] [migration_v3_test.dart](test/core/storage/migration_v3_test.dart)
 - Update `expect(await db.getVersion(), 3);` to expect `AppConstants.databaseVersion` (which is 4) since the database migrations have been upgraded to support the signature trust store. This will fix the test assertion and prevent cascading failures in subsequent in-memory tests.
 
 ### Accessibility, Manifest, & Performance Audits
@@ -47,17 +47,17 @@ The application functionality is complete up to Phase 7. To prepare it for relea
 
 ### Documentation
 
-#### [NEW] [security.md](file:///l:/Android/SreerajP_PDFApp/docs/security.md)
+#### [NEW] [security.md](docs/security.md)
 - Document the application's security posture, specifically detailing:
   - Encryption and password handling policies (stored in memory, not logged, never in `SharedPreferences`).
   - Trust store integrity checks (user trust certificate validation logic).
   - Scoped storage boundaries (SAF, no broad permissions).
   - Merged manifest analysis showing zero internet permission.
 
-#### [MODIFY] [architecture.md](file:///l:/Android/SreerajP_PDFApp/docs/architecture.md)
+#### [MODIFY] [architecture.md](docs/architecture.md)
 - Verify and fill in the final database schema, version (v4), method channels, and folder structure.
 
-#### [NEW] [CHANGELOG.md](file:///l:/Android/SreerajP_PDFApp/CHANGELOG.md)
+#### [NEW] [CHANGELOG.md](CHANGELOG.md)
 - Create a central `CHANGELOG.md` at the project root documenting all releases and phases from Phase 0 to Phase 8.
 
 ---

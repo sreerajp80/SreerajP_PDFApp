@@ -1,6 +1,6 @@
 # Implementation Plan — Smart Margin Trimming & Foldable Booklet Imposition Engine (Feature 2.7)
 
-**Status:** Completed
+**Status:** completed
 
 This plan details the implementation of Feature 2.7: **Smart Margin Trimming & Foldable Booklet Imposition Engine** for SreerajP PDF App.
 

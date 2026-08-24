@@ -1,6 +1,11 @@
-# Feature Analysis and Product Roadmap — SreerajP_PDFApp
+# Feature Analysis and Product Roadmap — SreerajP PDF App
+
+**Date:** 2026-08-19
+**Scope:** Feature inventory and forward roadmap for the app.
 
 This document details completed features, upcoming unique features, existing feature enhancements, and ecosystem app integrations for the **SreerajP PDF App**. It focuses on features that are absent from mainstream Android PDF applications (such as Adobe Acrobat, Foxit, PDF Extra, ReadEra, and Xodo), while respecting all project rules: **open-source only**, **offline-first**, **scoped storage only**, **copy-on-write**, and **no OCR**.
+
+> Read first: [../CLAUDE.md](../CLAUDE.md) for the project rules, [features.md](features.md) for what already ships, and [architecture.md](architecture.md) for the technical design.
 
 ---
 

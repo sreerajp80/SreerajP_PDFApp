@@ -70,4 +70,3 @@ class SettingsNavCard extends StatelessWidget {
     );
   }
 }
-

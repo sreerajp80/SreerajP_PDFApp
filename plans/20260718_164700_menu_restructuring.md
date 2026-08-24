@@ -1,6 +1,6 @@
 # Restructure Viewer Menu and Move Actions to Popup Menu
 
-**Status:** `completed`
+**Status:** completed
 
 ## 1. Issue Description
 The user wants to simplify and clean up the PDF viewer UI:

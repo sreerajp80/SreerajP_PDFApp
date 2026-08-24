@@ -55,7 +55,12 @@ class FeaturesScreen extends StatelessWidget {
             description:
                 'Switch between Single Page, Continuous Vertical Scrolling, and Two-Page Book view with Fit to Width or Fit to Page options.',
             icon: Icons.view_carousel_outlined,
-            highlights: ['Single Page', 'Continuous Scroll', 'Book View', 'Fit Modes'],
+            highlights: [
+              'Single Page',
+              'Continuous Scroll',
+              'Book View',
+              'Fit Modes',
+            ],
           ),
           _AppFeature(
             title: 'Foldable & Dual-Screen Support',
@@ -90,7 +95,11 @@ class FeaturesScreen extends StatelessWidget {
             description:
                 'SHA-256 fingerprinting preserves reading positions, zoom, and annotations even if files are renamed or moved.',
             icon: Icons.history_outlined,
-            highlights: ['SHA-256 Fingerprint', 'Last Read State', 'Recent Files'],
+            highlights: [
+              'SHA-256 Fingerprint',
+              'Last Read State',
+              'Recent Files',
+            ],
           ),
         ],
       ),
@@ -104,35 +113,55 @@ class FeaturesScreen extends StatelessWidget {
             description:
                 'Instant keyword search with match counting, bright highlight overlays, and grapheme-aligned navigation.',
             icon: Icons.find_in_page_outlined,
-            highlights: ['Instant Search', 'Match Counter', 'Grapheme Alignment'],
+            highlights: [
+              'Instant Search',
+              'Match Counter',
+              'Grapheme Alignment',
+            ],
           ),
           _AppFeature(
             title: 'Sandhi-Aware Indic Search',
             description:
                 'Rule-based Sandhi compound splitting and joining supporting Malayalam, Sanskrit, and Devanagari rules.',
             icon: Icons.merge_type_outlined,
-            highlights: ['Sandhi Splitting', 'Compound Joining', 'Sanskrit & Malayalam'],
+            highlights: [
+              'Sandhi Splitting',
+              'Compound Joining',
+              'Sanskrit & Malayalam',
+            ],
           ),
           _AppFeature(
             title: 'Indic Phonetic Sound-Alike Engine',
             description:
                 'Unifies Anusvara nasal conjuncts, chillu and virama forms, NTA ligatures, and Samvruthokaram endings.',
             icon: Icons.hearing_outlined,
-            highlights: ['Sound-Alike Matching', 'Chillu Unification', 'NFC Normalization'],
+            highlights: [
+              'Sound-Alike Matching',
+              'Chillu Unification',
+              'NFC Normalization',
+            ],
           ),
           _AppFeature(
             title: 'Malayalam Input Helper & Virtual Keypad',
             description:
                 'Live Manglish transliteration suggestions and a 3-tab virtual keypad for vowels, consonants, and signs.',
             icon: Icons.keyboard_outlined,
-            highlights: ['Manglish Suggestions', 'Virtual Keypad', 'Zero Extra Setup'],
+            highlights: [
+              'Manglish Suggestions',
+              'Virtual Keypad',
+              'Zero Extra Setup',
+            ],
           ),
           _AppFeature(
             title: 'Offline Text-to-Speech (TTS)',
             description:
                 'Read PDF text aloud in English and Malayalam with speech rate, pitch, sentence pause sliders, and media notifications.',
             icon: Icons.record_voice_over_outlined,
-            highlights: ['English & Malayalam', 'Speed & Pitch Controls', 'Background Playback'],
+            highlights: [
+              'English & Malayalam',
+              'Speed & Pitch Controls',
+              'Background Playback',
+            ],
           ),
         ],
       ),
@@ -160,7 +189,11 @@ class FeaturesScreen extends StatelessWidget {
             description:
                 'Export annotations permanently into standard PDF annotation objects in a new copy of your document.',
             icon: Icons.picture_as_pdf_outlined,
-            highlights: ['Copy-on-Write', 'Standard PDF Annotations', 'Non-Destructive'],
+            highlights: [
+              'Copy-on-Write',
+              'Standard PDF Annotations',
+              'Non-Destructive',
+            ],
           ),
         ],
       ),
@@ -202,14 +235,22 @@ class FeaturesScreen extends StatelessWidget {
             description:
                 'Combine multiple PDFs, split pages into individual files, and compress PDFs to reduce file size.',
             icon: Icons.call_split_outlined,
-            highlights: ['Merge Multiple', 'Page Splitter', 'Smart Compression'],
+            highlights: [
+              'Merge Multiple',
+              'Page Splitter',
+              'Smart Compression',
+            ],
           ),
           _AppFeature(
             title: 'PDF Encryption & Decryption',
             description:
                 'Protect documents with AES-256 passwords or unlock encrypted files into unencrypted copies.',
             icon: Icons.lock_outline,
-            highlights: ['AES-256 Protection', 'Owner Passwords', 'Unlock Decryption'],
+            highlights: [
+              'AES-256 Protection',
+              'Owner Passwords',
+              'Unlock Decryption',
+            ],
           ),
           _AppFeature(
             title: 'Batch Operations Engine',
@@ -279,7 +320,11 @@ class FeaturesScreen extends StatelessWidget {
             description:
                 'Convert up to 100 gallery images or shared plain text into formatted multi-page PDF documents.',
             icon: Icons.collections_outlined,
-            highlights: ['Up to 100 Images', 'Plain Text Importer', 'Custom Margins'],
+            highlights: [
+              'Up to 100 Images',
+              'Plain Text Importer',
+              'Custom Margins',
+            ],
           ),
         ],
       ),
@@ -293,7 +338,11 @@ class FeaturesScreen extends StatelessWidget {
             description:
                 'Validates document integrity, byte coverage, and certificate validity offline using Bouncy Castle.',
             icon: Icons.security_outlined,
-            highlights: ['Byte Integrity', 'Byte Coverage Scope', 'Offline Validation'],
+            highlights: [
+              'Byte Integrity',
+              'Byte Coverage Scope',
+              'Offline Validation',
+            ],
           ),
           _AppFeature(
             title: 'Custom Trust Store & EU Lists',
@@ -307,7 +356,11 @@ class FeaturesScreen extends StatelessWidget {
             description:
                 'Interactive signature stamp badges on PDF pages with one-tap access to certificate chain details.',
             icon: Icons.badge_outlined,
-            highlights: ['On-Page Badges', 'Certificate Chains', 'Signer Details'],
+            highlights: [
+              'On-Page Badges',
+              'Certificate Chains',
+              'Signer Details',
+            ],
           ),
         ],
       ),
@@ -321,7 +374,11 @@ class FeaturesScreen extends StatelessWidget {
             description:
                 'Support for Light, Dark, Sepia, and OLED Pitch-Black (#000000) for maximum battery savings.',
             icon: Icons.brightness_6_outlined,
-            highlights: ['OLED Pitch-Black', 'Sepia Reading', 'System Adaptive'],
+            highlights: [
+              'OLED Pitch-Black',
+              'Sepia Reading',
+              'System Adaptive',
+            ],
           ),
           _AppFeature(
             title: 'Custom Typography & Scale',
@@ -349,7 +406,11 @@ class FeaturesScreen extends StatelessWidget {
             description:
                 'In-depth guides covering PDF printer setup, Unicode printing, TTS voice configuration, page operations, signatures, and privacy.',
             icon: Icons.menu_book_outlined,
-            highlights: ['100% Offline Guides', 'Troubleshooting', 'Step-by-Step'],
+            highlights: [
+              '100% Offline Guides',
+              'Troubleshooting',
+              'Step-by-Step',
+            ],
           ),
         ],
       ),
@@ -364,9 +425,7 @@ class FeaturesScreen extends StatelessWidget {
     final categories = _buildCategories(l10n);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.featuresTitle),
-      ),
+      appBar: AppBar(title: Text(l10n.featuresTitle)),
       body: SafeArea(
         top: false,
         child: ListView(
@@ -394,7 +453,8 @@ class FeaturesScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final secondary = theme.colorScheme.secondary;
-    final gradient = colors?.brandGradient ??
+    final gradient =
+        colors?.brandGradient ??
         LinearGradient(
           colors: [primary, secondary],
           begin: Alignment.topLeft,
@@ -484,11 +544,7 @@ class FeaturesScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                category.icon,
-                size: 18,
-                color: primary,
-              ),
+              Icon(category.icon, size: 18, color: primary),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -577,11 +633,7 @@ class FeaturesScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   feature.description,
-                  style: TextStyle(
-                    color: muted,
-                    fontSize: 13,
-                    height: 1.35,
-                  ),
+                  style: TextStyle(color: muted, fontSize: 13, height: 1.35),
                 ),
                 if (feature.highlights.isNotEmpty) ...[
                   const SizedBox(height: 8),

@@ -34,7 +34,7 @@ class AboutScreen extends ConsumerWidget {
               ),
             ),
             ListTile(
-              title: const Text('Version'),
+              title: Text(l10n.aboutVersionLabel),
               subtitle: Text('${config.version} (build ${config.build})'),
             ),
             const Divider(),

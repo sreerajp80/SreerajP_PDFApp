@@ -123,11 +123,12 @@ class _NUpDialogState extends ConsumerState<NUpDialog> {
               Text(l10n.nUpGridLabel, style: theme.textTheme.titleSmall),
               const SizedBox(height: 8),
               SegmentedButton<int>(
-                segments: const [
-                  ButtonSegment(value: 2, label: Text('2-in-1')),
-                  ButtonSegment(value: 4, label: Text('4-in-1')),
-                  ButtonSegment(value: 6, label: Text('6-in-1')),
-                  ButtonSegment(value: 9, label: Text('9-in-1')),
+                segments: [
+                  for (final count in const [2, 4, 6, 9])
+                    ButtonSegment(
+                      value: count,
+                      label: Text(l10n.nUpPagesPerSheet(count)),
+                    ),
                 ],
                 selected: {_gridCount},
                 onSelectionChanged: (set) =>

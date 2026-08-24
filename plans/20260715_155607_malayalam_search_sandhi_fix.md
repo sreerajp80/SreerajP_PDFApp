@@ -1,6 +1,6 @@
 # Malayalam Search Sandhi & Conjuncts Fix
 
-**Status:** `completed`
+**Status:** completed
 
 ## Issue
 Malayalam search fails to find terms when they are part of a Sandhi conjoined word (e.g. searching "മീനാദ" in "ചലന്മീനാദലോചനാ"). This happens because the `characters` package parses "ന്മീ" (n + virama + m + ii) as a single grapheme cluster, but the search query "മീനാദ" starts with "മീ" (m + ii). Since the matching engine only checked for matches starting exactly at grapheme cluster boundaries, it failed to match.

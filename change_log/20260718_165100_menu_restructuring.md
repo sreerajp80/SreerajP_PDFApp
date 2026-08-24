@@ -2,8 +2,7 @@
 
 This change restructuring the viewer's layout, fit, settings options, and moves action buttons to the popup menu.
 
-- **Implements Plan:** [plans/20260718_164700_menu_restructuring.md](file:///l:/Android/SreerajP_PDFApp/plans/20260718_164700_menu_restructuring.md)
-- **Walkthrough:** [walkthrough.md](file:///D:/Users/sreerajp/.gemini/antigravity-ide/brain/7701f471-b730-455c-b547-c49a5b6d78ab/walkthrough.md)
+- **Implements Plan:** [plans/20260718_164700_menu_restructuring.md](plans/20260718_164700_menu_restructuring.md)
 
 ## Summary of Changes
 

@@ -3,7 +3,7 @@
 **Status:** completed
 
 ## Issue / Task Description
-The user wants to reanalyze `docs/feature_analysis_and_roadmap.md` to update non-implemented features, mark implemented features, and add new features. Before updating, we inspected `L:\Android\MyFlutterApps\myapps.md` which lists 18 existing Flutter apps developed by the user.
+The user wants to reanalyze `docs/feature_analysis_and_roadmap.md` to update non-implemented features, mark implemented features, and add new features. Before updating, we inspected a local index of my other Flutter apps which lists 18 existing Flutter apps developed by the user.
 
 ## Files to be changed
 - `docs/feature_analysis_and_roadmap.md`

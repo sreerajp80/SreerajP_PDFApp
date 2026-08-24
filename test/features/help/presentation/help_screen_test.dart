@@ -5,7 +5,9 @@ import 'package:pdfapp/features/help/presentation/help_screen.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('renders Help screen with all 6 help topic cards', (tester) async {
+  testWidgets('renders Help screen with all 6 help topic cards', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -68,7 +70,9 @@ void main() {
     // 5. Signatures & Trust Store
     expect(find.text('Digital Signatures & Trust Store'), findsOneWidget);
     expect(
-      find.text('Offline cryptographic verification and certificate management'),
+      find.text(
+        'Offline cryptographic verification and certificate management',
+      ),
       findsOneWidget,
     );
     expect(find.byIcon(Icons.verified_user_outlined), findsOneWidget);

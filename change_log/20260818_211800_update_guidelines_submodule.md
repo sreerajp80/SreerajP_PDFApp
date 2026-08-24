@@ -4,7 +4,7 @@
 Updated the `docs/guidelines` git submodule to the latest commit on `origin/master` (`2b381be`).
 
 ## Reference Plan
-Implemented [plans/20260818_211800_update_guidelines_submodule.md](file:///l:/Android/SreerajP_PDFApp/plans/20260818_211800_update_guidelines_submodule.md).
+Implemented [plans/20260818_211800_update_guidelines_submodule.md](plans/20260818_211800_update_guidelines_submodule.md).
 
 ## Detailed Changes
 1. **`docs/guidelines`**:

@@ -63,6 +63,6 @@ Implemented the hardening and release tooling items for Phase 8 of the SreerajP 
 
 -   **ELF Page Alignment Audit:**
     ```bash
-    python D:\Users\sreerajp\.gemini\antigravity-ide\scratch\check_so_alignment.py build\app\outputs\flutter-apk\app-dev-release.apk
+    python check_so_alignment.py build/app/outputs/flutter-apk/app-dev-release.apk
     ```
     **Result:** Verified all 64-bit libraries (`libpdfium.so`, etc.) are successfully 16 KB aligned.

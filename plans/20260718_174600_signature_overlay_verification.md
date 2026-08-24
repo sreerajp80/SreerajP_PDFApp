@@ -22,21 +22,21 @@ We will solve this by:
 
 ### 1. Kotlin Signature Handler
 
-#### [MODIFY] [SignatureHandler.kt](file:///l:/Android/SreerajP_PDFApp/android/app/src/main/kotlin/in/sreerajp/pdfapp/SignatureHandler.kt)
+#### [MODIFY] [SignatureHandler.kt](android/app/src/main/kotlin/in/sreerajp/pdfapp/SignatureHandler.kt)
 - Create a private helper class/struct `SignatureLoc` to represent a signature's coordinates on a page.
 - Implement `findSignatureLocations(doc: PDDocument)` to scan all pages and find annotation widgets linked to signature dictionaries.
 - Update `verifySignatures` to scan for locations and merge them into the signature map under key `"position"`.
 
 ### 2. Dart Bridge & Domain Models
 
-#### [MODIFY] [pdf_signature.dart](file:///l:/Android/SreerajP_PDFApp/lib/features/signature/domain/pdf_signature.dart)
+#### [MODIFY] [pdf_signature.dart](lib/features/signature/domain/pdf_signature.dart)
 - Define the `SignaturePosition` domain class.
 - Update `PdfSignature` to have an optional `final SignaturePosition? position` field.
 - Parse it in `PdfSignature.fromMap`.
 
 ### 3. Flutter Viewer Screen
 
-#### [MODIFY] [viewer_screen.dart](file:///l:/Android/SreerajP_PDFApp/lib/features/viewer/presentation/viewer_screen.dart)
+#### [MODIFY] [viewer_screen.dart](lib/features/viewer/presentation/viewer_screen.dart)
 - Declare `List<SignatureVerdict>? _currentVerdicts` inside `_ViewerScreenState`.
 - Inside `_buildBody`, read the verdicts reactively to cache them for painting.
 - Pass `_paintSignatureOverlays` to `PdfViewerParams.pagePaintCallbacks`.

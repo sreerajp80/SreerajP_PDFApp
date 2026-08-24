@@ -46,7 +46,10 @@ class SignaturesHelpScreen extends StatelessWidget {
                             color: accent.withValues(alpha: 0.14),
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: Icon(Icons.verified_user_outlined, color: accent),
+                          child: Icon(
+                            Icons.verified_user_outlined,
+                            color: accent,
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -146,7 +149,11 @@ class SignaturesHelpScreen extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.security_outlined, color: Color(0xFF1565C0), size: 22),
+                  const Icon(
+                    Icons.security_outlined,
+                    color: Color(0xFF1565C0),
+                    size: 22,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(

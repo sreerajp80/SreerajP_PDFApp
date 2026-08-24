@@ -45,7 +45,10 @@ class PageOpsHelpScreen extends StatelessWidget {
                             color: accent.withValues(alpha: 0.14),
                             borderRadius: BorderRadius.circular(14),
                           ),
-                          child: Icon(Icons.dashboard_customize_outlined, color: accent),
+                          child: Icon(
+                            Icons.dashboard_customize_outlined,
+                            color: accent,
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -145,7 +148,11 @@ class PageOpsHelpScreen extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.shield_outlined, color: Color(0xFF2E7D32), size: 22),
+                  const Icon(
+                    Icons.shield_outlined,
+                    color: Color(0xFF2E7D32),
+                    size: 22,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(

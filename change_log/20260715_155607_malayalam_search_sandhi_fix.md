@@ -2,7 +2,7 @@
 
 **Status:** `completed`
 
-This change implements the plan defined in [plans/20260715_155607_malayalam_search_sandhi_fix.md](file:///l:/Android/SreerajP_PDFApp/plans/20260715_155607_malayalam_search_sandhi_fix.md).
+This change implements the plan defined in [plans/20260715_155607_malayalam_search_sandhi_fix.md](plans/20260715_155607_malayalam_search_sandhi_fix.md).
 
 ## What Was Changed
 - Modified the `findAll` method in `lib/core/search/search_normalizer.dart` to support substring search on the normalized text key instead of forcing search matches to only start at grapheme cluster boundaries.

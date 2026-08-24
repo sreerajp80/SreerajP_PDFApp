@@ -140,14 +140,16 @@ class UnicodePrintingHelpScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: accent.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: accent.withValues(alpha: 0.24),
-                ),
+                border: Border.all(color: accent.withValues(alpha: 0.24)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.tips_and_updates_outlined, color: accent, size: 22),
+                  Icon(
+                    Icons.tips_and_updates_outlined,
+                    color: accent,
+                    size: 22,
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(

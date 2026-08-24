@@ -3973,6 +3973,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Security & Privacy'**
   String get helpSectionSecurity;
+
+  /// Label for the version row on the About screen
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get aboutVersionLabel;
+
+  /// PNG option in the page-image export format picker
+  ///
+  /// In en, this message translates to:
+  /// **'PNG (Lossless)'**
+  String get imageFormatPngLossless;
+
+  /// JPEG option in the page-image export format picker
+  ///
+  /// In en, this message translates to:
+  /// **'JPEG'**
+  String get imageFormatJpeg;
+
+  /// N-up grid option label, e.g. 2-in-1 means two pages on one sheet
+  ///
+  /// In en, this message translates to:
+  /// **'{count}-in-1'**
+  String nUpPagesPerSheet(int count);
+
+  /// Allowed page-number range shown under the go-to-page input
+  ///
+  /// In en, this message translates to:
+  /// **'{min} – {max}'**
+  String pageJumpRangeHint(int min, int max);
 }
 
 class _AppLocalizationsDelegate

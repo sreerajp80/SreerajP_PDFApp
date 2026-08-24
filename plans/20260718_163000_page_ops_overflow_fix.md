@@ -1,6 +1,6 @@
 # Fix Page Tools Bottom Sheet Layout Overflow
 
-**Status:** `completed`
+**Status:** completed
 
 ## 1. Issue Description
 In `lib/features/page_ops/presentation/page_ops_sheet.dart`, the `_PageOpsSheet` widget lists six options using a `Column` widget. On smaller screens, or devices with increased font sizes/display scaling, this widget layout exceeds the vertical bounds of the bottom sheet, resulting in a layout overflow of 54 pixels.

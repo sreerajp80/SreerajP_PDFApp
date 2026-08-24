@@ -1,6 +1,6 @@
 # Indic Phonetic and Sandhi-Aware Search (Malayalam & Sanskrit)
 
-**Status:** Proposed
+**Status:** completed
 
 ## Problem
 Standard PDF search engines compare exact bytes. In Indic languages like Malayalam and Sanskrit (in Malayalam and Devanagari scripts), words often merge together using grammatical Sandhi rules (e.g. `വിദ്യ` + `ആലയം` = `വിദ്യാലയം`, `ഹിമ` + `ആലയം` = `ഹിമാലയം`, `സത്` + `ചരിതം` = `സച്ചരിതം`, `നമഃ` + `തേ` = `നമസ്തേ`, `ഗംഗ` vs `ഗങ്ഗ` / `गंगा` vs `गङ्गा`).

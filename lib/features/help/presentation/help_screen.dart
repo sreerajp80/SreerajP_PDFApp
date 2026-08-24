@@ -24,7 +24,12 @@ class HelpScreen extends StatelessWidget {
             _buildHeaderCard(context, l10n, colors),
             const SizedBox(height: 20),
 
-            _buildSectionHeader(context, l10n.helpSectionPrinting, Icons.print_outlined, colors),
+            _buildSectionHeader(
+              context,
+              l10n.helpSectionPrinting,
+              Icons.print_outlined,
+              colors,
+            ),
             const SizedBox(height: 10),
             _HelpTopicCard(
               icon: Icons.print_outlined,
@@ -41,7 +46,12 @@ class HelpScreen extends StatelessWidget {
             ),
             const SizedBox(height: 22),
 
-            _buildSectionHeader(context, l10n.helpSectionReading, Icons.auto_stories_outlined, colors),
+            _buildSectionHeader(
+              context,
+              l10n.helpSectionReading,
+              Icons.auto_stories_outlined,
+              colors,
+            ),
             const SizedBox(height: 10),
             _HelpTopicCard(
               icon: Icons.record_voice_over_outlined,
@@ -51,7 +61,12 @@ class HelpScreen extends StatelessWidget {
             ),
             const SizedBox(height: 22),
 
-            _buildSectionHeader(context, l10n.helpSectionPageOps, Icons.dashboard_customize_outlined, colors),
+            _buildSectionHeader(
+              context,
+              l10n.helpSectionPageOps,
+              Icons.dashboard_customize_outlined,
+              colors,
+            ),
             const SizedBox(height: 10),
             _HelpTopicCard(
               icon: Icons.dashboard_customize_outlined,
@@ -61,7 +76,12 @@ class HelpScreen extends StatelessWidget {
             ),
             const SizedBox(height: 22),
 
-            _buildSectionHeader(context, l10n.helpSectionSecurity, Icons.security_outlined, colors),
+            _buildSectionHeader(
+              context,
+              l10n.helpSectionSecurity,
+              Icons.security_outlined,
+              colors,
+            ),
             const SizedBox(height: 10),
             _HelpTopicCard(
               icon: Icons.verified_user_outlined,
@@ -90,7 +110,8 @@ class HelpScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final secondary = theme.colorScheme.secondary;
-    final gradient = colors?.brandGradient ??
+    final gradient =
+        colors?.brandGradient ??
         LinearGradient(
           colors: [primary, secondary],
           begin: Alignment.topLeft,

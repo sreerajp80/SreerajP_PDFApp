@@ -33,6 +33,11 @@ Read it before making any change. See the docs table below for full architectura
 | [docs/dependencies.md](docs/dependencies.md) | Adding, upgrading, or checking approved packages |
 | [docs/project_structure.md](docs/project_structure.md) | Reviewing folder responsibilities and layer boundaries |
 | [docs/workflow_rules.md](docs/workflow_rules.md) | Starting or finishing any change (plan-before-change, log-after-change) |
+| [docs/features.md](docs/features.md) | Checking what the app already does before adding or changing a feature |
+| [docs/pdf_idea.md](docs/pdf_idea.md) | Understanding the product concept, scope, and design intent |
+| [docs/feature_analysis_and_roadmap.md](docs/feature_analysis_and_roadmap.md) | Planning new features or checking what is already on the roadmap |
+| [docs/implementation_plan.md](docs/implementation_plan.md) | Looking up the phase-by-phase build plan (point-in-time record) |
+| [docs/implementation_progress.md](docs/implementation_progress.md) | Checking which phases are done (point-in-time record) |
 | [docs/GUIDELINES_MANIFEST.md](docs/GUIDELINES_MANIFEST.md) | The shared Flutter guidelines index |
 
 > If a doc is copied into this project's own `docs/`, the local copy wins over the master submodule.
@@ -65,19 +70,41 @@ Read it before making any change. See the docs table below for full architectura
 
 ```bash
 flutter pub get                        # install dependencies
-flutter run                            # daily development
+flutter gen-l10n                       # regenerate localizations after editing any .arb file
+flutter run --flavor dev               # daily development
+flutter run --flavor prod              # production flavor with debug tooling
 flutter analyze                        # static analysis (must be clean, 0 warnings)
 flutter test                           # run all unit and widget tests
 dart format .                          # format code before committing
 
 # Production release APK (split per ABI with obfuscation)
-flutter build apk --release \
-  --obfuscate --split-debug-info=build/symbols --split-per-abi
+flutter build apk --flavor prod --release \
+  --obfuscate --split-debug-info=build/symbols/android-prod/ --split-per-abi
 
 # Production Play Store bundle
-flutter build appbundle --release \
-  --obfuscate --split-debug-info=build/symbols
+flutter build appbundle --flavor prod --release \
+  --obfuscate --split-debug-info=build/symbols/android-prod/
 ```
+
+> This project defines Gradle product flavors, so a bare `flutter run` or
+> `flutter build apk` **fails**. Always pass `--flavor dev` or `--flavor prod`.
+
+---
+
+## Build flavors
+
+| Flavor | Application id | Display name | Signing |
+|---|---|---|---|
+| `dev` | `in.sreerajp.pdfapp.dev` | SreerajP PDF App Dev | Debug keystore (automatic) |
+| `prod` | `in.sreerajp.pdfapp` | SreerajP PDF App | Release keystore (`android/key.properties`) |
+
+- The flavors are declared in `android/app/build.gradle.kts` under the `environment` dimension.
+  `dev` adds the `.dev` application id suffix and the `-dev` version name suffix.
+- Flutter injects `FLUTTER_APP_FLAVOR`; read it with
+  `String.fromEnvironment('FLUTTER_APP_FLAVOR')`. Do not pass it yourself.
+- Flavor-dependent values live in `lib/app/config/app_flavor_config.dart`. Never use
+  `kDebugMode` / `kReleaseMode` as a stand-in for the flavor.
+- There are no desktop targets, so the `APP_FLAVOR` dart-define path is not used here.
 
 ---
 
@@ -135,18 +162,27 @@ flutter build appbundle --release \
 
 ```
 .
-|-- .agents/                 # AI assistant instructions (AGENTS.md)
+|-- .agents/                 # Copy of AGENTS.md for tools that look inside .agents/
 |-- android/                 # Native Android project (Kotlin, PdfBox, Bouncy Castle)
 |-- assets/
+|   |-- branding/            # App launcher icon source art
 |   |-- config/              # app_config.json (Single source of truth for About metadata)
-|   |-- icons/               # App icon assets
+|   |-- fonts/               # Bundled Malayalam fonts (Manjari, Anek, Noto Sans Malayalam)
 |   `-- trust/               # Bundled EU trusted lists root certificates
 |-- change_log/              # Implemented change logs (yyyymmdd_hhMMss_<slug>.md)
 |-- docs/                    # Architecture, security, and process documentation
 |   `-- guidelines/          # Shared Flutter guidelines Git submodule
 |-- lib/                     # Application source code (Tier 2 Feature-First)
 |-- plans/                   # Implementation plans (yyyymmdd_hhMMss_<slug>.md)
-|-- test/                    # Unit and widget tests
+|-- samples/                 # Sample PDFs used for manual testing
+|-- test/                    # Unit and widget tests (mirrors lib/)
+|-- tool/                    # Project utility scripts (e.g. icon generation)
+|-- AGENTS.md                # Project rules for AI agents and LLMs
+|-- CLAUDE.md                # Project rules for Claude Code
+|-- CHANGELOG.md             # User-facing release history
+|-- README.md                # Setup, run, test, and build instructions
+|-- analysis_options.yaml    # Lint and static analysis configuration
+|-- l10n.yaml                # Localization generator configuration
 `-- pubspec.yaml             # Dependencies and metadata
 ```
 

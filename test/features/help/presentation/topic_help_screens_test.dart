@@ -21,7 +21,9 @@ Widget _buildTestApp(Widget home) {
 }
 
 void main() {
-  testWidgets('renders TtsHelpScreen with steps and action button', (tester) async {
+  testWidgets('renders TtsHelpScreen with steps and action button', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -31,11 +33,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Read Aloud (TTS) & Malayalam Voice'), findsOneWidget);
-    expect(find.text('How to Use Read Aloud and Install Malayalam Voices'), findsOneWidget);
+    expect(
+      find.text('How to Use Read Aloud and Install Malayalam Voices'),
+      findsOneWidget,
+    );
     expect(find.text('Open TTS Settings'), findsOneWidget);
   });
 
-  testWidgets('renders PageOpsHelpScreen with steps and safety guarantee', (tester) async {
+  testWidgets('renders PageOpsHelpScreen with steps and safety guarantee', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(1080, 2400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(tester.view.resetPhysicalSize);
@@ -49,31 +56,37 @@ void main() {
     expect(find.byIcon(Icons.shield_outlined), findsOneWidget);
   });
 
-  testWidgets('renders SignaturesHelpScreen with steps and trust store action', (tester) async {
-    tester.view.physicalSize = const Size(1080, 2400);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets(
+    'renders SignaturesHelpScreen with steps and trust store action',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(_buildTestApp(const SignaturesHelpScreen()));
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(_buildTestApp(const SignaturesHelpScreen()));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Digital Signatures & Trust Store'), findsOneWidget);
-    expect(find.text('Verifying Digital Signatures Offline'), findsOneWidget);
-    expect(find.text('Open Trust Store'), findsOneWidget);
-  });
+      expect(find.text('Digital Signatures & Trust Store'), findsOneWidget);
+      expect(find.text('Verifying Digital Signatures Offline'), findsOneWidget);
+      expect(find.text('Open Trust Store'), findsOneWidget);
+    },
+  );
 
-  testWidgets('renders PrivacyStorageHelpScreen with steps and storage action', (tester) async {
-    tester.view.physicalSize = const Size(1080, 2400);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets(
+    'renders PrivacyStorageHelpScreen with steps and storage action',
+    (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(_buildTestApp(const PrivacyStorageHelpScreen()));
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(_buildTestApp(const PrivacyStorageHelpScreen()));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Privacy & Scoped Storage'), findsOneWidget);
-    expect(find.text('100% Offline Privacy Guarantee'), findsOneWidget);
-    expect(find.text('Open Storage & Privacy Settings'), findsOneWidget);
-  });
+      expect(find.text('Privacy & Scoped Storage'), findsOneWidget);
+      expect(find.text('100% Offline Privacy Guarantee'), findsOneWidget);
+      expect(find.text('Open Storage & Privacy Settings'), findsOneWidget);
+    },
+  );
 }

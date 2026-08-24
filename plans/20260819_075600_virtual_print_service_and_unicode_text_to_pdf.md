@@ -1,6 +1,6 @@
 # Plan: Android Virtual Print Service & Unicode Text-to-PDF Engine
 
-**Status:** Proposed
+**Status:** completed
 
 ## Overview
 Currently, the app lacks a system-level Android Virtual Print Service (it cannot be chosen as a destination printer when printing from other apps like LibreOffice, Chrome, or Notes). Additionally, its text-to-PDF engine uses PdfBox's built-in Type 1 Helvetica font, which only supports Latin-1 and rejects Malayalam, Hindi, and other Unicode scripts.

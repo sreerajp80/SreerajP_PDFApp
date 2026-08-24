@@ -61,7 +61,7 @@ class _PageJumpDialogState extends State<_PageJumpDialog> {
         onSubmitted: (_) => _submit(),
         decoration: InputDecoration(
           labelText: l10n.pageNumberHint,
-          helperText: '1 – ${widget.pageCount}',
+          helperText: l10n.pageJumpRangeHint(1, widget.pageCount),
           errorText: _error,
         ),
       ),

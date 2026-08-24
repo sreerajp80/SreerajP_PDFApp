@@ -8,7 +8,7 @@
 1. **Updated `docs/feature_analysis_and_roadmap.md`**:
    - Added an explicit **Implementation Status Notice** highlighting that baseline core features (Phases 0–8) are 100% completed and release-hardened with 307 unit/widget tests passing.
    - Refined non-implemented world-first features (Indic Sandhi search, Visual PDF diff heatmap, Smart offline redactor, Forensic revision history inspector, Bionic & Karaoke reader, Air-gapped barcode decoupler, and Smart margin / booklet engine).
-   - Added **Ecosystem Interoperability** section linking `SreerajP_PDFApp` to existing Flutter apps from `L:\Android\MyFlutterApps\myapps.md`:
+   - Added **Ecosystem Interoperability** section linking `SreerajP_PDFApp` to existing Flutter apps from a local index of my other Flutter apps:
      - `sreeraj_qr_reader` for handling extracted QR code/barcode payloads.
      - `vault-files` for direct export of sensitive PDFs to offline vault storage.
      - `SreerajP_Journal_Vault` for attaching quotes, text excerpts, and audio notes to journal entries.

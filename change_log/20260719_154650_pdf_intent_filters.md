@@ -2,7 +2,7 @@
 
 ## Metadata
 - **Date/Time:** 2026-07-19 15:46:50 (Local Time)
-- **Plan Reference:** [plans/20260719_151226_pdf_intent_filters.md](file:///l:/Android/SreerajP_PDFApp/plans/20260719_151226_pdf_intent_filters.md)
+- **Plan Reference:** [plans/20260719_151226_pdf_intent_filters.md](plans/20260719_151226_pdf_intent_filters.md)
 
 ## Summary of Changes
 Added comprehensive intent filters to register the app as a system-wide PDF handler on Android. This enables opening PDFs from any app via standard MIME types, generic MIME types with a `.pdf`/`.PDF` extension, or when no MIME type is specified.

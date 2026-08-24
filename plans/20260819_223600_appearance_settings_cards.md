@@ -1,6 +1,6 @@
 # Plan: Appearance Settings Cards (Theme, Typography, Accent Color, App Color)
 
-**Status:** Proposed  
+**Status:** completed
 **Date:** 2026-08-19  
 
 ## Overview

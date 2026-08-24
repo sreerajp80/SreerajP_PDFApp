@@ -664,5 +664,10 @@
   "helpSectionPrinting": "പ്രിന്റിംഗും പരിവർത്തനവും",
   "helpSectionReading": "വായനയും ശബ്ദവും",
   "helpSectionPageOps": "ഡോക്യുമെന്റ് പ്രവർത്തനങ്ങൾ",
-  "helpSectionSecurity": "സുരക്ഷയും സ്വകാര്യതയും"
+  "helpSectionSecurity": "സുരക്ഷയും സ്വകാര്യതയും",
+  "aboutVersionLabel": "പതിപ്പ്",
+  "imageFormatPngLossless": "PNG (നഷ്ടരഹിതം)",
+  "imageFormatJpeg": "JPEG",
+  "nUpPagesPerSheet": "ഒന്നിൽ {count}",
+  "pageJumpRangeHint": "{min} \u2013 {max}"
 }

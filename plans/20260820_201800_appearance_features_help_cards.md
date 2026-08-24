@@ -1,6 +1,6 @@
 # Implementation Plan: Appearance, Features, and Help Cards
 
-**Status:** Proposed
+**Status:** completed
 **Date:** 2026-08-20
 
 ## 1. Overview

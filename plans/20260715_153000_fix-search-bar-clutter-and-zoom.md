@@ -21,13 +21,13 @@ We will modify two files to implement the fixes:
 
 ### Component: Features / Reading / Presentation
 
-#### [MODIFY] [reader_search_bar.dart](file:///l:/Android/SreerajP_PDFApp/lib/features/reading/presentation/widgets/reader_search_bar.dart)
+#### [MODIFY] [reader_search_bar.dart](lib/features/reading/presentation/widgets/reader_search_bar.dart)
 - Change the structure from a single `Row` to a `Column` containing:
   - **Row 1:** Back button, search text field (wrapped in `Expanded`), and clear button. This gives the text field the maximum width possible.
   - **A visual Divider:** A subtle separator line.
   - **Row 2:** Match status text (wrapped in `Expanded` to prevent overflow), search options button, and previous/next match buttons.
 
-#### [MODIFY] [viewer_screen.dart](file:///l:/Android/SreerajP_PDFApp/lib/features/viewer/presentation/viewer_screen.dart)
+#### [MODIFY] [viewer_screen.dart](lib/features/viewer/presentation/viewer_screen.dart)
 - In `_buildSearchAppBar()`, set `toolbarHeight: 104.0` on the `AppBar` to give the two-row layout of `ReaderSearchBar` enough vertical room.
 - In `ViewerScreen`'s main `Scaffold`, set `resizeToAvoidBottomInset: false`. This stops the keyboard from resizing the PDF viewer viewport, preserving the zoom level and avoiding layout shifts.
 
