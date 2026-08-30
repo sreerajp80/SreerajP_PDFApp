@@ -2236,6 +2236,9 @@ class AppLocalizationsMl extends AppLocalizations {
   String get aboutVersionLabel => 'പതിപ്പ്';
 
   @override
+  String get aboutBuildDateLabel => 'ബിൽഡ് തീയതി';
+
+  @override
   String get imageFormatPngLossless => 'PNG (നഷ്ടരഹിതം)';
 
   @override

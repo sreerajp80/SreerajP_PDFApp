@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdfapp/app/config/providers.dart';
+import 'package:pdfapp/core/constants/build_date.g.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
 /// About screen — data-driven from `ConfigService`/`AppConfig` (guideline.md §1.6).
@@ -36,6 +37,10 @@ class AboutScreen extends ConsumerWidget {
             ListTile(
               title: Text(l10n.aboutVersionLabel),
               subtitle: Text('${config.version} (build ${config.build})'),
+            ),
+            ListTile(
+              title: Text(l10n.aboutBuildDateLabel),
+              subtitle: const Text(kBuildDate),
             ),
             const Divider(),
             for (final entry in config.details.entries)

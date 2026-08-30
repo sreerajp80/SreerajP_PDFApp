@@ -2219,6 +2219,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get aboutVersionLabel => 'Version';
 
   @override
+  String get aboutBuildDateLabel => 'Build date';
+
+  @override
   String get imageFormatPngLossless => 'PNG (Lossless)';
 
   @override

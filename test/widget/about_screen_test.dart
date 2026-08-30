@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/core/config/app_config.dart';
+import 'package:pdfapp/core/constants/build_date.g.dart';
 import 'package:pdfapp/features/about/presentation/about_screen.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
@@ -37,6 +38,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Test PDF App'), findsOneWidget);
+    expect(find.text('Build date'), findsOneWidget);
+    expect(find.text(kBuildDate), findsOneWidget);
     // Each details key/value pair is rendered.
     expect(find.text('Author'), findsOneWidget);
     expect(find.text('Sreeraj P'), findsOneWidget);

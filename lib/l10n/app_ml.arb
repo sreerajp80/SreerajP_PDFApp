@@ -666,6 +666,7 @@
   "helpSectionPageOps": "ഡോക്യുമെന്റ് പ്രവർത്തനങ്ങൾ",
   "helpSectionSecurity": "സുരക്ഷയും സ്വകാര്യതയും",
   "aboutVersionLabel": "പതിപ്പ്",
+  "aboutBuildDateLabel": "ബിൽഡ് തീയതി",
   "imageFormatPngLossless": "PNG (നഷ്ടരഹിതം)",
   "imageFormatJpeg": "JPEG",
   "nUpPagesPerSheet": "ഒന്നിൽ {count}",

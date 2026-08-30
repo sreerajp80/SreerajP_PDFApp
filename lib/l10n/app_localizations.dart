@@ -3980,6 +3980,12 @@ abstract class AppLocalizations {
   /// **'Version'**
   String get aboutVersionLabel;
 
+  /// Label for the build date row on the About screen
+  ///
+  /// In en, this message translates to:
+  /// **'Build date'**
+  String get aboutBuildDateLabel;
+
   /// PNG option in the page-image export format picker
   ///
   /// In en, this message translates to:

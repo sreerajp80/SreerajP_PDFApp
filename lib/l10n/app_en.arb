@@ -1446,6 +1446,8 @@
   "@helpSectionSecurity": { "description": "Help section header for security" },
   "aboutVersionLabel": "Version",
   "@aboutVersionLabel": { "description": "Label for the version row on the About screen" },
+  "aboutBuildDateLabel": "Build date",
+  "@aboutBuildDateLabel": { "description": "Label for the build date row on the About screen" },
   "imageFormatPngLossless": "PNG (Lossless)",
   "@imageFormatPngLossless": { "description": "PNG option in the page-image export format picker" },
   "imageFormatJpeg": "JPEG",
