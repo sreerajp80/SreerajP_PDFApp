@@ -1,19 +1,22 @@
-# Architecture — SreerajP_PDFApp
+# Architecture — SreerajP PDF App
 
 Technical design for the Flutter Android app for **everything PDF**: opening, reading,
 searching, listening (text-to-speech), annotating, extracting, reorganizing (page operations),
 acting as a **print-to-PDF target**, and **verifying PDF digital signatures**. This document
 explains how the app is structured, which open-source packages to use, and how the hard parts
 (rendering, native platform channels, annotation overlay, signatures, security) fit together.
+Read this before modifying the app architecture, state management, or layer boundaries.
 
 This file is also the project's **engineering-standard architecture record**
 (`flutter_project_engineering_standard.md §21`): where the design is forward-looking, it notes
 what is built now versus planned. Phase-by-phase status lives in
 [implementation_progress.md](implementation_progress.md).
 
-Read [CLAUDE.md](../CLAUDE.md) first for the project rules. See
-[pdf_idea.md](pdf_idea.md) for the full product idea and
-[implementation_plan.md](implementation_plan.md) for the phased build plan.
+> Read first: [../.agents/AGENTS.md](../.agents/AGENTS.md) (or [../CLAUDE.md](../CLAUDE.md)) for project rules,
+> [pdf_idea.md](pdf_idea.md) for the full product concept,
+> [implementation_plan.md](implementation_plan.md) for the phased build plan,
+> [features.md](features.md) for the current feature catalog, and
+> [guidelines/architecture.md](guidelines/architecture.md) for the architecture blueprint template.
 
 **Applicability profiles in force:** Core Baseline + Production App Extension, plus selected
 Sensitive Data controls (PDF passwords, signature trust store — see the implementation plan §11).

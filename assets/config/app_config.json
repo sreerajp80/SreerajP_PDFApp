@@ -1,13 +1,37 @@
 {
-  "appName": "SreerajP PDF App",
-  "description": "An offline Android app for everything PDF — read, search, listen, annotate, extract, reorganize, print, and verify signatures.",
-  "version": "2.7.3",
-  "build": "23",
+  "appName": {
+    "en": "Sreeraj P PDF App",
+    "ml": "ശ്രീരാജ് പി പിഡിഎഫ് ആപ്പ്",
+    "sa": "श्रीराज पी पीडीएफ अनुप्रयोगः"
+  },
+  "description": {
+    "en": "An offline Android app for everything PDF — read, search, listen, annotate, extract, reorganize, print, and verify signatures.",
+    "ml": "പിഡിഎഫ് വായിക്കാനും തിരയാനും കേൾക്കാനും അടയാളപ്പെടുത്താനും വേർതിരിച്ചെടുക്കാനും പുനഃക്രമീകരിക്കാനും പ്രിന്റ് ചെയ്യാനും ഒപ്പുകൾ പരിശോധിക്കാനുമുള്ള ഒരു ഓഫ്‌ലൈൻ ആൻഡ്രോയിഡ് ആപ്പ്.",
+    "sa": "पीडीएफ्-पठनार्थं, अन्वेषणार्थं, श्रवणार्थं, टिप्पणीकरणार्थं, निष्कर्षणार्थं, पुनर्व्यवस्थापनार्थं, मुद्रणार्थं, हस्ताक्षराणां प्रमाणीकरणार्थं च एकः जालविहीनः आण्ड्रायिड्-अनुप्रयोगः।"
+  },
+  "version": "2.7.4",
+  "build": "24",
   "details": {
-    "Author": "Sreeraj P",
-    "Email": "sreerajp@zohomail.in",
-    "License": "All libraries used are open source.",
-    "AI used": "Anthropic Claude / Google Gemini 3.7 Flash",
-    "IDE used": "Visual Studio Code / Antigravity"
+    "author": {
+      "en": "Sreeraj P",
+      "ml": "ശ്രീരാജ് പി",
+      "sa": "श्रीराज् पी"
+    },
+    "email": "sreerajp@zohomail.in",
+    "license": {
+      "en": "All libraries used are open source.",
+      "ml": "ഉപയോഗിച്ച എല്ലാ ലൈബ്രറികളും ഓപ്പൺ സോഴ്സ് ആണ്.",
+      "sa": "सर्वाणि प्रयुक्तानि पुस्तकालयगणाः मुक्तस्रोतांसि सन्ति।"
+    },
+    "aiUsed": {
+      "en": "Anthropic Claude / Google Gemini",
+      "ml": "ആന്ത്രോപിക് ക്ലോഡ് / ഗൂഗിൾ ജെമിനി",
+      "sa": "एन्थ्रोपिक् क्लाड् / गूगल् जेमिनि"
+    },
+    "ideUsed": {
+      "en": "Visual Studio Code / Antigravity",
+      "ml": "വിഷ്വൽ സ്റ്റുഡിയോ കോഡ് / ആന്റിഗ്രാവിറ്റി",
+      "sa": "विजुअल् स्टूडिओ कोड् / एन्टिग्रैविटी"
+    }
   }
 }

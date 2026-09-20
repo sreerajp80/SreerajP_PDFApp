@@ -140,18 +140,20 @@ class SignaturesHelpScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFF1565C0).withValues(alpha: 0.08),
+                color: theme.colorScheme.primaryContainer.withValues(
+                  alpha: 0.3,
+                ),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: const Color(0xFF1565C0).withValues(alpha: 0.25),
+                  color: theme.colorScheme.primary.withValues(alpha: 0.25),
                 ),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.security_outlined,
-                    color: Color(0xFF1565C0),
+                    color: theme.colorScheme.primary,
                     size: 22,
                   ),
                   const SizedBox(width: 12),

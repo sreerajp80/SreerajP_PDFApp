@@ -231,6 +231,7 @@ class _BatchOperationsDialogState extends ConsumerState<BatchOperationsDialog> {
                                 ? null
                                 : IconButton(
                                     icon: const Icon(Icons.close, size: 16),
+                                    tooltip: l10n.removeAction,
                                     onPressed: () => setState(
                                       () => _documents.removeAt(index),
                                     ),

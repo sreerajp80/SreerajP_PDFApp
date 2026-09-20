@@ -1,6 +1,8 @@
-# Security — SreerajP_PDFApp
+# Security — SreerajP PDF App
 
-This document records the security posture, threat model, and technical controls implemented in the SreerajP PDF App, following the shared security engineering guidelines.
+This document records the security posture, threat model, and technical controls implemented in the SreerajP PDF App, following the shared security engineering guidelines. Read this before changing any security-sensitive code, permissions, storage handling, or cryptographic validation.
+
+> Read first: [../.agents/AGENTS.md](../.agents/AGENTS.md) (or [../CLAUDE.md](../CLAUDE.md)) for project rules, [architecture.md](architecture.md) for system architecture, and [guidelines/security.md](guidelines/security.md) for the security blueprint template.
 
 ---
 
@@ -13,7 +15,17 @@ This document records the security posture, threat model, and technical controls
 
 ---
 
-## 2. Threat Model Summary
+## 2. Security Objectives
+
+*   Protect opened PDF documents and user data by enforcing Android Scoped Storage (SAF) boundaries without broad storage permissions.
+*   Prevent secret and credential leakage (PDF passwords, signing keys) in logs, crash reports, debug consoles, or persistent storage.
+*   Ensure local, offline cryptographic integrity verification of PDF digital signatures against trusted root certificates without internet telemetry.
+*   Ensure copy-on-write isolation: never modify original documents in place.
+*   Harden release binaries against reverse engineering via code obfuscation and stripped debugging metadata.
+
+---
+
+## 3. Threat Model Summary
 
 ### In Scope Threats
 *   **Malicious PDF File Execution:** Attackers crafting corrupted or malformed PDF inputs to crash the application or run unauthorized code.
@@ -29,7 +41,7 @@ This document records the security posture, threat model, and technical controls
 
 ---
 
-## 3. Sensitive Data Inventory
+## 4. Sensitive Data Inventory
 
 | Data Type | Description | Location | Protection Control |
 |---|---|---|---|
@@ -39,7 +51,7 @@ This document records the security posture, threat model, and technical controls
 
 ---
 
-## 4. Storage & Access Controls
+## 5. Storage & Access Controls
 
 ### Scoped Storage Boundary (SAF)
 *   The application does **not** request broad storage permissions (e.g., `READ_EXTERNAL_STORAGE` or `WRITE_EXTERNAL_STORAGE` are absent from the manifest).
@@ -52,7 +64,7 @@ This document records the security posture, threat model, and technical controls
 
 ---
 
-## 5. Cryptography & Signature Verification
+## 6. Cryptography & Signature Verification
 
 ### PDF Decryption
 *   Standard PDF decryption (RC4, AES-128, AES-256) is executed natively via **PdfBox-Android**.
@@ -69,9 +81,10 @@ This document records the security posture, threat model, and technical controls
 
 ---
 
-## 6. Build Hardening
+## 7. Build Hardening
 
 *   **Obfuscation:** Release builds are compiled with `--obfuscate` to randomize class and method names.
 *   **Debug Symbols:** Debug mapping symbols are exported to a separate folder (`build/symbols`) and git-ignored.
 *   **R8 / ProGuard:** Enabled for release builds to strip dead code and optimize native library bindings.
 *   **No Debugging in Release:** The merged release manifest omits `android:debuggable="true"` (defaults to false), protecting runtime processes from attachment.
+

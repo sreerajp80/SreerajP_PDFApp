@@ -1514,6 +1514,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageMalayalam => 'മലയാളം (Malayalam)';
 
   @override
+  String get languageSanskrit => 'संस्कृतम् (Sanskrit)';
+
+  @override
   String get languageSelectTitle => 'App Language';
 
   @override
@@ -1803,6 +1806,68 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get permTypePrivacy => 'Privacy Guarantee';
+
+  @override
+  String get permissionsPrivacyHeader => 'Privacy & Zero-Permission Guarantees';
+
+  @override
+  String get permissionsPrivacySubtitle =>
+      'Dangerous permissions intentionally omitted from the manifest.';
+
+  @override
+  String get permBindPrintServiceTitle => 'BIND_PRINT_SERVICE';
+
+  @override
+  String get permBindPrintServiceReason =>
+      'Guards the Virtual Print Service so only the Android system print spooler can bind to it.';
+
+  @override
+  String get permBindPrintServiceWhatItAchieves =>
+      'Ensures untrusted third-party apps cannot invoke the print service or intercept spooled documents.';
+
+  @override
+  String get permStoreQueriesTitle => 'App Store & Web Queries';
+
+  @override
+  String get permStoreQueriesReason =>
+      'Queries Google Play Store and browser activities via market:// and https:// intent schemes.';
+
+  @override
+  String get permStoreQueriesWhatItAchieves =>
+      'Enables direct installation of speech engines (such as Speech Services by Google) if missing.';
+
+  @override
+  String get permViewPdfTitle => 'Default PDF Viewer (\'Open with\')';
+
+  @override
+  String get permViewPdfReason =>
+      'Registers the app as a handler for PDF MIME types and file extensions.';
+
+  @override
+  String get permViewPdfWhatItAchieves =>
+      'Allows opening PDF files directly from file managers, email attachments, and downloads.';
+
+  @override
+  String get permPrintManagerTitle => 'Android Print Framework';
+
+  @override
+  String get permPrintManagerReason =>
+      'Communicates with Android\'s system PrintManager and print spooler.';
+
+  @override
+  String get permPrintManagerWhatItAchieves =>
+      'Sends formatted PDF pages to physical printers and system print preview dialogs.';
+
+  @override
+  String get permNoBroadStorageTitle => 'Zero Broad Storage Access';
+
+  @override
+  String get permNoBroadStorageReason =>
+      'No READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, or MANAGE_EXTERNAL_STORAGE permissions are requested.';
+
+  @override
+  String get permNoBroadStorageWhatItAchieves =>
+      'Ensures all other photos, documents, and private data on your device remain completely inaccessible.';
 
   @override
   String get readingVelocityTitle => 'Reading Velocity & Time Estimates';
@@ -2236,4 +2301,71 @@ class AppLocalizationsEn extends AppLocalizations {
   String pageJumpRangeHint(int min, int max) {
     return '$min – $max';
   }
+
+  @override
+  String get aboutDetailAuthor => 'Author';
+
+  @override
+  String get aboutDetailEmail => 'Email';
+
+  @override
+  String get aboutDetailLicense => 'License';
+
+  @override
+  String get aboutDetailAiUsed => 'AI used';
+
+  @override
+  String get aboutDetailIdeUsed => 'IDE used';
+
+  @override
+  String madeWithLove(String heart) {
+    return 'Made with $heart from India';
+  }
+
+  @override
+  String get madeWithLoveA11y => 'Made with love from India';
+
+  @override
+  String get menuTooltip => 'Menu';
+
+  @override
+  String get tooltipShowPassword => 'Show password';
+
+  @override
+  String get tooltipHidePassword => 'Hide password';
+
+  @override
+  String get colorYellow => 'Yellow';
+
+  @override
+  String get colorGreen => 'Green';
+
+  @override
+  String get colorBlue => 'Blue';
+
+  @override
+  String get colorRed => 'Red';
+
+  @override
+  String get colorPurple => 'Purple';
+
+  @override
+  String get colorOrange => 'Orange';
+
+  @override
+  String aboutVersionBuild(String version, String build) {
+    return '$version (build $build)';
+  }
+
+  @override
+  String get closeAction => 'Close';
+
+  @override
+  String get removeAction => 'Remove';
+
+  @override
+  String get rotateScreenTooltip => 'Rotate screen';
+
+  @override
+  String get screenOrientationTitle => 'Screen Orientation';
 }

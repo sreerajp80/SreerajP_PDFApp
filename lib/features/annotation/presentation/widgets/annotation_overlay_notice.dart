@@ -15,7 +15,7 @@ class AnnotationOverlayNotice extends StatelessWidget {
     return Material(
       color: scheme.secondaryContainer,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+        padding: const EdgeInsetsDirectional.fromSTEB(16, 8, 8, 8),
         child: Row(
           children: [
             Icon(

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_en.dart';
 import 'app_localizations_ml.dart';
+import 'app_localizations_sa.dart';
 
 // ignore_for_file: type=lint
 
@@ -96,6 +97,7 @@ abstract class AppLocalizations {
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
     Locale('ml'),
+    Locale('sa'),
   ];
 
   /// The application title
@@ -2750,6 +2752,12 @@ abstract class AppLocalizations {
   /// **'മലയാളം (Malayalam)'**
   String get languageMalayalam;
 
+  /// Sanskrit language option
+  ///
+  /// In en, this message translates to:
+  /// **'संस्कृतम् (Sanskrit)'**
+  String get languageSanskrit;
+
   /// Heading for language selection
   ///
   /// In en, this message translates to:
@@ -3253,6 +3261,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Privacy Guarantee'**
   String get permTypePrivacy;
+
+  /// Header for privacy guarantees section
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy & Zero-Permission Guarantees'**
+  String get permissionsPrivacyHeader;
+
+  /// Subtitle for privacy guarantees section
+  ///
+  /// In en, this message translates to:
+  /// **'Dangerous permissions intentionally omitted from the manifest.'**
+  String get permissionsPrivacySubtitle;
+
+  /// Title for BIND_PRINT_SERVICE permission
+  ///
+  /// In en, this message translates to:
+  /// **'BIND_PRINT_SERVICE'**
+  String get permBindPrintServiceTitle;
+
+  /// Reason for BIND_PRINT_SERVICE permission
+  ///
+  /// In en, this message translates to:
+  /// **'Guards the Virtual Print Service so only the Android system print spooler can bind to it.'**
+  String get permBindPrintServiceReason;
+
+  /// What BIND_PRINT_SERVICE permission achieves
+  ///
+  /// In en, this message translates to:
+  /// **'Ensures untrusted third-party apps cannot invoke the print service or intercept spooled documents.'**
+  String get permBindPrintServiceWhatItAchieves;
+
+  /// Title for app store and web queries
+  ///
+  /// In en, this message translates to:
+  /// **'App Store & Web Queries'**
+  String get permStoreQueriesTitle;
+
+  /// Reason for app store and web queries
+  ///
+  /// In en, this message translates to:
+  /// **'Queries Google Play Store and browser activities via market:// and https:// intent schemes.'**
+  String get permStoreQueriesReason;
+
+  /// What app store and web queries achieve
+  ///
+  /// In en, this message translates to:
+  /// **'Enables direct installation of speech engines (such as Speech Services by Google) if missing.'**
+  String get permStoreQueriesWhatItAchieves;
+
+  /// Title for PDF VIEW intent filter
+  ///
+  /// In en, this message translates to:
+  /// **'Default PDF Viewer (\'Open with\')'**
+  String get permViewPdfTitle;
+
+  /// Reason for PDF VIEW intent filter
+  ///
+  /// In en, this message translates to:
+  /// **'Registers the app as a handler for PDF MIME types and file extensions.'**
+  String get permViewPdfReason;
+
+  /// What PDF VIEW intent filter achieves
+  ///
+  /// In en, this message translates to:
+  /// **'Allows opening PDF files directly from file managers, email attachments, and downloads.'**
+  String get permViewPdfWhatItAchieves;
+
+  /// Title for Android print framework integration
+  ///
+  /// In en, this message translates to:
+  /// **'Android Print Framework'**
+  String get permPrintManagerTitle;
+
+  /// Reason for Android print framework integration
+  ///
+  /// In en, this message translates to:
+  /// **'Communicates with Android\'s system PrintManager and print spooler.'**
+  String get permPrintManagerReason;
+
+  /// What Android print framework integration achieves
+  ///
+  /// In en, this message translates to:
+  /// **'Sends formatted PDF pages to physical printers and system print preview dialogs.'**
+  String get permPrintManagerWhatItAchieves;
+
+  /// Title for zero broad storage guarantee
+  ///
+  /// In en, this message translates to:
+  /// **'Zero Broad Storage Access'**
+  String get permNoBroadStorageTitle;
+
+  /// Reason for zero broad storage guarantee
+  ///
+  /// In en, this message translates to:
+  /// **'No READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, or MANAGE_EXTERNAL_STORAGE permissions are requested.'**
+  String get permNoBroadStorageReason;
+
+  /// What zero broad storage guarantee achieves
+  ///
+  /// In en, this message translates to:
+  /// **'Ensures all other photos, documents, and private data on your device remain completely inaccessible.'**
+  String get permNoBroadStorageWhatItAchieves;
 
   /// Title for reading velocity section
   ///
@@ -4009,6 +4119,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{min} – {max}'**
   String pageJumpRangeHint(int min, int max);
+
+  /// Label for author detail on About screen
+  ///
+  /// In en, this message translates to:
+  /// **'Author'**
+  String get aboutDetailAuthor;
+
+  /// Label for email detail on About screen
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get aboutDetailEmail;
+
+  /// Label for license detail on About screen
+  ///
+  /// In en, this message translates to:
+  /// **'License'**
+  String get aboutDetailLicense;
+
+  /// Label for AI used detail on About screen
+  ///
+  /// In en, this message translates to:
+  /// **'AI used'**
+  String get aboutDetailAiUsed;
+
+  /// Label for IDE used detail on About screen
+  ///
+  /// In en, this message translates to:
+  /// **'IDE used'**
+  String get aboutDetailIdeUsed;
+
+  /// About-screen signature badge. {heart} is a red heart glyph.
+  ///
+  /// In en, this message translates to:
+  /// **'Made with {heart} from India'**
+  String madeWithLove(String heart);
+
+  /// Screen-reader text for the About badge
+  ///
+  /// In en, this message translates to:
+  /// **'Made with love from India'**
+  String get madeWithLoveA11y;
+
+  /// Tooltip for the options popup menu
+  ///
+  /// In en, this message translates to:
+  /// **'Menu'**
+  String get menuTooltip;
+
+  /// Tooltip for showing password in plain text
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get tooltipShowPassword;
+
+  /// Tooltip for hiding password
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get tooltipHidePassword;
+
+  /// Yellow color name
+  ///
+  /// In en, this message translates to:
+  /// **'Yellow'**
+  String get colorYellow;
+
+  /// Green color name
+  ///
+  /// In en, this message translates to:
+  /// **'Green'**
+  String get colorGreen;
+
+  /// Blue color name
+  ///
+  /// In en, this message translates to:
+  /// **'Blue'**
+  String get colorBlue;
+
+  /// Red color name
+  ///
+  /// In en, this message translates to:
+  /// **'Red'**
+  String get colorRed;
+
+  /// Purple color name
+  ///
+  /// In en, this message translates to:
+  /// **'Purple'**
+  String get colorPurple;
+
+  /// Orange color name
+  ///
+  /// In en, this message translates to:
+  /// **'Orange'**
+  String get colorOrange;
+
+  /// Version and build number display on About screen
+  ///
+  /// In en, this message translates to:
+  /// **'{version} (build {build})'**
+  String aboutVersionBuild(String version, String build);
+
+  /// Close action button or tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get closeAction;
+
+  /// Remove action button or tooltip
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get removeAction;
+
+  /// Tooltip for rotate screen button
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate screen'**
+  String get rotateScreenTooltip;
+
+  /// Title for screen orientation setting
+  ///
+  /// In en, this message translates to:
+  /// **'Screen Orientation'**
+  String get screenOrientationTitle;
 }
 
 class _AppLocalizationsDelegate
@@ -4022,7 +4258,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'ml'].contains(locale.languageCode);
+      <String>['en', 'ml', 'sa'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -4035,6 +4271,8 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsEn();
     case 'ml':
       return AppLocalizationsMl();
+    case 'sa':
+      return AppLocalizationsSa();
   }
 
   throw FlutterError(

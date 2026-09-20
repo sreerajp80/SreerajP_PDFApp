@@ -112,9 +112,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _showError(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    messenger.showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    );
   }
 
   @override

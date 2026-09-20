@@ -1,11 +1,14 @@
-# PDF App — Implementation Progress
+# Implementation Progress — SreerajP PDF App
 
-**Date:** 2026-07-18
+**Date:** 2026-07-18  
 **Status:** completed (tracker) — Phase 0 to Phase 8 fully implemented, verified, and release-hardened.
 
 This is the living progress tracker for the **SreerajP PDF App**. It follows the phases in
-`docs/implementation_plan.md`. Update it as work moves. Keep it honest:
+[implementation_plan.md](implementation_plan.md). Update it as work moves. Keep it honest:
 mark a task done only when it is really done (analyze clean, tests pass, verified in the app).
+
+> Read first: [../.agents/AGENTS.md](../.agents/AGENTS.md) (or [../CLAUDE.md](../CLAUDE.md)) for project rules,
+> and [implementation_plan.md](implementation_plan.md) for the phased build plan.
 
 **How to read the status marks:**
 
@@ -19,7 +22,7 @@ mark a task done only when it is really done (analyze clean, tests pass, verifie
 
 ---
 
-## Overall status
+## 1. Overall Status
 
 | Phase | Title | Status | % | Notes |
 |---|---|---|---|---|
@@ -35,7 +38,7 @@ mark a task done only when it is really done (analyze clean, tests pass, verifie
 
 ---
 
-## Phase 0 — Scaffolding & foundation
+## 2. Phase 0 — Scaffolding & Foundation
 
 - [x] `flutter create`; package id `in.sreerajp.pdfapp`, minSdk 26, Java 17 target, AGP 8.x
 - [x] Folder structure (Tier 2, §4 of plan)
@@ -59,7 +62,7 @@ mark a task done only when it is really done (analyze clean, tests pass, verifie
 
 ---
 
-## Phase 1 — Core viewing & navigation (MVP)
+## 3. Phase 1 — Core Viewing & Navigation (MVP)
 
 - [x] Open via SAF picker + "Open with" intent; persistable URI permission
 - [x] Recent files (DB migration v2)
@@ -76,7 +79,7 @@ mark a task done only when it is really done (analyze clean, tests pass, verifie
 
 ---
 
-## Phase 2 — Reading: search, copy, metadata, TTS
+## 4. Phase 2 — Reading: Search, Copy, Metadata, TTS
 
 - [x] PdfBox-Android Kotlin channel scaffold
 - [x] Text search + highlight + jump between matches
@@ -101,7 +104,7 @@ full install/guide/auto-disable behavior.
 
 ---
 
-## Phase 3 — Extraction & conversion
+## 5. Phase 3 — Extraction & Conversion
 
 - [x] Extract plain text (page / range)
 - [x] Extract embedded images
@@ -114,7 +117,7 @@ full install/guide/auto-disable behavior.
 
 ---
 
-## Phase 4 — Page operations (copy-on-write)
+## 6. Phase 4 — Page Operations (Copy-on-Write)
 
 - [x] Merge multiple PDFs
 - [x] Split into separate files
@@ -127,7 +130,7 @@ full install/guide/auto-disable behavior.
 
 ---
 
-## Phase 5 — Annotation overlay layer
+## 7. Phase 5 — Annotation Overlay Layer
 
 - [x] Annotations DB table (fingerprint + page + position + type + payload) — schema v3
 - [x] Highlight / underline / strikethrough
@@ -142,7 +145,7 @@ full install/guide/auto-disable behavior.
 
 ---
 
-## Phase 6 — PDF printer ("print to PDF")
+## 8. Phase 6 — PDF Printer ("Print to PDF")
 
 - [x] Share / "Open with" → save-as-PDF (copy-on-write)
 - [x] Print a PDF out via Android print framework (incl. page range / extracted text)
@@ -152,7 +155,7 @@ full install/guide/auto-disable behavior.
 
 ---
 
-## Phase 7 — Digital signature verification
+## 9. Phase 7 — Digital Signature Verification
 
 - [x] Kotlin signature module: PdfBox reads signature + ByteRange
 - [x] Bouncy Castle (repackaged) verifies PKCS#7 / CMS
@@ -166,7 +169,7 @@ rules; bad signatures shown honestly.
 
 ---
 
-## Phase 8 — Hardening & release
+## 10. Phase 8 — Hardening & Release
 
 - [x] Accessibility pass (targets, contrast, semantics, text scaling, TalkBack)
 - [x] Performance pass (scroll jank, image cache, isolates, startup, size budget)
@@ -181,7 +184,7 @@ rules; bad signatures shown honestly.
 
 ---
 
-## Change-log links
+## 11. Change-Log Links
 
 - Phase 0 — `change_log/20260714_142000_phase0-scaffolding.md`
 - Phase 1 — `change_log/20260714_150000_phase1-core-viewing.md`

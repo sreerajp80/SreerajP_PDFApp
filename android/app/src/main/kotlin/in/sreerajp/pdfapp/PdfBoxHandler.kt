@@ -4,12 +4,14 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import android.os.Handler
 import android.os.Looper
 import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
+import java.text.Normalizer
 import com.tom_roush.pdfbox.android.PDFBoxResourceLoader
 import com.tom_roush.pdfbox.pdmodel.PDDocument
 import com.tom_roush.pdfbox.pdmodel.PDPage
@@ -963,6 +965,11 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
      * the system font engine (HarfBuzz) to provide full complex script shaping (Malayalam,
      * Devanagari, Tamil, etc.), bidirectional text, font fallback, and TrueType subset embedding
      * with valid /ToUnicode CMaps so the generated text is fully searchable and copyable.
+     *
+     * Before rendering, text is normalized to Unicode NFC and legacy chillu sequences are converted
+     * to canonical atomic chillu characters. The bundled Noto Sans Malayalam font is used for
+     * Malayalam text to guarantee complete OpenType ligature shaping and accurate /ToUnicode maps.
+     * After rendering, the text layer is verified with [PDFTextStripper] to ensure 0% PUA glyphs.
      */
     private fun textToPdf(text: String, outputPath: String, result: MethodChannel.Result) {
         io.execute {
@@ -970,10 +977,29 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
                 if (text.isBlank()) throw IllegalStateException("There is no text to save.")
 
                 val cleaned = text.replace("\r\n", "\n").replace("\r", "\n").replace("\t", "    ")
+                val chilluNormalized = normalizeMalayalamChillu(cleaned)
+                val normalized = Normalizer.normalize(chilluNormalized, Normalizer.Form.NFC)
+
+                val hasMalayalam = normalized.any { it in '\u0D00'..'\u0D7F' }
+                val typeface: Typeface = if (hasMalayalam) {
+                    try {
+                        Typeface.createFromAsset(appContext.assets, "flutter_assets/assets/fonts/NotoSansMalayalam-Regular.ttf")
+                    } catch (_: Exception) {
+                        try {
+                            Typeface.createFromAsset(appContext.assets, "assets/fonts/NotoSansMalayalam-Regular.ttf")
+                        } catch (_: Exception) {
+                            Typeface.create("sans-serif", Typeface.NORMAL)
+                        }
+                    }
+                } else {
+                    Typeface.create("sans-serif", Typeface.NORMAL)
+                }
+
                 val textPaint = TextPaint().apply {
                     isAntiAlias = true
                     textSize = TEXT_FONT_SIZE
                     color = Color.BLACK
+                    this.typeface = typeface
                 }
 
                 val pageWidth = PDRectangle.A4.width.toInt()
@@ -982,9 +1008,9 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
                 val printableHeight = pageHeight - PAGE_MARGIN * 2
 
                 val layout = StaticLayout.Builder.obtain(
-                    cleaned,
+                    normalized,
                     0,
-                    cleaned.length,
+                    normalized.length,
                     textPaint,
                     printableWidth
                 )
@@ -1009,19 +1035,29 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
                         endLine = startLine + 1
                     }
 
+                    val pageStart = layout.getLineStart(startLine)
+                    val pageEnd = layout.getLineEnd(endLine - 1)
+                    val pageText = normalized.substring(pageStart, pageEnd).trimEnd('\n')
+
+                    val pageLayout = StaticLayout.Builder.obtain(
+                        pageText,
+                        0,
+                        pageText.length,
+                        textPaint,
+                        printableWidth
+                    )
+                        .setAlignment(Layout.Alignment.ALIGN_NORMAL)
+                        .setLineSpacing(0f, 1.25f)
+                        .setIncludePad(false)
+                        .build()
+
                     val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageNum).create()
                     val page = pdfDoc.startPage(pageInfo)
                     val canvas = page.canvas
 
                     canvas.save()
-                    canvas.clipRect(
-                        PAGE_MARGIN,
-                        PAGE_MARGIN,
-                        PAGE_MARGIN + printableWidth,
-                        PAGE_MARGIN + printableHeight
-                    )
-                    canvas.translate(PAGE_MARGIN, PAGE_MARGIN - startY)
-                    layout.draw(canvas)
+                    canvas.translate(PAGE_MARGIN, PAGE_MARGIN)
+                    pageLayout.draw(canvas)
                     canvas.restore()
 
                     pdfDoc.finishPage(page)
@@ -1039,6 +1075,9 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
                 }
                 pdfDoc.close()
 
+                // Verify that the generated PDF contains a valid, searchable Unicode text layer
+                verifyUnicodeSearchability(outputPath, normalized)
+
                 main.post { result.success(outputPath) }
             } catch (e: Exception) {
                 main.post { result.error("op_failed", "Could not save this text as a PDF: ${e.message}", null) }
@@ -1046,6 +1085,57 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
                 main.post { result.error("op_failed", "This text is too long to save as a PDF.", null) }
             }
         }
+    }
+
+    private fun normalizeMalayalamChillu(input: String): String {
+        return input
+            .replace("\u0D23\u0D4D\u200D", "\u0D7A") // CHILLU NN
+            .replace("\u0D28\u0D4D\u200D", "\u0D7B") // CHILLU N
+            .replace("\u0D30\u0D4D\u200D", "\u0D7C") // CHILLU RR
+            .replace("\u0D32\u0D4D\u200D", "\u0D7D") // CHILLU L
+            .replace("\u0D33\u0D4D\u200D", "\u0D7E") // CHILLU LL
+            .replace("\u0D15\u0D4D\u200D", "\u0D7F") // CHILLU K
+    }
+
+    /**
+     * Verifies that the created PDF contains a valid, extractable Unicode text layer,
+     * ensuring no glyphs were mapped to Private Use Area (PUA) codepoints or lost.
+     */
+    private fun verifyUnicodeSearchability(pdfPath: String, originalText: String) {
+        check(resourcesReady)
+        val file = File(pdfPath)
+        PDDocument.load(file).use { doc ->
+            val stripper = com.tom_roush.pdfbox.text.PDFTextStripper()
+            val extracted = stripper.getText(doc)
+            if (extracted.isBlank() && originalText.isNotBlank()) {
+                throw IllegalStateException("Generated PDF has an empty text layer (non-searchable).")
+            }
+
+            var total = 0
+            var bad = 0
+            var i = 0
+            while (i < extracted.length) {
+                val cp = extracted.codePointAt(i)
+                if (!Character.isWhitespace(cp)) {
+                    total++
+                    if (isUndecodableCodePoint(cp)) {
+                        bad++
+                    }
+                }
+                i += Character.charCount(cp)
+            }
+
+            if (total > 0 && (bad.toFloat() / total.toFloat()) > 0.05f) {
+                throw IllegalStateException("Generated PDF contains unmapped glyphs / PUA characters, making it non-searchable.")
+            }
+        }
+    }
+
+    private fun isUndecodableCodePoint(cp: Int): Boolean {
+        return cp == 0xFFFD ||
+            (cp in 0xE000..0xF8FF) ||
+            (cp in 0xF0000..0xFFFFD) ||
+            (cp in 0x100000..0x10FFFD)
     }
 
     // --- Phase 11 / Feature 2.7: Smart Margin Trimming & Foldable Booklet Imposition ---

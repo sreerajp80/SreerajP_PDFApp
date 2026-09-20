@@ -5,7 +5,7 @@
 
 This document details completed features, upcoming unique features, existing feature enhancements, and ecosystem app integrations for the **SreerajP PDF App**. It focuses on features that are absent from mainstream Android PDF applications (such as Adobe Acrobat, Foxit, PDF Extra, ReadEra, and Xodo), while respecting all project rules: **open-source only**, **offline-first**, **scoped storage only**, **copy-on-write**, and **no OCR**.
 
-> Read first: [../CLAUDE.md](../CLAUDE.md) for the project rules, [features.md](features.md) for what already ships, and [architecture.md](architecture.md) for the technical design.
+> Read first: [../.agents/AGENTS.md](../.agents/AGENTS.md) (or [../CLAUDE.md](../CLAUDE.md)) for project rules, [features.md](features.md) for what already ships, and [architecture.md](architecture.md) for the technical design.
 
 ---
 
@@ -95,7 +95,7 @@ These feature concepts solve real user problems that standard PDF readers neglec
 
 ## 3. Existing Feature Improvements & Ecosystem Integrations
 
-In addition to core features, the app connects directly with existing Flutter applications from `L:\Android\MyFlutterApps\myapps.md`.
+In addition to core features, the app connects directly with existing Flutter applications from `myapps.md` (ecosystem app catalog).
 
 ```
 +-------------------------------------------------------------------------------+

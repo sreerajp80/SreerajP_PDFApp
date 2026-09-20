@@ -36,11 +36,21 @@ class PermissionsScreen extends StatelessWidget {
     final muted = colors?.mutedText ?? theme.colorScheme.onSurfaceVariant;
     final primary = theme.colorScheme.primary;
 
-    const greenColor = Color(0xFF10B981);
-    const blueColor = Color(0xFF3B82F6);
-    const purpleColor = Color(0xFF8B5CF6);
+    final activeColor = theme.colorScheme.primary;
+    final systemColor = theme.colorScheme.secondary;
+    final privacyColor = theme.colorScheme.tertiary;
 
     final explicitItems = <_DetailedPermissionItem>[
+      _DetailedPermissionItem(
+        title:
+            '${l10n.permPrintServiceTitle} (${l10n.permBindPrintServiceTitle})',
+        category: l10n.permTypeExplicit,
+        reason: l10n.permBindPrintServiceReason,
+        whatItAchieves: l10n.permBindPrintServiceWhatItAchieves,
+        icon: Icons.print_outlined,
+        statusLabel: l10n.statusSystem,
+        statusColor: systemColor,
+      ),
       _DetailedPermissionItem(
         title: l10n.permScopedStorageTitle,
         category: l10n.permTypeExplicit,
@@ -48,16 +58,7 @@ class PermissionsScreen extends StatelessWidget {
         whatItAchieves: l10n.permScopedStorageWhatItAchieves,
         icon: Icons.folder_open_outlined,
         statusLabel: l10n.statusActive,
-        statusColor: greenColor,
-      ),
-      _DetailedPermissionItem(
-        title: l10n.permPrintServiceTitle,
-        category: l10n.permTypeExplicit,
-        reason: l10n.permPrintServiceReason,
-        whatItAchieves: l10n.permPrintServiceWhatItAchieves,
-        icon: Icons.print_outlined,
-        statusLabel: l10n.statusSystem,
-        statusColor: blueColor,
+        statusColor: activeColor,
       ),
       _DetailedPermissionItem(
         title: l10n.permFileProviderTitle,
@@ -66,7 +67,7 @@ class PermissionsScreen extends StatelessWidget {
         whatItAchieves: l10n.permFileProviderWhatItAchieves,
         icon: Icons.share_outlined,
         statusLabel: l10n.statusSystem,
-        statusColor: blueColor,
+        statusColor: systemColor,
       ),
     ];
 
@@ -78,7 +79,7 @@ class PermissionsScreen extends StatelessWidget {
         whatItAchieves: l10n.permTtsWhatItAchieves,
         icon: Icons.record_voice_over_outlined,
         statusLabel: l10n.statusSystem,
-        statusColor: blueColor,
+        statusColor: systemColor,
       ),
       _DetailedPermissionItem(
         title: l10n.permTtsInstallTitle,
@@ -87,7 +88,16 @@ class PermissionsScreen extends StatelessWidget {
         whatItAchieves: l10n.permTtsInstallWhatItAchieves,
         icon: Icons.download_for_offline_outlined,
         statusLabel: l10n.statusSystem,
-        statusColor: blueColor,
+        statusColor: systemColor,
+      ),
+      _DetailedPermissionItem(
+        title: l10n.permStoreQueriesTitle,
+        category: l10n.permTypeImplicit,
+        reason: l10n.permStoreQueriesReason,
+        whatItAchieves: l10n.permStoreQueriesWhatItAchieves,
+        icon: Icons.storefront_outlined,
+        statusLabel: l10n.statusSystem,
+        statusColor: systemColor,
       ),
       _DetailedPermissionItem(
         title: l10n.permProcessTextTitle,
@@ -96,7 +106,16 @@ class PermissionsScreen extends StatelessWidget {
         whatItAchieves: l10n.permProcessTextWhatItAchieves,
         icon: Icons.text_fields_outlined,
         statusLabel: l10n.statusSystem,
-        statusColor: blueColor,
+        statusColor: systemColor,
+      ),
+      _DetailedPermissionItem(
+        title: l10n.permViewPdfTitle,
+        category: l10n.permTypeImplicit,
+        reason: l10n.permViewPdfReason,
+        whatItAchieves: l10n.permViewPdfWhatItAchieves,
+        icon: Icons.picture_as_pdf_outlined,
+        statusLabel: l10n.statusActive,
+        statusColor: activeColor,
       ),
       _DetailedPermissionItem(
         title: l10n.permSendShareTitle,
@@ -105,7 +124,16 @@ class PermissionsScreen extends StatelessWidget {
         whatItAchieves: l10n.permSendShareWhatItAchieves,
         icon: Icons.input_outlined,
         statusLabel: l10n.statusActive,
-        statusColor: greenColor,
+        statusColor: activeColor,
+      ),
+      _DetailedPermissionItem(
+        title: l10n.permPrintManagerTitle,
+        category: l10n.permTypeImplicit,
+        reason: l10n.permPrintManagerReason,
+        whatItAchieves: l10n.permPrintManagerWhatItAchieves,
+        icon: Icons.local_printshop_outlined,
+        statusLabel: l10n.statusSystem,
+        statusColor: systemColor,
       ),
     ];
 
@@ -117,7 +145,16 @@ class PermissionsScreen extends StatelessWidget {
         whatItAchieves: l10n.permZeroInternetWhatItAchieves,
         icon: Icons.wifi_off_outlined,
         statusLabel: l10n.statusOffline,
-        statusColor: purpleColor,
+        statusColor: privacyColor,
+      ),
+      _DetailedPermissionItem(
+        title: l10n.permNoBroadStorageTitle,
+        category: l10n.permTypePrivacy,
+        reason: l10n.permNoBroadStorageReason,
+        whatItAchieves: l10n.permNoBroadStorageWhatItAchieves,
+        icon: Icons.lock_outline,
+        statusLabel: l10n.statusOffline,
+        statusColor: privacyColor,
       ),
     ];
 
@@ -157,8 +194,8 @@ class PermissionsScreen extends StatelessWidget {
             const SizedBox(height: 24),
             _sectionHeader(
               context,
-              l10n.permZeroInternetTitle,
-              l10n.permOfflineReason,
+              l10n.permissionsPrivacyHeader,
+              l10n.permissionsPrivacySubtitle,
               primary,
               muted,
             ),

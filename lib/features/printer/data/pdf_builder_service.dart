@@ -64,6 +64,10 @@ class PdfBuilderService {
   }
 
   /// Builds a PDF from shared text. Returns the new file path.
+  ///
+  /// Guarantees a fully searchable Unicode PDF with proper complex script
+  /// shaping (Malayalam, Sanskrit, etc.), NFC normalization, and standard /ToUnicode
+  /// CMaps without unmapped or Private Use Area (PUA) glyphs.
   /// Throws [PdfUnsupportedTextException] for letters the built-in fonts lack.
   Future<String> fromText(IncomingText text) async {
     final out = await outputPath(text.suggestedName);

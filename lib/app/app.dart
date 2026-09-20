@@ -5,6 +5,7 @@ import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/app/routing/app_router.dart';
 import 'package:pdfapp/app/theme/app_theme.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
+import 'package:pdfapp/l10n/sa_material_localizations.dart';
 
 /// Root widget: `MaterialApp.router` wired with theme, localization, and routes.
 class PdfApp extends ConsumerWidget {
@@ -44,6 +45,9 @@ class PdfApp extends ConsumerWidget {
       routerConfig: appRouter,
       localizationsDelegates: const [
         AppLocalizations.delegate,
+        SaMaterialLocalizationsDelegate(),
+        SaCupertinoLocalizationsDelegate(),
+        SaWidgetsLocalizationsDelegate(),
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,

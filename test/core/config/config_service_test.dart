@@ -11,7 +11,7 @@ void main() {
 
       final config = await service.load();
 
-      expect(config.appName, 'X');
+      expect(config.appName.resolve('en'), 'X');
       expect(config.version, '1.2.3');
       expect(config.build, '9');
     });
@@ -21,7 +21,7 @@ void main() {
 
       final config = await service.load();
 
-      expect(config.appName, isNotEmpty);
+      expect(config.appName.resolve('en'), isNotEmpty);
       expect(config.version, '0.0.0'); // fallback value
     });
 

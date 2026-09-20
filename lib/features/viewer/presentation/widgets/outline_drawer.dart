@@ -86,7 +86,10 @@ class _OutlineTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final padding = EdgeInsets.only(left: 16.0 + depth * 16, right: 16);
+    final padding = EdgeInsetsDirectional.only(
+      start: 16.0 + depth * 16,
+      end: 16,
+    );
     if (node.children.isEmpty) {
       return ListTile(
         contentPadding: padding,
@@ -103,7 +106,9 @@ class _OutlineTile extends StatelessWidget {
         // Tapping the header still navigates to its own destination.
         if (node.dest != null)
           ListTile(
-            contentPadding: EdgeInsets.only(left: 16.0 + (depth + 1) * 16),
+            contentPadding: EdgeInsetsDirectional.only(
+              start: 16.0 + (depth + 1) * 16,
+            ),
             dense: true,
             leading: const Icon(Icons.my_location_outlined, size: 18),
             title: Text(node.title),

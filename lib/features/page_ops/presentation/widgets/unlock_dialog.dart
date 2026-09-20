@@ -103,6 +103,9 @@ class _UnlockDialogState extends ConsumerState<UnlockDialog> {
               labelText: l10n.currentPasswordLabel,
               border: const OutlineInputBorder(),
               suffixIcon: IconButton(
+                tooltip: _obscure
+                    ? l10n.tooltipShowPassword
+                    : l10n.tooltipHidePassword,
                 icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
                 onPressed: () => setState(() => _obscure = !_obscure),
               ),

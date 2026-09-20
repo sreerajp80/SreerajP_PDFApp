@@ -109,6 +109,9 @@ class _ProtectDialogState extends ConsumerState<ProtectDialog> {
               labelText: l10n.userPasswordLabel,
               border: const OutlineInputBorder(),
               suffixIcon: IconButton(
+                tooltip: _obscure
+                    ? l10n.tooltipShowPassword
+                    : l10n.tooltipHidePassword,
                 icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
                 onPressed: () => setState(() => _obscure = !_obscure),
               ),

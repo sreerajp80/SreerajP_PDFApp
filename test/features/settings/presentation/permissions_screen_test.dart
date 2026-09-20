@@ -32,10 +32,21 @@ void main() {
     expect(find.text('Permissions'), findsOneWidget);
     expect(find.text('CAPABILITIES'), findsOneWidget);
     expect(find.text('Scoped Storage (SAF)'), findsOneWidget);
-    expect(find.text('Virtual Print Service'), findsOneWidget);
+    expect(
+      find.text('Virtual Print Service (BIND_PRINT_SERVICE)'),
+      findsOneWidget,
+    );
+    expect(find.text('Secure File Provider'), findsOneWidget);
     expect(find.text('PRIVACY & SYSTEM DECLARATIONS'), findsOneWidget);
     expect(find.text('Text-to-Speech Engine'), findsOneWidget);
     expect(find.text('Voice Data Installer'), findsOneWidget);
+    expect(find.text('App Store & Web Queries'), findsOneWidget);
     expect(find.text('Process Text Action'), findsOneWidget);
+    expect(find.text("Default PDF Viewer ('Open with')"), findsOneWidget);
+    expect(find.text("Receive Shares & 'Open with'"), findsOneWidget);
+    expect(find.text('Android Print Framework'), findsOneWidget);
+    expect(find.text('PRIVACY & ZERO-PERMISSION GUARANTEES'), findsOneWidget);
+    expect(find.text('Zero Internet Guarantee'), findsOneWidget);
+    expect(find.text('Zero Broad Storage Access'), findsOneWidget);
   });
 }

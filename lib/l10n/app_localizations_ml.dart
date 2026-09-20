@@ -1522,6 +1522,9 @@ class AppLocalizationsMl extends AppLocalizations {
   String get languageMalayalam => 'മലയാളം';
 
   @override
+  String get languageSanskrit => 'സംസ്കൃതം (Sanskrit)';
+
+  @override
   String get languageSelectTitle => 'ആപ്പ് ഭാഷ';
 
   @override
@@ -1808,6 +1811,69 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get permTypePrivacy => 'സ്വകാര്യത ഉറപ്പ്';
+
+  @override
+  String get permissionsPrivacyHeader => 'സ്വകാര്യതയും സീറോ-പെർമിഷൻ ഉറപ്പുകളും';
+
+  @override
+  String get permissionsPrivacySubtitle =>
+      'മാനിഫെസ്റ്റിൽ നിന്ന് ബോധപൂർവ്വം ഒഴിവാക്കിയ അപകടകരമായ അനുമതികൾ.';
+
+  @override
+  String get permBindPrintServiceTitle => 'BIND_PRINT_SERVICE';
+
+  @override
+  String get permBindPrintServiceReason =>
+      'ആൻഡ്രോയിഡ് സിസ്റ്റം പ്രിന്റ് സ്പൂളറിന് മാത്രം ബന്ധപ്പെടാനാകും വിധം വെർച്വൽ പ്രിന്റ് സർവീസിന് സുരക്ഷയൊരുക്കുന്നു.';
+
+  @override
+  String get permBindPrintServiceWhatItAchieves =>
+      'അനധികൃത ആപ്പുകൾക്ക് പ്രിന്റ് സർവീസ് ദുരുപയോഗം ചെയ്യാനോ പ്രിന്റ് ഫയലുകൾ ചോർത്താനോ സാധിക്കില്ലെന്ന് ഉറപ്പാക്കുന്നു.';
+
+  @override
+  String get permStoreQueriesTitle => 'ആപ്പ് സ്റ്റോർ & വെബ് ക്വറികൾ';
+
+  @override
+  String get permStoreQueriesReason =>
+      'market://, https:// ലിങ്കുകൾ വഴി ഗൂഗിൾ പ്ലേ സ്റ്റോറിലെയും ബ്രൗസറിലെയും ആക്ടിവിറ്റികൾ തിരയുന്നു.';
+
+  @override
+  String get permStoreQueriesWhatItAchieves =>
+      'സ്പീച്ച് സർവീസസ് ലഭ്യമല്ലെങ്കിൽ ഗൂഗിൾ സ്പീച്ച് എൻജിൻ എളുപ്പത്തിൽ ഇൻസ്റ്റാൾ ചെയ്യാൻ സഹായിക്കുന്നു.';
+
+  @override
+  String get permViewPdfTitle => 'ഡീഫോൾട്ട് PDF വ്യൂവർ (\'Open with\')';
+
+  @override
+  String get permViewPdfReason =>
+      'PDF ഫയൽ തരങ്ങൾ തുറക്കാനുള്ള ആപ്പായി സിസ്റ്റത്തിൽ രജിസ്റ്റർ ചെയ്യുന്നു.';
+
+  @override
+  String get permViewPdfWhatItAchieves =>
+      'ഫയൽ മാനേജർ, ഡൗൺലോഡ്സ്, ഇമെയിൽ എന്നിവയിൽ നിന്ന് നേരിട്ട് PDF ഫയലുകൾ തുറക്കാൻ സഹായിക്കുന്നു.';
+
+  @override
+  String get permPrintManagerTitle => 'ആൻഡ്രോയിഡ് പ്രിന്റ് ഫ്രെയിംവർക്ക്';
+
+  @override
+  String get permPrintManagerReason =>
+      'ആൻഡ്രോയിഡിന്റെ സിസ്റ്റം പ്രിന്റ് മാനേജറുമായും പ്രിന്റ് സ്പൂളറുമായും സംവദിക്കുന്നു.';
+
+  @override
+  String get permPrintManagerWhatItAchieves =>
+      'ഫിസിക്കൽ പ്രിന്ററുകളിലേക്ക് പ്രിന്റ് ചെയ്യാനും സിസ്റ്റം പ്രിന്റ് പ്രിവ്യൂ കാണാനും സഹായിക്കുന്നു.';
+
+  @override
+  String get permNoBroadStorageTitle =>
+      'സ്റ്റോറേജ് അനുമതി പൂർണ്ണമായി ഒഴിവാക്കി';
+
+  @override
+  String get permNoBroadStorageReason =>
+      'READ_EXTERNAL_STORAGE, WRITE_EXTERNAL_STORAGE, MANAGE_EXTERNAL_STORAGE എന്നിവ ആവശ്യപ്പെടുന്നില്ല.';
+
+  @override
+  String get permNoBroadStorageWhatItAchieves =>
+      'ഉപകരണത്തിലെ മറ്റ് ഫോട്ടോകളും രേഖകളും പൂർണ്ണമായും സുരക്ഷിതമായി നിലനിർത്തുന്നു.';
 
   @override
   String get readingVelocityTitle => 'വായനാ വേഗതയും സമയവും';
@@ -2253,4 +2319,71 @@ class AppLocalizationsMl extends AppLocalizations {
   String pageJumpRangeHint(int min, int max) {
     return '$min – $max';
   }
+
+  @override
+  String get aboutDetailAuthor => 'രചയിതാവ്';
+
+  @override
+  String get aboutDetailEmail => 'ഇമെയിൽ';
+
+  @override
+  String get aboutDetailLicense => 'ലൈസൻസ്';
+
+  @override
+  String get aboutDetailAiUsed => 'ഉപയോഗിച്ച AI';
+
+  @override
+  String get aboutDetailIdeUsed => 'ഉപയോഗിച്ച IDE';
+
+  @override
+  String madeWithLove(String heart) {
+    return 'സ്നേഹത്തോടെ $heart ഇന്ത്യയിൽ നിന്ന്';
+  }
+
+  @override
+  String get madeWithLoveA11y => 'സ്നേഹത്തോടെ ഇന്ത്യയിൽ നിന്ന്';
+
+  @override
+  String get menuTooltip => 'മെനു';
+
+  @override
+  String get tooltipShowPassword => 'പാസ്‌വേഡ് കാണിക്കുക';
+
+  @override
+  String get tooltipHidePassword => 'പാസ്‌വേഡ് മറയ്ക്കുക';
+
+  @override
+  String get colorYellow => 'മഞ്ഞ';
+
+  @override
+  String get colorGreen => 'പച്ച';
+
+  @override
+  String get colorBlue => 'നീല';
+
+  @override
+  String get colorRed => 'ചുവപ്പ്';
+
+  @override
+  String get colorPurple => 'വയലറ്റ്';
+
+  @override
+  String get colorOrange => 'ഓറഞ്ച്';
+
+  @override
+  String aboutVersionBuild(String version, String build) {
+    return '$version (നിർമ്മിതി $build)';
+  }
+
+  @override
+  String get closeAction => 'അടയ്ക്കുക';
+
+  @override
+  String get removeAction => 'നീക്കം ചെയ്യുക';
+
+  @override
+  String get rotateScreenTooltip => 'സ്ക്രീൻ തിരിക്കുക';
+
+  @override
+  String get screenOrientationTitle => 'സ്ക്രീൻ ഓറിയന്റേഷൻ';
 }

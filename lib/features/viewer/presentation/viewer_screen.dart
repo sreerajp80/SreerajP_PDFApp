@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:ui' show DisplayFeatureType;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 // Hide pdfrx's PdfDocumentRef — this app has its own domain type of that name.
@@ -83,6 +84,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   late final PdfRepository _repo = ref.read(pdfRepositoryProvider);
 
   late PdfViewMode _viewMode;
+  ScreenOrientationMode _screenOrientation = ScreenOrientationMode.auto;
   bool _invert = false;
   bool _positionLoaded = false;
   int _initialPage = 1;
@@ -165,6 +167,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
 
   @override
   void dispose() {
+    SystemChrome.setPreferredOrientations(DeviceOrientation.values);
     _saveTimer?.cancel();
     _flushSave();
     _velocityService?.dispose();
@@ -1129,10 +1132,12 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         onPressed: _document == null ? null : _toggleAnnotateMode,
       ),
       PopupMenuButton<_ViewerMenu>(
+        tooltip: l10n.menuTooltip,
         onSelected: (item) => switch (item) {
           _ViewerMenu.invertColors => _toggleInvert(),
           _ViewerMenu.viewMode => _showViewModeDialog(),
           _ViewerMenu.pageFit => _showPageFitDialog(),
+          _ViewerMenu.screenOrientation => _showScreenOrientationDialog(),
           _ViewerMenu.thumbnails => _showThumbnails(),
           _ViewerMenu.contents => _scaffoldKey.currentState?.openEndDrawer(),
           _ViewerMenu.bookmarks => _showBookmarks(),
@@ -1174,6 +1179,16 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                 const Icon(Icons.fit_screen_outlined, size: 18),
                 const SizedBox(width: 12),
                 Text(l10n.pageFit),
+              ],
+            ),
+          ),
+          PopupMenuItem(
+            value: _ViewerMenu.screenOrientation,
+            child: Row(
+              children: [
+                const Icon(Icons.screen_rotation_outlined, size: 18),
+                const SizedBox(width: 12),
+                Text(l10n.screenOrientationTitle),
               ],
             ),
           ),
@@ -1364,6 +1379,78 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     );
   }
 
+  void _setScreenOrientation(ScreenOrientationMode mode) {
+    setState(() => _screenOrientation = mode);
+    switch (mode) {
+      case ScreenOrientationMode.auto:
+        SystemChrome.setPreferredOrientations(DeviceOrientation.values);
+      case ScreenOrientationMode.portrait:
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ]);
+      case ScreenOrientationMode.landscape:
+        SystemChrome.setPreferredOrientations([
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ]);
+    }
+  }
+
+  void _toggleScreenOrientation() {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    _setScreenOrientation(
+      isLandscape
+          ? ScreenOrientationMode.portrait
+          : ScreenOrientationMode.landscape,
+    );
+  }
+
+  Future<void> _showScreenOrientationDialog() async {
+    final l10n = AppLocalizations.of(context);
+    await showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(l10n.screenOrientationTitle),
+          content: RadioGroup<ScreenOrientationMode>(
+            groupValue: _screenOrientation,
+            onChanged: (value) {
+              if (value != null) {
+                _setScreenOrientation(value);
+                Navigator.of(context).pop();
+              }
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RadioListTile<ScreenOrientationMode>(
+                  title: Text(l10n.orientationAuto),
+                  value: ScreenOrientationMode.auto,
+                ),
+                RadioListTile<ScreenOrientationMode>(
+                  title: Text(l10n.orientationPortrait),
+                  value: ScreenOrientationMode.portrait,
+                ),
+                RadioListTile<ScreenOrientationMode>(
+                  title: Text(l10n.orientationLandscape),
+                  value: ScreenOrientationMode.landscape,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.cancelAction),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildBottomBar(AppLocalizations l10n) {
     if (_ttsActive) {
       return _buildTtsBottomBar(l10n);
@@ -1426,9 +1513,11 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               ),
             ),
           ),
-          const SizedBox(
-            width: 48,
-          ), // spacer matching IconButton size to balance centering
+          IconButton(
+            icon: const Icon(Icons.screen_rotation_outlined),
+            tooltip: l10n.rotateScreenTooltip,
+            onPressed: _toggleScreenOrientation,
+          ),
         ],
       ),
     );
@@ -1537,6 +1626,7 @@ enum _ViewerMenu {
   invertColors,
   viewMode,
   pageFit,
+  screenOrientation,
   thumbnails,
   contents,
   bookmarks,
@@ -1547,3 +1637,5 @@ enum _ViewerMenu {
   signatures,
   settings,
 }
+
+enum ScreenOrientationMode { auto, portrait, landscape }

@@ -94,6 +94,13 @@ class PdfPrintService : PrintService() {
                     }
                 }
 
+                // Inspect incoming spooled PDF for Unicode searchability
+                try {
+                    checkSearchability(outFile)
+                } catch (e: Exception) {
+                    android.util.Log.w("PdfPrintService", "Could not check incoming PDF searchability: ${e.message}")
+                }
+
                 printJob.complete()
 
                 // Launch MainActivity to open the printed PDF in SreerajP PDF App
@@ -111,6 +118,36 @@ class PdfPrintService : PrintService() {
                 printJob.fail(e.message ?: "Failed to save printed document.")
             }
         }.start()
+    }
+
+    private fun checkSearchability(file: File) {
+        try {
+            com.tom_roush.pdfbox.android.PDFBoxResourceLoader.init(applicationContext)
+            com.tom_roush.pdfbox.pdmodel.PDDocument.load(file).use { doc ->
+                val stripper = com.tom_roush.pdfbox.text.PDFTextStripper()
+                val extracted = stripper.getText(doc)
+                if (extracted.isNotBlank()) {
+                    var total = 0
+                    var bad = 0
+                    var i = 0
+                    while (i < extracted.length) {
+                        val cp = extracted.codePointAt(i)
+                        if (!Character.isWhitespace(cp)) {
+                            total++
+                            if (cp == 0xFFFD || (cp in 0xE000..0xF8FF) || (cp in 0xF0000..0xFFFFD) || (cp in 0x100000..0x10FFFD)) {
+                                bad++
+                            }
+                        }
+                        i += Character.charCount(cp)
+                    }
+                    if (total > 0 && (bad.toFloat() / total.toFloat()) > 0.15f) {
+                        android.util.Log.w("PdfPrintService", "Warning: incoming PDF has garbled/PUA text (${bad}/${total} characters undecodable). Missing ToUnicode CMap.")
+                    }
+                }
+            }
+        } catch (_: Exception) {
+            // Non-critical check for external spool
+        }
     }
 
     companion object {

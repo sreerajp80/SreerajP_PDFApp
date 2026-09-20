@@ -53,7 +53,7 @@ class _BookmarksPanelState extends State<_BookmarksPanel> {
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 8, 8),
+              padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 8, 8),
               child: Row(
                 children: [
                   Expanded(

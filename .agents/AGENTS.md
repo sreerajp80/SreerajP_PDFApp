@@ -128,7 +128,7 @@ flutter build appbundle --flavor prod --release \
 ## Localization rules
 
 - All user-visible text MUST come from `lib/l10n/*.arb` via `AppLocalizations` — never raw string literals in widgets.
-- The app supports English (`app_en.arb`) and Malayalam (`app_ml.arb`).
+- The app supports English (`app_en.arb`), Malayalam (`app_ml.arb`), and Sanskrit (`app_sa.arb`).
 - `l10n.yaml` (project root) and `lib/l10n/app_en.arb` exist. Run `flutter gen-l10n` after editing any `.arb` file.
 - Literals are permitted only for internal logs, non-UI exceptions, asset paths, and database identifiers.
 

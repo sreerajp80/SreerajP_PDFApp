@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfapp/app/config/providers.dart';
+import 'package:pdfapp/core/errors/app_exception.dart';
 import 'package:pdfapp/core/platform/open_document_channel.dart';
 import 'package:pdfapp/core/storage/app_database.dart';
 import 'package:pdfapp/features/viewer/domain/recent_file.dart';
@@ -21,6 +22,11 @@ class _FakeOpenDocumentChannel extends OpenDocumentChannel {
 
   @override
   Stream<IncomingContent> get incoming => const Stream.empty();
+
+  @override
+  Future<OpenedDocument> resolveToCache(String uri) async {
+    throw const StorageException('This file could not be reopened.');
+  }
 }
 
 /// A recents notifier backed by an in-memory list, so the widget test does no
@@ -121,4 +127,22 @@ void main() {
 
     expect(find.text('report.pdf'), findsNothing);
   });
+
+  testWidgets(
+    'tapping a recent file that fails to open shows error snackbar promptly',
+    (tester) async {
+      await pumpHome(tester, [recent()]);
+      expect(find.text('report.pdf'), findsOneWidget);
+
+      await tester.tap(find.text('report.pdf'));
+      await tester.pump();
+
+      expect(
+        find.text(
+          'This file could not be reopened. It may have been moved or deleted.',
+        ),
+        findsOneWidget,
+      );
+    },
+  );
 }

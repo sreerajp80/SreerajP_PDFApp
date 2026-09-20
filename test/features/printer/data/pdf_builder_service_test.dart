@@ -127,6 +127,27 @@ void main() {
       expect(out, endsWith('.pdf'));
     });
 
+    test(
+      'sends complex Unicode Indic text with conjuncts to textToPdf',
+      () async {
+        mockPdfBox((call) async {
+          expect(call.method, 'textToPdf');
+          expect(call.arguments['text'], 'മലയാളം അക്ഷരങ്ങൾ 123');
+          return call.arguments['outputPath'] as String;
+        });
+
+        final out = await sut.fromText(
+          const IncomingText(
+            text: 'മലയാളം അക്ഷരങ്ങൾ 123',
+            suggestedName: 'malayalam_note',
+          ),
+        );
+
+        expect(out, contains('malayalam_note_'));
+        expect(out, endsWith('.pdf'));
+      },
+    );
+
     test('turns unsupported letters into a typed exception', () async {
       mockPdfBox((call) async {
         throw PlatformException(

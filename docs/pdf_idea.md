@@ -1,6 +1,13 @@
-# PDF App Idea & Concepts — SreerajP_PDFApp
+# Product Idea & Concepts — SreerajP PDF App
 
-## What is this app
+This document describes the core concept, feature scope, design intent, and technical trade-offs for the SreerajP PDF App. Read this before planning new features or redesigning core user journeys.
+
+> Read first: [../.agents/AGENTS.md](../.agents/AGENTS.md) (or [../CLAUDE.md](../CLAUDE.md)) for project rules, [architecture.md](architecture.md) for the technical architecture, and [features.md](features.md) for the current feature catalog.
+
+---
+
+## 1. Core Product Concept
+
 This is an Android app built in Flutter for **everything PDF**: opening, reading, navigating,
 annotating, extracting from, and reorganizing PDF files — including whatever editing is
 possible on Android. It also works as a **PDF printer for Android**: other apps can "print
@@ -8,17 +15,25 @@ to PDF" / send content to this app to be saved as a PDF. It is one of five separ
 split out from the original single "File Reader" idea (the others cover text/data files,
 code files, HTML, and EPUB).
 
-## Development Tools versions
-Flutter 3.44.8 or higher
+---
+
+## 2. Development Tool Requirements
+
+Flutter 3.44.8 or higher  
 Dart 3.12.2 or higher
 
-## Licensing constraint
+---
+
+## 3. Licensing Constraints
+
 Every library used by this app must be **open source**. Commercial or source-available SDKs
 are not allowed, even when they have a free community license (for example Syncfusion,
-PSPDFKit, Apryse). See [PDF library decision](#pdf-library-decision-open-source-only) for
+PSPDFKit, Apryse). See [Open-Source Library Decisions](#7-open-source-library-decisions) for
 what this means for the feature set.
 
-## Shared Capabilities (build once, reuse everywhere)
+---
+
+## 4. Shared Capabilities (Build Once, Reuse Everywhere)
 - **Search** — find text, highlight matches, and jump between matches across the document
   (needs a text layer; see scanned-PDF note below). Search is **Unicode-aware for complex
   Indic scripts (Malayalam and Sanskrit)**: the same word can be stored in a PDF in several
@@ -44,7 +59,9 @@ what this means for the feature set.
   fingerprint (see [Non-Functional Requirements](#non-functional-requirements)).
 - **Copy** — select and copy text from pages (needs a text layer).
 
-## Features
+---
+
+## 5. Core Feature Domains
 
 ### Viewing & navigation
 Open PDF files. Render and scroll pages (single page, continuous, two-page / book view).
@@ -100,7 +117,9 @@ The app acts as a **print / PDF target** for the rest of the device:
   that part is treated as a risk / later-phase item; the simpler share-to-save-as-PDF path
   is the first target.
 
-## Risks & Hard Features
+---
+
+## 6. Risks & Hard Features
 
 - **PDF digital signature verification with a custom trust store** — *highest risk.* Real
   cryptography: PKCS#7 / CMS parsing, certificate-chain validation, and revocation checks.
@@ -170,7 +189,9 @@ The app acts as a **print / PDF target** for the rest of the device:
 - **Compression is best-effort only** — open-source tools cannot match commercial PDF
   compressors.
 
-## PDF library decision (open source only)
+---
+
+## 7. Open-Source Library Decisions
 The app uses **open-source libraries only**. Commercial PDF SDKs (Syncfusion, PSPDFKit,
 Apryse) are not an option, even with a free community license. The chosen open-source stack:
 
@@ -187,7 +208,9 @@ Two honest trade-offs come with this stack:
 2. **Compression is best-effort only** — open-source tools cannot match commercial
    compressors.
 
-## Non-Functional Requirements
+---
+
+## 8. Non-Functional Requirements
 
 - **Large files** — PDFs up to **a few hundred MB** should open (pdfium loads pages lazily).
   Above the limit, show a clear warning and a degraded mode (e.g. a raw paged view) instead

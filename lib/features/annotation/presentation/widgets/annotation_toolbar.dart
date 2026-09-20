@@ -167,22 +167,33 @@ class AnnotationToolbar extends StatelessWidget {
   Widget _colorDot(BuildContext context, int color) {
     final selected = controller.color == color;
     final scheme = Theme.of(context).colorScheme;
-    final label = _colorName(color);
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: label,
-      child: GestureDetector(
-        onTap: () => controller.setColor(color),
-        child: Container(
-          width: 30,
-          height: 30,
-          decoration: BoxDecoration(
-            color: Color(color),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: selected ? scheme.primary : scheme.outlineVariant,
-              width: selected ? 3 : 1,
+    final l10n = AppLocalizations.of(context);
+    final label = _colorName(l10n, color);
+    return Tooltip(
+      message: label,
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: label,
+        child: GestureDetector(
+          onTap: () => controller.setColor(color),
+          behavior: HitTestBehavior.opaque,
+          child: SizedBox(
+            width: 48,
+            height: 48,
+            child: Center(
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: Color(color),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: selected ? scheme.primary : scheme.outlineVariant,
+                    width: selected ? 3 : 1,
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -190,16 +201,16 @@ class AnnotationToolbar extends StatelessWidget {
     );
   }
 
-  String _colorName(int color) {
+  String _colorName(AppLocalizations l10n, int color) {
     return switch (color) {
-      0xFFFFEB3B => 'Yellow',
-      0xFF4CAF50 => 'Green',
-      0xFF2196F3 => 'Blue',
-      0xFFE53935 => 'Red',
-      0xFF9C27B0 => 'Purple',
-      0xFFFF9800 => 'Orange',
-      0xFF000000 => 'Black',
-      _ => 'Custom Color',
+      0xFFFFEB3B => l10n.colorYellow,
+      0xFF4CAF50 => l10n.colorGreen,
+      0xFF2196F3 => l10n.colorBlue,
+      0xFFE53935 => l10n.colorRed,
+      0xFF9C27B0 => l10n.colorPurple,
+      0xFFFF9800 => l10n.colorOrange,
+      _ =>
+        '#${color.toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}',
     };
   }
 }

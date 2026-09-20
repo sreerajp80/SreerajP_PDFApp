@@ -1,8 +1,8 @@
-# Project Structure — SreerajP_PDFApp
+# Project Structure — SreerajP PDF App
 
-This document details the folder structure and architectural responsibilities of the SreerajP PDF App codebase.
+This document details the folder structure and architectural responsibilities of the SreerajP PDF App codebase. Read this before adding new modules, features, or screens.
 
-Read this before adding new modules, features, or screens. Full architectural details live in [architecture.md](architecture.md).
+> Read first: [../.agents/AGENTS.md](../.agents/AGENTS.md) (or [../CLAUDE.md](../CLAUDE.md)) for project rules, [architecture.md](architecture.md) for full architectural details, and [guidelines/guideline.md](guidelines/guideline.md) for folder-structure conventions.
 
 ---
 
@@ -44,6 +44,7 @@ The application follows the **Tier 2 Feature-First** layout specified in `docs/g
 lib/
 |-- main.dart                # Application entrypoint, initializes DB and runs ProviderScope
 |-- app/
+|   |-- app.dart             # Root MaterialApp widget with theme, localization, and router
 |   |-- config/              # Flavor config and global Riverpod providers / service wiring
 |   |-- routing/             # AppRouter, route definitions, and navigation guards
 |   `-- theme/               # Material 3 theme configurations and design tokens
@@ -57,7 +58,8 @@ lib/
 |   |-- platform/            # Method-channel clients (PdfBox, signature, TTS, open document)
 |   |-- search/              # Indic phonetic engine, Sandhi engine, script detection,
 |   |                        # transliteration, and search normalization
-|   `-- storage/             # AppDatabase, SQLite migrations, cache service, file fingerprint
+|   |-- storage/             # AppDatabase, SQLite migrations, cache service, file fingerprint
+|   `-- widgets/             # Shared core widgets (MadeWithLove badge)
 |-- features/
 |   |-- about/               # About screen presentation and config binding
 |   |-- annotation/          # Overlay annotations (markups, drawings, sticky notes, bookmarks)
@@ -96,3 +98,17 @@ Each feature under `lib/features/<feature_name>/` adheres strictly to standard s
 3. **Data Layer (`data/`)**:
    - Encapsulates database tables, `SharedPreferences`, and platform channels.
    - Catches lower-level errors and returns domain models or typed failures.
+
+---
+
+## 5. Test Suite Mirroring (`test/`)
+
+The `test/` directory mirrors `lib/` directory structure strictly:
+
+- `test/app/` — Tests for app-level configurations and themes (`test/app/config/`, `test/app/theme/`).
+- `test/core/` — Tests for core modules (`config/`, `errors/`, `format/`, `platform/`, `search/`, `storage/`, `widgets/`).
+- `test/features/<feature>/` — Tests organized by layer:
+  - `data/` — DAO, database migration, and platform-channel service tests.
+  - `domain/` — Pure Dart logic, model validation, and geometry tests.
+  - `presentation/` — Screen, dialog, and widget tests.
+

@@ -1,8 +1,8 @@
-# Dependencies — SreerajP_PDFApp
+# Dependencies — SreerajP PDF App
 
-This document catalogs all dependencies used in the project, their open-source licenses, their purposes, and the explicit blocked dependencies list.
+This document catalogs all dependencies used in the project, their open-source licenses, their purposes, and the explicit blocked dependencies list. Read this before adding or updating any library in the project.
 
-Read this before adding or updating any library in the project. Full architectural context is in [architecture.md](architecture.md).
+> Read first: [../.agents/AGENTS.md](../.agents/AGENTS.md) (or [../CLAUDE.md](../CLAUDE.md)) for project rules, [architecture.md](architecture.md) for architectural context, and [guidelines/flutter_project_engineering_standard.md](guidelines/flutter_project_engineering_standard.md) for dependency rules.
 
 ---
 

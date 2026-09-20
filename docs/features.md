@@ -4,7 +4,7 @@ This document is the complete catalog of what the app does today: every screen, 
 PDF operation, and every system integration it offers. Read it before adding or changing
 a feature, so you know what already exists.
 
-> Read first: [../CLAUDE.md](../CLAUDE.md) for the project rules,
+> Read first: [../.agents/AGENTS.md](../.agents/AGENTS.md) (or [../CLAUDE.md](../CLAUDE.md)) for the project rules,
 > [architecture.md](architecture.md) for how the app is built, and
 > [feature_analysis_and_roadmap.md](feature_analysis_and_roadmap.md) for what is planned next.
 

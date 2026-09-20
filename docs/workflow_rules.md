@@ -1,8 +1,8 @@
-# Workflow Rules — SreerajP_PDFApp
+# Workflow Rules — SreerajP PDF App
 
-This document details the mandatory workflow rules for modifying the SreerajP PDF App codebase.
+This document details the mandatory workflow rules for modifying the SreerajP PDF App codebase. Read this before proposing or making any changes to the project.
 
-Read this before proposing or making any changes to the project.
+> Read first: [../.agents/AGENTS.md](../.agents/AGENTS.md) (or [../CLAUDE.md](../CLAUDE.md)) for project rules, and [guidelines/flutter_project_engineering_standard.md](guidelines/flutter_project_engineering_standard.md) for the engineering standard.
 
 ---
 

@@ -195,31 +195,52 @@ class _PresetSwatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: selected
-              ? Border.all(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  width: 3,
-                )
-              : null,
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.4),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+    final hexCode =
+        '#${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
+    return Tooltip(
+      message: hexCode,
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: hexCode,
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: SizedBox(
+            width: 48,
+            height: 48,
+            child: Center(
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border: selected
+                      ? Border.all(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          width: 3,
+                        )
+                      : null,
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.4),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: selected
+                    ? Icon(
+                        Icons.check,
+                        color: AppTheme.contrastOn(color),
+                        size: 22,
+                      )
+                    : null,
+              ),
             ),
-          ],
+          ),
         ),
-        child: selected
-            ? Icon(Icons.check, color: AppTheme.contrastOn(color), size: 22)
-            : null,
       ),
     );
   }

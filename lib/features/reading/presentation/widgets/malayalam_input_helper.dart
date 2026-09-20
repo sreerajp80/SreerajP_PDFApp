@@ -75,7 +75,7 @@ class _MalayalamInputHelperState extends State<MalayalamInputHelper>
                 Expanded(
                   child: suggestions.isEmpty
                       ? Align(
-                          alignment: Alignment.centerLeft,
+                          alignment: AlignmentDirectional.centerStart,
                           child: Text(
                             widget.currentText.isEmpty
                                 ? l10n.malayalamHelperTooltip
@@ -112,6 +112,7 @@ class _MalayalamInputHelperState extends State<MalayalamInputHelper>
                 ),
                 IconButton(
                   icon: const Icon(Icons.close, size: 18),
+                  tooltip: l10n.closeAction,
                   onPressed: widget.onClose,
                 ),
               ],

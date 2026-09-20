@@ -52,6 +52,9 @@ class _PasswordDialogState extends State<_PasswordDialog> {
             decoration: InputDecoration(
               labelText: l10n.passwordHint,
               suffixIcon: IconButton(
+                tooltip: _obscure
+                    ? l10n.tooltipShowPassword
+                    : l10n.tooltipHidePassword,
                 icon: Icon(
                   _obscure
                       ? Icons.visibility_outlined
