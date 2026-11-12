@@ -3,7 +3,7 @@ description: "Folio — an offline Android app for everything PDF."
 publish_to: 'none'
 
 # version/build. Keep in sync with assets/config/app_config.json (ConfigService checks this).
-version: 2.8.1+28
+version: 2.8.2+29
 
 environment:
   sdk: ^3.13.0
