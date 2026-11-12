@@ -1,13 +1,13 @@
 # Implementation Progress — SreerajP PDF App
 
-**Date:** 2026-07-18  
-**Status:** completed (tracker) — Phase 0 to Phase 8 fully implemented, verified, and release-hardened.
-
 This is the living progress tracker for the **SreerajP PDF App**. It follows the phases in
 [implementation_plan.md](implementation_plan.md). Update it as work moves. Keep it honest:
 mark a task done only when it is really done (analyze clean, tests pass, verified in the app).
 
-> Read first: [../.agents/AGENTS.md](../.agents/AGENTS.md) (or [../CLAUDE.md](../CLAUDE.md)) for project rules,
+**Date:** 2026-07-18  
+**Status:** completed (tracker) — Phase 0 to Phase 8 fully implemented, verified, and release-hardened.
+
+> Read first: [../CLAUDE.md](../CLAUDE.md) and [../AGENTS.md](../AGENTS.md) for project rules,
 > and [implementation_plan.md](implementation_plan.md) for the phased build plan.
 
 **How to read the status marks:**

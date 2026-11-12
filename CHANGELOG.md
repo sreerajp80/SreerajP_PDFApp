@@ -1,6 +1,24 @@
 # Changelog
 
-All notable changes to the SreerajP PDF App project will be documented in this file.
+All notable changes to the Folio app project will be documented in this file.
+
+---
+
+## [Unreleased]
+
+*   **Fixed** search now scrolls to the first match even when it is on a later page. Before, the view stayed where it was until you tapped Next.
+*   **Fixed** search could miss whole pages of a PDF (and read-aloud could skip them) when a page had not finished loading yet. The page is now waited for, and an unloaded page is tried again instead of being treated as empty.
+*   **Fixed** Organize pages: a rotated page now shows its thumbnail turned, not only a "90°" label.
+*   **Fixed** Malayalam and Sanskrit texts now use the app's own name (ഗ്രന്ഥം / ग्रन्थः) instead of "Folio". Where a text points to an Android screen, "(Folio)" is added, because Android shows the name in the phone's language.
+*   **Fixed** the release build no longer asks for permission to read shared storage. Android added it automatically because of the camera library; the app never used it.
+*   **Added** sending PDFs to a nearby phone over your local WiFi: long-press recent files on Home to select them, or use "Send to nearby phone" in the viewer menu. The other phone scans the code in Device sync › Receive, sees the files, and taps Accept. Each file is checked on arrival and saved as a new file in a folder you choose once (shown as "Saving to" with a Change button).
+*   **Added** Device sync (Settings › Device sync): copy your settings to another phone. One phone shows a QR code, the other scans it. "QR only" needs no network; "WiFi" connects the two phones directly on your local WiFi or hotspot, encrypted with a one-time key. You see what will change and nothing is applied until you tap Apply.
+*   **Changed** permissions: the app now declares `INTERNET` (used only for Device sync on the local WiFi, never for an internet server) and `CAMERA` (used only to scan a Device sync code). The privacy texts now say "no internet servers" instead of "100% offline".
+*   **Changed** the app name to **Folio** (Malayalam: ഗ്രന്ഥം, Sanskrit: ग्रन्थः). The launcher, About screen, print service and help texts use the new name. Existing installs update normally.
+*   **Fixed** text watermarks in Malayalam, Sanskrit and other non-Latin scripts. They used to fail; now the letters are drawn and joined correctly.
+*   **Changed** the watermark default text and preset words now follow the app language.
+*   **Fixed** search, copy and read-aloud in PDFs made by LibreOffice (common for Malayalam and Sanskrit). Words were often split by a stray space or joined without one, so many words could not be found.
+*   **Changed** a few remaining English labels (language "Auto", paper sizes, image quality, "No text found", signature overlay) now follow the app language.
 
 ---
 

@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:pdfrx/pdfrx.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
+import 'package:pdfrx/pdfrx.dart';
 
 /// The table of contents (outline) as a navigation drawer.
 ///
@@ -32,7 +32,7 @@ class OutlineDrawer extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(16),
               child: Text(
-                l10n.contentsTitle,
+                l10n.titleContents,
                 style: Theme.of(context).textTheme.titleLarge,
               ),
             ),
@@ -48,14 +48,21 @@ class OutlineDrawer extends StatelessWidget {
                   if (nodes.isEmpty) {
                     return Padding(
                       padding: const EdgeInsets.all(24),
-                      child: Text(l10n.noOutline, textAlign: TextAlign.center),
+                      child: Text(
+                        l10n.emptyOutline,
+                        textAlign: TextAlign.center,
+                      ),
                     );
                   }
-                  return ListView(
-                    children: [
-                      for (final node in nodes)
-                        _OutlineTile(node: node, depth: 0, onTap: _goTo),
-                    ],
+                  // An outline can be very long: build entries lazily
+                  // (engineering standard §10.3).
+                  return ListView.builder(
+                    itemCount: nodes.length,
+                    itemBuilder: (context, index) => _OutlineTile(
+                      node: nodes[index],
+                      depth: 0,
+                      onTap: _goTo,
+                    ),
                   );
                 },
               ),

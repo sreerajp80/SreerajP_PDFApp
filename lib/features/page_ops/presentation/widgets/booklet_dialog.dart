@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:pdfapp/core/errors/user_error_message.dart';
+import 'package:pdfapp/core/logging/app_logger.dart';
 import 'package:pdfapp/features/page_ops/data/page_ops_service.dart';
 import 'package:pdfapp/features/page_ops/domain/booklet_imposition_planner.dart';
 import 'package:pdfapp/features/page_ops/presentation/widgets/page_ops_result_dialog.dart';
@@ -53,17 +55,22 @@ class _BookletDialogState extends ConsumerState<BookletDialog> {
         showDialog<void>(
           context: nav.context,
           builder: (context) => PageOpsResultDialog(
-            title: l10n.bookletDoneTitle,
+            title: l10n.titleBookletDone,
             outputPaths: [out],
-            note: l10n.bookletDoneNote,
+            note: l10n.descBookletDoneNote,
           ),
         );
       }
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error(
+        'booklet_dialog: operation failed',
+        error: e,
+        stackTrace: st,
+      );
       if (mounted) {
         setState(() {
           _loading = false;
-          _error = '${l10n.opFailed}: $e';
+          _error = userErrorMessage(l10n, e, fallback: l10n.errorOpFailed);
         });
       }
     }
@@ -85,7 +92,7 @@ class _BookletDialogState extends ConsumerState<BookletDialog> {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(height: 16),
-            Text(l10n.bookletWorking),
+            Text(l10n.descBookletWorking),
           ],
         ),
       );
@@ -96,7 +103,7 @@ class _BookletDialogState extends ConsumerState<BookletDialog> {
         children: [
           Icon(Icons.menu_book, color: theme.colorScheme.primary),
           const SizedBox(width: 8),
-          Expanded(child: Text(l10n.bookletTitle)),
+          Expanded(child: Text(l10n.titleBooklet)),
         ],
       ),
       content: SingleChildScrollView(
@@ -104,7 +111,7 @@ class _BookletDialogState extends ConsumerState<BookletDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.bookletDescription, style: theme.textTheme.bodyMedium),
+            Text(l10n.descBooklet, style: theme.textTheme.bodyMedium),
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
@@ -131,7 +138,7 @@ class _BookletDialogState extends ConsumerState<BookletDialog> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        l10n.bookletSummaryTitle,
+                        l10n.titleBookletSummary,
                         style: theme.textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -140,7 +147,7 @@ class _BookletDialogState extends ConsumerState<BookletDialog> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    l10n.bookletSummaryPages(
+                    l10n.descBookletSummaryPages(
                       widget.pageCount,
                       plan.paddedPages,
                     ),
@@ -148,7 +155,7 @@ class _BookletDialogState extends ConsumerState<BookletDialog> {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    l10n.bookletSummarySheets(
+                    l10n.descBookletSummarySheets(
                       plan.totalSheets,
                       plan.totalSheets * 2,
                     ),
@@ -157,7 +164,7 @@ class _BookletDialogState extends ConsumerState<BookletDialog> {
                   if (plan.blankPageCount > 0) ...[
                     const SizedBox(height: 2),
                     Text(
-                      l10n.bookletSummaryBlanks(plan.blankPageCount),
+                      l10n.descBookletSummaryBlanks(plan.blankPageCount),
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontStyle: FontStyle.italic,
                       ),
@@ -175,7 +182,7 @@ class _BookletDialogState extends ConsumerState<BookletDialog> {
             ],
             const SizedBox(height: 16),
             Text(
-              l10n.bookletBindingLabel,
+              l10n.labelBookletBinding,
               style: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -185,12 +192,12 @@ class _BookletDialogState extends ConsumerState<BookletDialog> {
               segments: [
                 ButtonSegment<BookletBinding>(
                   value: BookletBinding.ltr,
-                  label: Text(l10n.bookletBindingLtr),
+                  label: Text(l10n.labelBookletBindingLtr),
                   icon: const Icon(Icons.format_textdirection_l_to_r, size: 18),
                 ),
                 ButtonSegment<BookletBinding>(
                   value: BookletBinding.rtl,
-                  label: Text(l10n.bookletBindingRtl),
+                  label: Text(l10n.labelBookletBindingRtl),
                   icon: const Icon(Icons.format_textdirection_r_to_l, size: 18),
                 ),
               ],
@@ -203,7 +210,7 @@ class _BookletDialogState extends ConsumerState<BookletDialog> {
             ),
             const SizedBox(height: 16),
             Text(
-              l10n.bookletPaperSizeLabel,
+              l10n.labelBookletPaperSize,
               style: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -213,15 +220,15 @@ class _BookletDialogState extends ConsumerState<BookletDialog> {
               segments: [
                 ButtonSegment<String>(
                   value: 'auto',
-                  label: Text(l10n.bookletPaperAuto),
+                  label: Text(l10n.labelBookletPaperAuto),
                 ),
                 ButtonSegment<String>(
                   value: 'a4',
-                  label: Text(l10n.bookletPaperA4),
+                  label: Text(l10n.labelBookletPaperA4),
                 ),
                 ButtonSegment<String>(
                   value: 'letter',
-                  label: Text(l10n.bookletPaperLetter),
+                  label: Text(l10n.labelBookletPaperLetter),
                 ),
               ],
               selected: {_sheetSize},
@@ -234,9 +241,9 @@ class _BookletDialogState extends ConsumerState<BookletDialog> {
             const SizedBox(height: 12),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(l10n.bookletFoldGuideLabel),
+              title: Text(l10n.labelBookletFoldGuide),
               subtitle: Text(
-                l10n.bookletFoldGuideHelp,
+                l10n.helpBookletFoldGuide,
                 style: theme.textTheme.bodySmall,
               ),
               value: _addFoldGuide,
@@ -248,11 +255,11 @@ class _BookletDialogState extends ConsumerState<BookletDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.cancelAction),
+          child: Text(l10n.actionCancel),
         ),
         FilledButton.icon(
           icon: const Icon(Icons.menu_book),
-          label: Text(l10n.bookletAction),
+          label: Text(l10n.actionBooklet),
           onPressed: _run,
         ),
       ],

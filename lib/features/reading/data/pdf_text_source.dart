@@ -1,11 +1,8 @@
 import 'package:pdfrx/pdfrx.dart';
 import 'package:pdfapp/core/constants/app_constants.dart';
 import 'package:pdfapp/core/logging/app_logger.dart';
+import 'package:pdfapp/features/reading/data/text_layout_repair.dart';
 import 'package:pdfapp/features/reading/domain/text_quality.dart';
-
-/// Placeholder for a character pdfium gave no rectangle for. `isEmpty` is true
-/// for it, so the highlight code skips it rather than merging it in.
-const PdfRect _noRect = PdfRect(0, 0, 0, 0);
 
 /// One page's text, kept together with the rectangle of every character.
 ///
@@ -21,7 +18,8 @@ class PageText {
 
   final int pageNumber;
 
-  /// The page's text exactly as pdfium gave it — never folded or rewritten.
+  /// The page's text as pdfium gave it, with only its word spacing repaired
+  /// from character positions (see `TextLayoutRepair`) — never folded.
   final String text;
 
   /// One rectangle per character of [text], in PDF page coordinates.
@@ -83,6 +81,13 @@ abstract class PageTextSource {
   Future<PageText> page(int pageNumber);
 }
 
+/// Waits until [page] is really loaded and returns the loaded instance, or
+/// `null` if it did not load within [timeout].
+typedef PageLoadWaiter = Future<PdfPage?> Function(
+  PdfPage page,
+  Duration timeout,
+);
+
 /// Judges whether [source] has usable text, from a sample of its pages.
 ///
 /// Samples the first page and then spreads across the rest: a scanned book often
@@ -107,14 +112,34 @@ Future<TextQuality> assessTextQuality(PageTextSource source) async {
 /// Reads text out of an open PDF, one page at a time.
 ///
 /// Text comes from pdfrx/pdfium — not PdfBox — because only pdfium reports the
-/// rectangle of each character, which highlighting needs.
+/// rectangle of each character, which highlighting needs. It uses pdfium's raw
+/// text (`loadText`), not `loadStructuredText`: the structured text merges
+/// spaces and loses each space's real box, which `TextLayoutRepair` needs to
+/// fix word spacing in PDFs such as LibreOffice's.
 ///
 /// Pages are loaded lazily and cached: search, copy, and read-aloud all ask for
 /// the same pages, and pulling text out of a page is not free.
+///
+/// The viewer opens documents with pdfrx's progressive loading, so a page may
+/// not be loaded yet when its text is asked for — and pdfrx then gives no text
+/// at all. Each page is therefore waited for first, and a page that is still
+/// not loaded is never cached, so the next request tries again.
 class PdfTextSource implements PageTextSource {
-  PdfTextSource(this.document);
+  PdfTextSource(
+    this.document, {
+    PageLoadWaiter? waitForPage,
+    this.loadTimeout = AppConstants.pageTextLoadTimeout,
+  }) : _waitForPage = waitForPage ?? _waitWithPdfrx;
 
   final PdfDocument document;
+
+  /// How long to wait for a page that is not loaded yet.
+  final Duration loadTimeout;
+
+  final PageLoadWaiter _waitForPage;
+
+  static Future<PdfPage?> _waitWithPdfrx(PdfPage page, Duration timeout) =>
+      page.waitForLoaded(timeout: timeout);
 
   final Map<int, PageText> _cache = {};
   TextQuality? _quality;
@@ -134,11 +159,26 @@ class PdfTextSource implements PageTextSource {
     if (pageNumber < 1 || pageNumber > pageCount) return PageText.emptyPage;
 
     try {
-      final pageText = await document.pages[pageNumber - 1].loadText();
+      // Use the instance the wait returns: pdfrx replaces a page object when
+      // the real page finishes loading.
+      final loadedPage = await _waitForPage(
+        document.pages[pageNumber - 1],
+        loadTimeout,
+      );
+      if (loadedPage == null || !loadedPage.isLoaded) {
+        // Not loaded in time. Report it as empty for now, but do not cache
+        // it: an empty cached page would hide its text for good.
+        return PageText(pageNumber: pageNumber, text: '', charRects: const []);
+      }
+      final raw = await loadedPage.loadText();
+      final repaired = TextLayoutRepair.repair(
+        raw?.fullText ?? '',
+        raw?.charRects ?? const [],
+      );
       final loaded = PageText(
         pageNumber: pageNumber,
-        text: pageText.fullText,
-        charRects: _charRectsOf(pageText),
+        text: repaired.text,
+        charRects: repaired.rects,
       );
       _cache[pageNumber] = loaded;
       return loaded;
@@ -153,24 +193,6 @@ class PdfTextSource implements PageTextSource {
       _cache[pageNumber] = blank;
       return blank;
     }
-  }
-
-  /// Flattens pdfium's fragments into one rectangle per character of `fullText`.
-  ///
-  /// Every character of `fullText` belongs to exactly one fragment, and a
-  /// fragment's `charRects` line up with its own slice of the text. Any gap is
-  /// padded with an empty rect so the list stays index-aligned with the text —
-  /// that alignment is the whole point.
-  static List<PdfRect> _charRectsOf(PdfPageText pageText) {
-    final rects = List<PdfRect>.filled(pageText.fullText.length, _noRect);
-    for (final fragment in pageText.fragments) {
-      final charRects = fragment.charRects;
-      for (var i = 0; i < fragment.length && i < charRects.length; i++) {
-        final at = fragment.index + i;
-        if (at >= 0 && at < rects.length) rects[at] = charRects[i];
-      }
-    }
-    return rects;
   }
 
   /// Whether this PDF has usable text, judged from a sample of its pages.

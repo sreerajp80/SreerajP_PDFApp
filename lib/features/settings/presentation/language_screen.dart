@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/app/theme/app_theme.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
@@ -19,26 +19,26 @@ class LanguageScreen extends ConsumerWidget {
     final currentCode = currentLocale?.languageCode;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.languageTitle)),
+      appBar: AppBar(title: Text(l10n.titleLanguage)),
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 48),
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 48),
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(4, 4, 4, 16),
+              padding: const EdgeInsetsDirectional.fromSTEB(4, 4, 4, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    l10n.languageSelectTitle,
+                    l10n.titleLanguageSelect,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    l10n.languageSelectSubtitle,
+                    l10n.descLanguageSelectSubtitle,
                     style: TextStyle(color: muted, fontSize: 13),
                   ),
                 ],
@@ -49,8 +49,8 @@ class LanguageScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   _LanguageTile(
-                    title: l10n.languageSystem,
-                    subtitle: 'Auto',
+                    title: l10n.labelLanguageSystem,
+                    subtitle: l10n.labelLanguageAuto,
                     selected: currentCode == null,
                     onTap: () => ref.read(appLocaleProvider.notifier).set(null),
                   ),
@@ -61,7 +61,7 @@ class LanguageScreen extends ConsumerWidget {
                     color: muted.withValues(alpha: 0.18),
                   ),
                   _LanguageTile(
-                    title: l10n.languageEnglish,
+                    title: l10n.labelLanguageEnglish,
                     subtitle: 'English',
                     selected: currentCode == 'en',
                     onTap: () => ref
@@ -75,7 +75,7 @@ class LanguageScreen extends ConsumerWidget {
                     color: muted.withValues(alpha: 0.18),
                   ),
                   _LanguageTile(
-                    title: l10n.languageMalayalam,
+                    title: l10n.labelLanguageMalayalam,
                     subtitle: 'മലയാളം',
                     selected: currentCode == 'ml',
                     onTap: () => ref
@@ -89,7 +89,7 @@ class LanguageScreen extends ConsumerWidget {
                     color: muted.withValues(alpha: 0.18),
                   ),
                   _LanguageTile(
-                    title: l10n.languageSanskrit,
+                    title: l10n.labelLanguageSanskrit,
                     subtitle: 'संस्कृतम्',
                     selected: currentCode == 'sa',
                     onTap: () => ref

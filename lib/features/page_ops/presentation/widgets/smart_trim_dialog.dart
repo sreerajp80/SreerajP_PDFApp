@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:pdfapp/core/errors/user_error_message.dart';
+import 'package:pdfapp/core/logging/app_logger.dart';
 import 'package:pdfapp/features/page_ops/data/page_ops_service.dart';
 import 'package:pdfapp/features/page_ops/presentation/widgets/page_ops_result_dialog.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
@@ -44,17 +46,22 @@ class _SmartTrimDialogState extends ConsumerState<SmartTrimDialog> {
         showDialog<void>(
           context: nav.context,
           builder: (context) => PageOpsResultDialog(
-            title: l10n.trimMarginsDoneTitle,
+            title: l10n.titleTrimMarginsDone,
             outputPaths: [out],
-            note: l10n.trimMarginsDoneNote,
+            note: l10n.descTrimMarginsDoneNote,
           ),
         );
       }
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error(
+        'smart_trim_dialog: operation failed',
+        error: e,
+        stackTrace: st,
+      );
       if (mounted) {
         setState(() {
           _loading = false;
-          _error = '${l10n.opFailed}: $e';
+          _error = userErrorMessage(l10n, e, fallback: l10n.errorOpFailed);
         });
       }
     }
@@ -72,7 +79,7 @@ class _SmartTrimDialogState extends ConsumerState<SmartTrimDialog> {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(height: 16),
-            Text(l10n.trimMarginsWorking),
+            Text(l10n.descTrimMarginsWorking),
           ],
         ),
       );
@@ -83,7 +90,7 @@ class _SmartTrimDialogState extends ConsumerState<SmartTrimDialog> {
         children: [
           Icon(Icons.crop, color: theme.colorScheme.primary),
           const SizedBox(width: 8),
-          Expanded(child: Text(l10n.trimMarginsTitle)),
+          Expanded(child: Text(l10n.titleTrimMargins)),
         ],
       ),
       content: SingleChildScrollView(
@@ -91,10 +98,7 @@ class _SmartTrimDialogState extends ConsumerState<SmartTrimDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              l10n.trimMarginsDescription,
-              style: theme.textTheme.bodyMedium,
-            ),
+            Text(l10n.descTrimMargins, style: theme.textTheme.bodyMedium),
             const SizedBox(height: 16),
             if (_error != null) ...[
               Text(
@@ -104,7 +108,7 @@ class _SmartTrimDialogState extends ConsumerState<SmartTrimDialog> {
               const SizedBox(height: 12),
             ],
             Text(
-              l10n.trimPaddingLabel,
+              l10n.labelTrimPadding,
               style: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -114,15 +118,15 @@ class _SmartTrimDialogState extends ConsumerState<SmartTrimDialog> {
               segments: [
                 ButtonSegment<double>(
                   value: 4.0,
-                  label: Text(l10n.trimPaddingTight),
+                  label: Text(l10n.labelTrimPaddingTight),
                 ),
                 ButtonSegment<double>(
                   value: 12.0,
-                  label: Text(l10n.trimPaddingStandard),
+                  label: Text(l10n.labelTrimPaddingStandard),
                 ),
                 ButtonSegment<double>(
                   value: 24.0,
-                  label: Text(l10n.trimPaddingComfortable),
+                  label: Text(l10n.labelTrimPaddingComfortable),
                 ),
               ],
               selected: {_padding},
@@ -135,9 +139,9 @@ class _SmartTrimDialogState extends ConsumerState<SmartTrimDialog> {
             const SizedBox(height: 16),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: Text(l10n.trimSymmetricLabel),
+              title: Text(l10n.labelTrimSymmetric),
               subtitle: Text(
-                l10n.trimSymmetricHelp,
+                l10n.helpTrimSymmetric,
                 style: theme.textTheme.bodySmall,
               ),
               value: _symmetric,
@@ -149,11 +153,11 @@ class _SmartTrimDialogState extends ConsumerState<SmartTrimDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.cancelAction),
+          child: Text(l10n.actionCancel),
         ),
         FilledButton.icon(
           icon: const Icon(Icons.crop),
-          label: Text(l10n.trimMarginsAction),
+          label: Text(l10n.actionTrimMargins),
           onPressed: _run,
         ),
       ],

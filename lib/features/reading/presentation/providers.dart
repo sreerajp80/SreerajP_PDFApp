@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+// ChangeNotifierProvider moved to the legacy library in Riverpod 3.
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/core/constants/app_constants.dart';
 import 'package:pdfapp/core/platform/pdfbox_channel.dart';

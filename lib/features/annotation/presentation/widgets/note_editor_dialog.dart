@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
 /// Result of the note editor: the new text, and whether the note was deleted.
@@ -23,34 +23,34 @@ Future<NoteEditorResult?> showNoteEditor(
   return showDialog<NoteEditorResult>(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text(l10n.noteTitle),
+      title: Text(l10n.titleNote),
       content: TextField(
         controller: controller,
         autofocus: true,
         maxLines: 5,
         minLines: 3,
         decoration: InputDecoration(
-          hintText: l10n.noteHint,
+          hintText: l10n.labelNoteHint,
           border: const OutlineInputBorder(),
         ),
       ),
       actions: [
         if (isExisting)
           TextButton(
-            onPressed: () => Navigator.of(
-              context,
-            ).pop(const NoteEditorResult(text: '', deleted: true)),
-            child: Text(l10n.deleteAction),
+            onPressed: () =>
+                Navigator.of(context)
+                    .pop(const NoteEditorResult(text: '', deleted: true)),
+            child: Text(l10n.actionDelete),
           ),
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.cancelAction),
+          child: Text(l10n.actionCancel),
         ),
         FilledButton(
-          onPressed: () => Navigator.of(
-            context,
-          ).pop(NoteEditorResult(text: controller.text.trim())),
-          child: Text(l10n.saveAction),
+          onPressed: () =>
+              Navigator.of(context)
+                  .pop(NoteEditorResult(text: controller.text.trim())),
+          child: Text(l10n.actionSave),
         ),
       ],
     ),

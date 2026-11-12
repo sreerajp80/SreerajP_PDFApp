@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/reading/domain/text_quality.dart';
 import 'package:pdfapp/features/reading/presentation/widgets/text_quality_notice.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
@@ -43,7 +43,7 @@ void main() {
     (tester) async {
       await pumpNotice(tester, TextQuality.garbled);
 
-      expect(find.text('Text cannot be read properly'), findsOneWidget);
+      expect(find.text('Text unreadable'), findsOneWidget);
       expect(find.textContaining('wrong results'), findsOneWidget);
       // It must still say the reader can read the pages.
       expect(
@@ -52,6 +52,19 @@ void main() {
       );
     },
   );
+
+  testWidgets('text that may not be proper Unicode gets a warning', (
+    tester,
+  ) async {
+    await pumpNotice(tester, TextQuality.unreliable);
+
+    expect(find.text('Text may be wrong'), findsOneWidget);
+    expect(find.textContaining('proper Unicode'), findsOneWidget);
+    expect(
+      find.textContaining('Reading the pages still works'),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('a healthy PDF shows nothing at all', (tester) async {
     await pumpNotice(tester, TextQuality.good);

@@ -48,7 +48,7 @@ class TtsHandler(private val context: Context, messenger: BinaryMessenger) {
                 "openTtsSettings" -> result.success(start(ttsSettingsIntent()))
                 "openPlayStore" -> result.success(openPlayStore())
                 "showNotification" -> {
-                    val title = call.argument<String>("title") ?: "SreerajP PDF App"
+                    val title = call.argument<String>("title") ?: "Folio"
                     val content = call.argument<String>("content") ?: ""
                     val isPlaying = call.argument<Boolean>("isPlaying") ?: true
                     showNotification(title, content, isPlaying)

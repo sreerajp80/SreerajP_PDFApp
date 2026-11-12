@@ -22,11 +22,7 @@ void main() {
 
     test('reads localized appName, description and details', () {
       final config = AppConfig.fromJson({
-        'appName': {
-          'en': 'SreerajP PDF App',
-          'ml': 'ശ്രീരാജ് പി പി.ഡി.എഫ്. ആപ്പ്',
-          'sa': 'श्रीराजपि PDF अनुप्रयोगः',
-        },
+        'appName': {'en': 'Folio', 'ml': 'ഗ്രന്ഥം', 'sa': 'ग्रन्थः'},
         'description': {
           'en': 'English desc',
           'ml': 'Malayalam desc',
@@ -43,9 +39,9 @@ void main() {
         },
       });
 
-      expect(config.appName.resolve('en'), 'SreerajP PDF App');
-      expect(config.appName.resolve('ml'), 'ശ്രീരാജ് പി പി.ഡി.എഫ്. ആപ്പ്');
-      expect(config.appName.resolve('sa'), 'श्रीराजपि PDF अनुप्रयोगः');
+      expect(config.appName.resolve('en'), 'Folio');
+      expect(config.appName.resolve('ml'), 'ഗ്രന്ഥം');
+      expect(config.appName.resolve('sa'), 'ग्रन्थः');
       expect(config.description.resolve('en'), 'English desc');
       expect(config.description.resolve('ml'), 'Malayalam desc');
       expect(config.description.resolve('sa'), 'संस्कृत विवरणम्');

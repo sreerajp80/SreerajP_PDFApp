@@ -1,6 +1,7 @@
 import 'dart:math' as math;
-import 'package:flutter/material.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/app/theme/app_theme.dart';
 import 'package:pdfapp/features/settings/presentation/widgets/app_section_card.dart';
@@ -67,15 +68,15 @@ class _AccentColorScreenState extends ConsumerState<AccentColorScreen> {
     final onAccent = AppTheme.contrastOn(selected);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.accentColorTitle)),
+      appBar: AppBar(title: Text(l10n.titleAccentColor)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           AppSectionCard(
-            title: l10n.livePreviewLabel,
+            title: l10n.labelLivePreview,
             subtitle: isDark
-                ? l10n.accentAppliesToDark
-                : l10n.accentAppliesToLight,
+                ? l10n.descAccentAppliesToDark
+                : l10n.descAccentAppliesToLight,
             child: Center(
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -99,7 +100,7 @@ class _AccentColorScreenState extends ConsumerState<AccentColorScreen> {
                     Icon(Icons.palette_outlined, color: onAccent, size: 18),
                     const SizedBox(width: 8),
                     Text(
-                      l10n.sampleText,
+                      l10n.labelSampleText,
                       style: TextStyle(
                         color: onAccent,
                         fontSize: 15,
@@ -113,7 +114,7 @@ class _AccentColorScreenState extends ConsumerState<AccentColorScreen> {
           ),
           const SizedBox(height: 16),
           AppSectionCard(
-            title: l10n.presetsLabel,
+            title: l10n.labelPresets,
             child: Wrap(
               spacing: 12,
               runSpacing: 12,
@@ -130,7 +131,7 @@ class _AccentColorScreenState extends ConsumerState<AccentColorScreen> {
           ),
           const SizedBox(height: 16),
           AppSectionCard(
-            title: l10n.customColorWheelLabel,
+            title: l10n.labelCustomColorWheel,
             child: Column(
               children: [
                 Center(
@@ -160,14 +161,14 @@ class _AccentColorScreenState extends ConsumerState<AccentColorScreen> {
                     icon: const Icon(Icons.restart_alt),
                     label: Text(
                       isDark
-                          ? l10n.resetDarkToDefault
-                          : l10n.resetLightToDefault,
+                          ? l10n.descResetDarkToDefault
+                          : l10n.descResetLightToDefault,
                     ),
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  l10n.contrastNotice,
+                  l10n.descContrastNotice,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
@@ -268,12 +269,37 @@ class _HueWheel extends StatelessWidget {
     onChanged(deg, sat);
   }
 
+  /// Hue step for screen-reader increase / decrease actions.
+  static const double _hueStep = 15;
+
+  String _hex(HSVColor value) =>
+      '#${value.toColor().toARGB32().toRadixString(16).substring(2).toUpperCase()}';
+
+  HSVColor _shift(double delta) => hsv.withHue((hsv.hue + delta) % 360);
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onPanDown: (d) => _handle(d.localPosition),
-      onPanUpdate: (d) => _handle(d.localPosition),
-      child: CustomPaint(size: Size.square(size), painter: _WheelPainter(hsv)),
+    final l10n = AppLocalizations.of(context);
+    // A custom painted control: give screen readers a label, hint, current
+    // value, and a way to change it without dragging (engineering standard
+    // §7.3).
+    return Semantics(
+      slider: true,
+      label: l10n.labelAccentColorWheel,
+      hint: l10n.helpAccentColorWheelHint,
+      value: _hex(hsv),
+      increasedValue: _hex(_shift(_hueStep)),
+      decreasedValue: _hex(_shift(-_hueStep)),
+      onIncrease: () => onChanged(_shift(_hueStep).hue, hsv.saturation),
+      onDecrease: () => onChanged(_shift(-_hueStep).hue, hsv.saturation),
+      child: GestureDetector(
+        onPanDown: (d) => _handle(d.localPosition),
+        onPanUpdate: (d) => _handle(d.localPosition),
+        child: CustomPaint(
+          size: Size.square(size),
+          painter: _WheelPainter(hsv),
+        ),
+      ),
     );
   }
 }
@@ -292,9 +318,8 @@ class _WheelPainter extends CustomPainter {
         HSVColor.fromAHSV(1, i % 360.0, 1, 1).toColor(),
     ];
     final sweep = Paint()
-      ..shader = SweepGradient(
-        colors: hueColors,
-      ).createShader(Rect.fromCircle(center: center, radius: radius));
+      ..shader = SweepGradient(colors: hueColors)
+          .createShader(Rect.fromCircle(center: center, radius: radius));
     canvas.drawCircle(center, radius, sweep);
 
     final satPaint = Paint()

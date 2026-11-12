@@ -17,7 +17,7 @@ import java.io.FileOutputStream
  * Android system Virtual Print Service.
  *
  * Appears in Android's system print dialog as a destination printer:
- * "Save as PDF (SreerajP PDF App)".
+ * "Save as PDF (Folio)".
  *
  * When an external app prints to this service:
  * 1. Reads the spooled PDF stream from [PrintJob.getDocument].
@@ -103,7 +103,7 @@ class PdfPrintService : PrintService() {
 
                 printJob.complete()
 
-                // Launch MainActivity to open the printed PDF in SreerajP PDF App
+                // Launch MainActivity to open the printed PDF in Folio
                 val uri = FileProvider.getUriForFile(
                     this@PdfPrintService,
                     "${packageName}.fileprovider",

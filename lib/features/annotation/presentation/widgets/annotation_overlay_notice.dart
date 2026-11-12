@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
 /// A dismissible banner telling the user that overlay marks live only inside
@@ -26,13 +26,13 @@ class AnnotationOverlayNotice extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                l10n.annotationOverlayNotice,
+                l10n.descAnnotationOverlayNotice,
                 style: TextStyle(color: scheme.onSecondaryContainer),
               ),
             ),
             IconButton(
               icon: const Icon(Icons.close),
-              tooltip: l10n.cancelAction,
+              tooltip: l10n.actionCancel,
               color: scheme.onSecondaryContainer,
               onPressed: onDismiss,
             ),

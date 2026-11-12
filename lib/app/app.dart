@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/app/routing/app_router.dart';
 import 'package:pdfapp/app/theme/app_theme.dart';
@@ -29,28 +28,28 @@ class PdfApp extends ConsumerWidget {
     final appLocale = ref.watch(appLocaleProvider);
 
     return MaterialApp.router(
-      onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+      onGenerateTitle: (context) => AppLocalizations.of(context).titleApp,
       locale: appLocale,
       theme: theme.light,
       darkTheme: theme.dark,
       themeMode: theme.mode,
       builder: (context, child) {
         return MediaQuery(
-          data: MediaQuery.of(
-            context,
-          ).copyWith(textScaler: TextScaler.linear(appTextScale.scale)),
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(appTextScale.scale)),
           child: child ?? const SizedBox.shrink(),
         );
       },
       routerConfig: appRouter,
+      // Sanskrit fallbacks first so they win for `sa` (engineering standard
+      // §8.3.1). Since Flutter 3.47 `GlobalMaterialLocalizations.delegates`
+      // (from material_ui) covers Material, Cupertino and Widgets.
       localizationsDelegates: const [
         AppLocalizations.delegate,
         SaMaterialLocalizationsDelegate(),
         SaCupertinoLocalizationsDelegate(),
         SaWidgetsLocalizationsDelegate(),
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
+        ...GlobalMaterialLocalizations.delegates,
       ],
       supportedLocales: AppLocalizations.supportedLocales,
     );

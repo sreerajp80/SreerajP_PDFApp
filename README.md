@@ -1,14 +1,14 @@
-# SreerajP PDF App
+# Folio
 
 [![Platform: Android](https://img.shields.io/badge/Platform-Android%208.0%2B%20(API%2026%2B)-3DDC84?logo=android&logoColor=white)](https://developer.android.com)
-[![Flutter](https://img.shields.io/badge/Flutter-3.44.8%2B-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-[![Dart](https://img.shields.io/badge/Dart-3.12.2%2B-0175C2?logo=dart&logoColor=white)](https://dart.dev)
+[![Flutter](https://img.shields.io/badge/Flutter-3.47.0%2B-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.13.0%2B-0175C2?logo=dart&logoColor=white)](https://dart.dev)
 [![Open Source](https://img.shields.io/badge/License-100%25%20Open%20Source-green.svg)](docs/dependencies.md)
 [![Privacy](https://img.shields.io/badge/Telemetry-Zero%20%2F%20100%25%20Offline-brightgreen)](docs/security.md)
 
 An **offline-first Android app**, built with Flutter, for **everything PDF**: viewing, reading, phonetic Indic search, Malayalam & English text-to-speech (TTS), annotating, page reorganization, virtual printing, and digital signature verification.
 
-Built exclusively with **open-source libraries** (MIT, BSD, Apache 2.0). Fully offline with **zero network telemetry** (`android.permission.INTERNET` is completely absent from the production manifest).
+Built exclusively with **open-source libraries** (MIT, BSD, Apache 2.0). Fully offline with **zero network telemetry**. The app never contacts an internet server; `android.permission.INTERNET` is declared only for **Device sync**, which copies settings phone-to-phone over the local WiFi after pairing by QR code.
 
 ---
 
@@ -68,7 +68,7 @@ Built exclusively with **open-source libraries** (MIT, BSD, Apache 2.0). Fully o
 - **User Certificate Management**: Import and manage custom trusted root certificates.
 
 ### 🛡️ Privacy & Scoped Storage
-- **Zero Internet Access**: `android.permission.INTERNET` is not included in the production app. No analytics, tracking, or network telemetry.
+- **No Internet Servers**: the app never contacts an internet host. No analytics, tracking, or network telemetry. `android.permission.INTERNET` is used only by Device sync, directly between your own phones on the local WiFi, and only while that screen is open.
 - **Scoped Storage (SAF)**: Uses Android Storage Access Framework and "Open with" intents. No broad external storage permissions requested.
 - **Volatile Passwords**: Passwords for encrypted PDFs exist only in temporary memory and are immediately cleared.
 
@@ -78,8 +78,8 @@ Built exclusively with **open-source libraries** (MIT, BSD, Apache 2.0). Fully o
 
 The application follows a **Tier 2 Feature-First** architecture:
 
-- **Framework**: Flutter 3.44.8+ / Dart 3.12.2+
-- **State Management**: [Riverpod 2.6+](https://riverpod.dev) (`flutter_riverpod`)
+- **Framework**: Flutter 3.47.0+ / Dart 3.13.0+
+- **State Management**: [Riverpod 3.4+](https://riverpod.dev) (`flutter_riverpod`)
 - **Navigation**: [GoRouter](https://pub.dev/packages/go_router)
 - **Local Database**: [sqflite](https://pub.dev/packages/sqflite) (SQLite with WAL mode)
 - **Native Android**: Kotlin, PdfBox-Android, Bouncy Castle (`CertPathValidator`)
@@ -107,13 +107,13 @@ lib/
 
 ## Prerequisites
 
-- **Flutter SDK**: `3.44.8` or higher (`flutter --version`)
-- **Dart SDK**: `3.12.2` or higher
+- **Flutter SDK**: `3.47.0` or higher (`flutter --version`)
+- **Dart SDK**: `3.13.0` or higher
 - **JDK**: JDK 17 for Android Gradle builds. Set `JAVA_HOME` or configure via:
   ```bash
   flutter config --jdk-dir <path-to-jdk-17>
   ```
-- **Android SDK**: `minSdk 26` (Android 8.0), `targetSdk 35` (Android 15), AGP 8.x.
+- **Android SDK**: `minSdk 26` (Android 8.0), `targetSdk 35` (Android 15), AGP 9.4.1, Gradle 9.8.0, Kotlin 2.4.10.
 
 ---
 
@@ -123,8 +123,8 @@ This project defines two Gradle product flavors:
 
 | Flavor | Application ID | App Name | Signing Keystore |
 |---|---|---|---|
-| `dev` | `in.sreerajp.pdfapp.dev` | SreerajP PDF App Dev | Debug keystore (automatic) |
-| `prod` | `in.sreerajp.pdfapp` | SreerajP PDF App | Release keystore (`android/key.properties`) |
+| `dev` | `in.sreerajp.pdfapp.dev` | Folio Dev | Debug keystore (automatic) |
+| `prod` | `in.sreerajp.pdfapp` | Folio | Release keystore (`android/key.properties`) |
 
 > ⚠️ Always pass `--flavor dev` or `--flavor prod`. A bare `flutter run` or `flutter build` will fail.
 
@@ -172,6 +172,12 @@ This project defines two Gradle product flavors:
   ```bash
   dart format .
   ```
+
+- **Continuous integration**: `.github/workflows/ci.yml` runs on every push to `master` and every
+  pull request: format check, `flutter analyze`, `flutter test`, a check that the committed
+  localizations match the ARB files, the Sanskrit Hindi-marker gate, a "no HTTP client, sockets only in the Device sync folder"
+  check, and a hardened prod App Bundle build (`--obfuscate --split-debug-info`, debug symbols
+  kept as a build artifact). CI holds no signing material.
 
 ---
 

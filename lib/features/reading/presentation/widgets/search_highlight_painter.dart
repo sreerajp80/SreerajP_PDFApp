@@ -1,8 +1,8 @@
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
-import 'package:pdfrx/pdfrx.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/reading/domain/search_hit.dart';
+import 'package:pdfrx/pdfrx.dart';
 
 /// Draws search matches straight onto the rendered page.
 ///

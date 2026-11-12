@@ -1,0 +1,83 @@
+# CI — engineering standard §19 (checks only). It runs format, analyze, test and
+# pass/fail language and manifest gates. It never builds release artifacts, signs,
+# uploads or publishes (§19.3); release builds are done locally
+# (docs/release_process.md). Action versions are updated by hand (§19.2).
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Format, analyze, test, language gates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.6
+          cache: true
+
+      - run: flutter pub get
+
+      # Generated localizations are committed; they must match the ARB files.
+      - name: Generated localizations are up to date
+        run: |
+          flutter gen-l10n
+          git diff --exit-code -- lib/l10n
+
+      - run: dart format --output=none --set-exit-if-changed .
+      - run: flutter analyze
+      - run: flutter test
+
+      # Language pack sanskrit_malayalam.md §4.1: no Hindi markers in Sanskrit text.
+      - name: Sanskrit Hindi-marker gate
+        shell: bash
+        run: |
+          PATTERN='(?<=[\s"'\''([{<>।,*_`#|:;~-]|^)(?:था|थे|थी|हो|है|हैं|हूं|और)(?=[\s"'\''\)\]}<>।,.\?!*_`#|:;~-]|$)|करें|करना|करके|रहा|रही|रहे|गया|गयी|चाहिए|नहीं|लेकिन|क्या|आपका|आपकी|आपके|हमारा|मेरा|कृपया|सेटिंग्स|ऐप|\x{093C}|[\x{0958}-\x{095F}]'
+
+          mapfile -t FILES < <(find . -path '*/build' -prune -o -path './docs' -prune -o -type f \( \
+              -name 'app_sa.arb' -o \
+              -path '*/assets/*_sa.*' -o \
+              -path '*/assets/config/app_config.json' \) -print)
+
+          if [ "${#FILES[@]}" -eq 0 ]; then
+            echo 'No Sanskrit files found — the project declares sa but app_sa.arb is missing.'; exit 1
+          fi
+
+          for sample in '"greeting": "है"' '<b>है</b>' 'यह **है**' 'यह `है`' 'वह *था*'; do
+            if ! printf '%s\n' "$sample" | LC_ALL=C.UTF-8 grep -qP "$PATTERN"; then
+              echo "Sanskrit check self-test failed on: $sample"; exit 1
+            fi
+          done
+
+          if LC_ALL=C.UTF-8 grep -nP "$PATTERN" "${FILES[@]}"; then
+            echo 'Hindi markers found in Sanskrit text (language pack §4.1).'; exit 1
+          fi
+
+      # Project rule 2: no internet. INTERNET is declared only for Device sync on
+      # local WiFi, so instead of banning the permission we ban every way of
+      # reaching a server, and keep raw sockets inside one reviewed folder.
+      - name: No HTTP or web-socket client in lib/
+        run: |
+          if grep -rnE 'package:(http|dio|web_socket_channel)/|\bHttpClient\b|\bWebSocket\b|\bHttpServer\b' lib --include=*.dart; then
+            echo 'An HTTP / web-socket client was found in lib/ (rule 2).'; exit 1
+          fi
+      - name: Sockets only in the Device sync data folder
+        run: |
+          if grep -rlE '\b(Server)?Socket\.(bind|connect)\b|\bRaw(Server|Datagram)?Socket\b' lib --include=*.dart \
+              | grep -v '^lib/features/nearby_transfer/data/'; then
+            echo 'Socket use found outside lib/features/nearby_transfer/data/ (rule 2).'; exit 1
+          fi
+

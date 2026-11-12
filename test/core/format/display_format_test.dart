@@ -45,4 +45,47 @@ void main() {
       expect(DisplayFormat.dateTime(value, 'zz_ZZ'), contains('2026'));
     });
   });
+
+  group('DisplayFormat.decimal', () {
+    test('uses exactly the asked number of decimals', () {
+      expect(DisplayFormat.decimal(1, 'en', fractionDigits: 2), '1.00');
+      expect(DisplayFormat.decimal(0.456, 'en', fractionDigits: 1), '0.5');
+      expect(DisplayFormat.decimal(12, 'en'), '12');
+    });
+
+    test('never groups thousands in plain settings numbers', () {
+      expect(DisplayFormat.decimal(12345, 'en'), '12345');
+    });
+
+    test('Sanskrit and unknown locales fall back to English patterns', () {
+      expect(DisplayFormat.formattingLocale('sa'), 'en');
+      expect(DisplayFormat.formattingLocale('zz_ZZ'), 'en');
+      expect(DisplayFormat.decimal(1.5, 'sa', fractionDigits: 1), '1.5');
+    });
+
+    test('known locales are used as they are', () {
+      expect(DisplayFormat.formattingLocale('ml'), 'ml');
+      expect(DisplayFormat.formattingLocale('en'), 'en');
+    });
+
+    test('language tags are turned into intl keys', () {
+      expect(DisplayFormat.formattingLocale('en-US'), 'en_US');
+      expect(DisplayFormat.formattingLocale('en_US'), 'en_US');
+    });
+
+    test('an unknown region falls back to the language code', () {
+      expect(DisplayFormat.formattingLocale('ml_ZZ'), 'ml');
+      expect(DisplayFormat.formattingLocale('sa-IN'), 'en');
+    });
+
+    test('a malformed name falls back to English', () {
+      expect(DisplayFormat.formattingLocale(''), 'en');
+      expect(DisplayFormat.formattingLocale('???'), 'en');
+    });
+
+    test('bytes use the locale for the number', () {
+      expect(DisplayFormat.bytes(1536, 'sa'), '1.5 KB');
+      expect(DisplayFormat.bytes(1536, 'ml'), '1.5 KB');
+    });
+  });
 }

@@ -9,7 +9,7 @@ The documentation files in `docs/` have minor deviations from the project guidel
 2. **Missing Standard Anatomy Elements**: Several documents lack the mandatory "Read first" links block with relative links up to `../.agents/AGENTS.md` / `../CLAUDE.md` and sideways/submodule links.
 3. **Unnumbered Sections**: `docs/pdf_idea.md` and `docs/implementation_progress.md` have unnumbered `##` section headings rather than following the numbered section convention (`## 1.`, `## 2.`, ...). `docs/pdf_idea.md` also lacks a purpose paragraph directly below the `# H1` title.
 4. **Missing Production Flavor in Release Commands**: `docs/release_process.md` lists build commands without `--flavor prod`, which causes Gradle builds to fail because flavors are configured.
-5. **Absolute System Path**: `docs/feature_analysis_and_roadmap.md` contains an absolute drive-letter path reference (`L:\...`), violating the relative-paths-only privacy rule.
+5. **Absolute System Path**: `docs/feature_analysis_and_roadmap.md` contains an absolute drive-letter path reference, violating the relative-paths-only privacy rule.
 6. **Outdated Layout in Project Structure**: `docs/project_structure.md` is missing `lib/app/app.dart` from the source code layout.
 7. **Security Blueprint Alignment**: `docs/security.md` is missing an explicit `## 2. Security Objectives` section from the standard security blueprint template.
 
@@ -65,7 +65,7 @@ The documentation files in `docs/` have minor deviations from the project guidel
 
 #### 11. `docs/feature_analysis_and_roadmap.md`
 - Add `../.agents/AGENTS.md` to "Read first" links.
-- Remove absolute path reference `L:\Android\MyFlutterApps\myapps.md` and replace with relative reference `myapps.md`.
+- Remove the absolute drive-letter path to `myapps.md` and replace it with the relative reference `myapps.md`.
 
 ### Files Kept Untouched (As required by `DOCS_FOLDER_GUIDELINE.md` §1)
 - `docs/GUIDELINES_MANIFEST.md` (shared portable pointer file, copied in unchanged)

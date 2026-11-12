@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/theme/app_theme.dart';
 import 'package:pdfapp/core/platform/open_document_channel.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
@@ -29,7 +29,7 @@ class PdfPrinterHelpScreen extends StatelessWidget {
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 48),
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 48),
           children: [
             Card(
               margin: EdgeInsets.zero,

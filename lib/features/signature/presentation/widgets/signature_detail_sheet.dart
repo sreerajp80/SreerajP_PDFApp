@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/core/errors/app_exception.dart';
+import 'package:pdfapp/core/errors/user_error_message.dart';
 import 'package:pdfapp/features/signature/domain/pdf_signature.dart';
 import 'package:pdfapp/features/signature/domain/trusted_certificate.dart';
 import 'package:pdfapp/features/signature/presentation/providers.dart';
@@ -49,7 +50,7 @@ class SignatureDetailSheet extends ConsumerWidget {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 16),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -63,7 +64,7 @@ class SignatureDetailSheet extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          sig.name ?? l10n.signatureUnnamed,
+                          sig.name ?? l10n.labelSignatureUnnamed,
                           style: theme.textTheme.titleLarge,
                         ),
                         const SizedBox(height: 4),
@@ -73,44 +74,46 @@ class SignatureDetailSheet extends ConsumerWidget {
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
-                    tooltip: l10n.closeAction,
+                    tooltip: l10n.actionClose,
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
               ),
               const Divider(height: 24),
               if (sig.reason != null)
-                _infoRow(context, l10n.signatureReasonLabel, sig.reason!),
+                _infoRow(context, l10n.labelSignatureReason, sig.reason!),
               if (sig.location != null)
-                _infoRow(context, l10n.signatureLocationLabel, sig.location!),
+                _infoRow(context, l10n.labelSignatureLocation, sig.location!),
               if (sig.bestSignedAt != null)
                 _infoRow(
                   context,
-                  l10n.signatureTimeLabel,
+                  l10n.labelSignatureTime,
                   sig.signingTimeIsClaimOnly
-                      ? '${_formatDate(sig.bestSignedAt!)} (${l10n.signatureTimeClaimOnly})'
+                      ? '${_formatDate(sig.bestSignedAt!)} (${l10n.labelSignatureTimeClaimOnly})'
                       : _formatDate(sig.bestSignedAt!),
                 ),
               _infoRow(
                 context,
-                l10n.signatureIntegrityLabel,
+                l10n.labelSignatureIntegrity,
                 switch (sig.integrity) {
-                  SignatureIntegrity.valid => l10n.signatureIntegrityValid,
-                  SignatureIntegrity.invalid => l10n.signatureIntegrityInvalid,
-                  SignatureIntegrity.unknown => l10n.signatureIntegrityUnknown,
+                  SignatureIntegrity.valid => l10n.descSignatureIntegrityValid,
+                  SignatureIntegrity.invalid =>
+                    l10n.descSignatureIntegrityInvalid,
+                  SignatureIntegrity.unknown =>
+                    l10n.descSignatureIntegrityUnknown,
                 },
               ),
               _infoRow(
                 context,
-                l10n.signatureCoverageLabel,
+                l10n.labelSignatureCoverage,
                 sig.coversWholeFile
-                    ? l10n.signatureCoversWholeFile
-                    : l10n.signatureCoversPartialFile,
+                    ? l10n.descSignatureCoversWholeFile
+                    : l10n.descSignatureCoversPartialFile,
               ),
               const SizedBox(height: 12),
               if (cert != null) ...[
                 Text(
-                  l10n.signatureCertificateHeader,
+                  l10n.descSignatureCertificateHeader,
                   style: theme.textTheme.titleSmall,
                 ),
                 const SizedBox(height: 8),
@@ -132,7 +135,7 @@ class SignatureDetailSheet extends ConsumerWidget {
                           Icons.file_download_outlined,
                           size: 18,
                         ),
-                        label: Text(l10n.trustStoreExportAction),
+                        label: Text(l10n.actionTrustStoreExport),
                         onPressed: () => _exportCertificate(context, ref, cert),
                       ),
                     ),
@@ -141,7 +144,7 @@ class SignatureDetailSheet extends ConsumerWidget {
                     Expanded(
                       child: FilledButton.icon(
                         icon: const Icon(Icons.verified_user, size: 18),
-                        label: Text(l10n.signatureTrustSignerAction),
+                        label: Text(l10n.actionSignatureTrustSigner),
                         onPressed: () => _trustSigner(context, ref, cert),
                       ),
                     ),
@@ -202,11 +205,25 @@ class SignatureDetailSheet extends ConsumerWidget {
           );
       if (saved != null) {
         messenger.showSnackBar(
-          SnackBar(content: Text(l10n.trustStoreExportSuccess(saved))),
+          SnackBar(content: Text(l10n.descTrustStoreExportSuccess(saved))),
         );
       }
     } on AppException catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            userErrorMessage(l10n, e, fallback: l10n.errorCertificateExport),
+          ),
+          action: SnackBarAction(
+            label: l10n.actionTryAgain,
+            onPressed: () {
+              if (context.mounted) {
+                _exportCertificate(context, ref, certificate);
+              }
+            },
+          ),
+        ),
+      );
     }
   }
 
@@ -232,7 +249,9 @@ class SignatureDetailSheet extends ConsumerWidget {
     }
     ref.invalidate(trustedCertificatesProvider);
 
-    messenger.showSnackBar(SnackBar(content: Text(l10n.signatureTrustedToast)));
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.descSignatureTrustedToast)),
+    );
     if (context.mounted) {
       Navigator.of(context).pop(); // close sheet after trusting
     }

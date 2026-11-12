@@ -2,7 +2,10 @@ import java.io.File
 import java.io.FileInputStream
 import java.time.LocalDate
 import java.util.Properties
+import javax.inject.Inject
 import org.gradle.api.GradleException
+import org.gradle.process.ExecOperations
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
@@ -32,9 +35,44 @@ val dartExecutable = File(
 )
 val projectRootDir = rootProject.projectDir.parentFile
 
-val generateBuildMetadata = tasks.register("generateBuildMetadata") {
+// Runs the Dart scripts that write the About-screen version and build date.
+// Gradle 9 removed `project.exec { }`, so the task gets an injected `ExecOperations`
+// instead (flavors guide, "Android Toolchain Baseline"). This also works on Gradle 8.
+abstract class GenerateBuildMetadataTask : DefaultTask() {
+    @get:Inject
+    abstract val execOperations: ExecOperations
+
+    @get:Internal
+    abstract val dartExecutablePath: Property<String>
+
+    @get:Internal
+    abstract val workingDirectory: DirectoryProperty
+
+    @TaskAction
+    fun generate() {
+        val dart = File(dartExecutablePath.get())
+        if (!dart.exists()) {
+            throw GradleException(
+                "Could not find Dart executable at ${dart.absolutePath}. " +
+                    "Check android\\local.properties flutter.sdk or FLUTTER_ROOT."
+            )
+        }
+        val rootDir = workingDirectory.get().asFile
+        for (script in listOf("tool/generate_app_version.dart", "tool/generate_build_date.dart")) {
+            execOperations.exec {
+                workingDir = rootDir
+                commandLine(dart.absolutePath, "run", script)
+            }
+        }
+    }
+}
+
+val generateBuildMetadata = tasks.register<GenerateBuildMetadataTask>("generateBuildMetadata") {
     group = "build setup"
     description = "Generates About-screen build metadata before Android builds."
+
+    dartExecutablePath.set(dartExecutable.absolutePath)
+    workingDirectory.set(projectRootDir)
 
     inputs.file(projectRootDir.resolve("pubspec.yaml"))
     inputs.file(projectRootDir.resolve("tool/generate_app_version.dart"))
@@ -42,24 +80,6 @@ val generateBuildMetadata = tasks.register("generateBuildMetadata") {
     inputs.property("metadataBuildDate", LocalDate.now().toString())
     outputs.file(projectRootDir.resolve("lib/core/constants/app_version.g.dart"))
     outputs.file(projectRootDir.resolve("lib/core/constants/build_date.g.dart"))
-
-    doLast {
-        if (!dartExecutable.exists()) {
-            throw GradleException(
-                "Could not find Dart executable at ${dartExecutable.absolutePath}. " +
-                    "Check android\\local.properties flutter.sdk or FLUTTER_ROOT."
-            )
-        }
-
-        project.exec {
-            workingDir = projectRootDir
-            commandLine(dartExecutable.absolutePath, "run", "tool/generate_app_version.dart")
-        }
-        project.exec {
-            workingDir = projectRootDir
-            commandLine(dartExecutable.absolutePath, "run", "tool/generate_build_date.dart")
-        }
-    }
 }
 
 tasks.named("preBuild") {
@@ -82,10 +102,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
-    }
-
     defaultConfig {
         applicationId = "in.sreerajp.pdfapp"
         // minSdk 26 (Android 8.0) is a hard project rule — do not lower it.
@@ -102,12 +118,10 @@ android {
         create("dev") {
             dimension = "environment"
             applicationIdSuffix = ".dev"
-            versionNameSuffix = "-dev"
-            manifestPlaceholders["appLabel"] = "SreerajP PDF App Dev"
+            versionNameSuffix = "-dev"
         }
         create("prod") {
-            dimension = "environment"
-            manifestPlaceholders["appLabel"] = "SreerajP PDF App"
+            dimension = "environment"
         }
     }
 
@@ -132,6 +146,21 @@ android {
                 signingConfig = signingConfigs.getByName("debug")
             }
         }
+    }
+
+    // Keep every language on the device: the in-app language picker can switch to
+    // a language the Play Store would otherwise leave out (engineering standard §8.1).
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
+}
+
+// Kotlin compiler options (engineering standard §5.3: `compilerOptions`, not `kotlinOptions`).
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 

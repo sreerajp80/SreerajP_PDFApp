@@ -262,7 +262,7 @@ class TtsService extends ChangeNotifier {
     final page = _status.speakingPage;
     final content = page != null ? 'Reading page $page' : 'Reading aloud';
     ttsChannel?.showNotification(
-      title: _activeDocTitle.isNotEmpty ? _activeDocTitle : 'SreerajP PDF App',
+      title: _activeDocTitle.isNotEmpty ? _activeDocTitle : 'Folio',
       content: content,
       isPlaying: isPlaying,
     );

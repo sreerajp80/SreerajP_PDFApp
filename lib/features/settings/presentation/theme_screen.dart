@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/app/theme/app_theme.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
@@ -17,11 +17,11 @@ class ThemeScreen extends ConsumerWidget {
     final muted = colors?.mutedText ?? theme.colorScheme.onSurfaceVariant;
 
     String label(AppThemeMode m) => switch (m) {
-      AppThemeMode.system => l10n.themeSystem,
-      AppThemeMode.light => l10n.themeLight,
-      AppThemeMode.dark => l10n.themeDark,
-      AppThemeMode.oled => l10n.themeOled,
-      AppThemeMode.sepia => l10n.themeSepia,
+      AppThemeMode.system => l10n.labelThemeSystem,
+      AppThemeMode.light => l10n.labelThemeLight,
+      AppThemeMode.dark => l10n.labelThemeDark,
+      AppThemeMode.oled => l10n.labelThemeOled,
+      AppThemeMode.sepia => l10n.labelThemeSepia,
     };
 
     IconData iconFor(AppThemeMode m) => switch (m) {
@@ -33,14 +33,14 @@ class ThemeScreen extends ConsumerWidget {
     };
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.themeModeTitle)),
+      appBar: AppBar(title: Text(l10n.titleThemeMode)),
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 48),
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 48),
           children: [
             Text(
-              l10n.themeModeTitle.toUpperCase(),
+              l10n.titleThemeMode.toUpperCase(),
               style: theme.textTheme.labelLarge?.copyWith(
                 color: theme.colorScheme.primary,
                 fontWeight: FontWeight.w800,
@@ -70,7 +70,7 @@ class ThemeScreen extends ConsumerWidget {
                     const SizedBox(width: 14),
                     Expanded(
                       child: Text(
-                        l10n.themeModeDescription,
+                        l10n.descThemeMode,
                         style: TextStyle(
                           color: muted,
                           fontSize: 13,

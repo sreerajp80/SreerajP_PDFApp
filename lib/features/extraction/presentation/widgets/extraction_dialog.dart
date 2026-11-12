@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:pdfapp/core/errors/user_error_message.dart';
+import 'package:pdfapp/core/logging/app_logger.dart';
 import 'package:pdfapp/features/extraction/data/extraction_service.dart';
 import 'package:pdfapp/features/extraction/data/share_service.dart';
 import 'package:pdfapp/features/extraction/presentation/widgets/form_fields_dialog.dart';
@@ -81,7 +83,7 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
         if (startVal < 1 || endVal < startVal || endVal > widget.totalPages) {
           setState(() {
             _loading = false;
-            _errorMessage = l10n.invalidPageRange;
+            _errorMessage = l10n.labelInvalidPageRange;
           });
           return;
         }
@@ -131,9 +133,8 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
           if (mounted) {
             Navigator.of(context).pop(); // Close dialog
             if (imagePaths.isEmpty) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(l10n.noImagesFound)));
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text(l10n.emptyImagesFound)));
             } else {
               // Trigger share chooser
               await shareService.shareFiles(imagePaths, mimeType: 'image/png');
@@ -178,11 +179,20 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
           }
           break;
       }
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error(
+        'extraction_dialog: operation failed',
+        error: e,
+        stackTrace: st,
+      );
       if (mounted) {
         setState(() {
           _loading = false;
-          _errorMessage = '${l10n.extractionFailed}: $e';
+          _errorMessage = userErrorMessage(
+            l10n,
+            e,
+            fallback: l10n.errorExtractionFailed,
+          );
         });
       }
     }
@@ -200,14 +210,17 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(height: 16),
-            Text(l10n.extractingProgress, style: theme.textTheme.bodyMedium),
+            Text(
+              l10n.labelExtractingProgress,
+              style: theme.textTheme.bodyMedium,
+            ),
           ],
         ),
       );
     }
 
     return AlertDialog(
-      title: Text(l10n.extractAndConvert),
+      title: Text(l10n.labelExtractAndConvert),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -240,19 +253,19 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
               items: [
                 DropdownMenuItem(
                   value: ExtractionType.text,
-                  child: Text(l10n.extractTextAction),
+                  child: Text(l10n.actionExtractText),
                 ),
                 DropdownMenuItem(
                   value: ExtractionType.embeddedImages,
-                  child: Text(l10n.extractImagesAction),
+                  child: Text(l10n.actionExtractImages),
                 ),
                 DropdownMenuItem(
                   value: ExtractionType.pageImages,
-                  child: Text(l10n.convertPdfAction),
+                  child: Text(l10n.actionConvertPdf),
                 ),
                 DropdownMenuItem(
                   value: ExtractionType.formFields,
-                  child: Text(l10n.formFieldsAction),
+                  child: Text(l10n.actionFormFields),
                 ),
               ],
               onChanged: (val) {
@@ -278,15 +291,15 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
                 segments: [
                   ButtonSegment(
                     value: RangeType.current,
-                    label: Text(l10n.rangeCurrent(widget.currentPage)),
+                    label: Text(l10n.descRangeCurrent(widget.currentPage)),
                   ),
                   ButtonSegment(
                     value: RangeType.all,
-                    label: Text(l10n.rangeAll),
+                    label: Text(l10n.labelRangeAll),
                   ),
                   ButtonSegment(
                     value: RangeType.custom,
-                    label: Text(l10n.rangeCustom),
+                    label: Text(l10n.labelRangeCustom),
                   ),
                 ],
                 selected: {_range},
@@ -305,7 +318,7 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
                         controller: _startController,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
-                          labelText: l10n.startPageLabel,
+                          labelText: l10n.labelStartPage,
                           border: const OutlineInputBorder(),
                         ),
                       ),
@@ -316,7 +329,7 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
                         controller: _endController,
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
-                          labelText: l10n.endPageLabel,
+                          labelText: l10n.labelEndPage,
                           border: const OutlineInputBorder(),
                         ),
                       ),
@@ -332,7 +345,7 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
               const Divider(),
               const SizedBox(height: 8),
               Text(
-                l10n.imageFormatLabel,
+                l10n.labelImageFormat,
                 style: theme.textTheme.labelMedium?.copyWith(
                   color: theme.colorScheme.primary,
                 ),
@@ -342,11 +355,11 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
                 segments: [
                   ButtonSegment(
                     value: 'png',
-                    label: Text(l10n.imageFormatPngLossless),
+                    label: Text(l10n.labelImageFormatPngLossless),
                   ),
                   ButtonSegment(
                     value: 'jpeg',
-                    label: Text(l10n.imageFormatJpeg),
+                    label: Text(l10n.labelImageFormatJpeg),
                   ),
                 ],
                 selected: {_imageFormat},
@@ -360,9 +373,11 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(l10n.resolutionLabel(_dpi)),
+                  Text(l10n.descResolution(_dpi)),
                   Text(
-                    _dpi <= 150 ? 'Standard' : 'High Quality',
+                    _dpi <= 150
+                        ? l10n.labelQualityStandard
+                        : l10n.labelQualityHigh,
                     style: theme.textTheme.labelSmall?.copyWith(
                       color: _dpi <= 150
                           ? theme.hintColor
@@ -390,9 +405,9 @@ class _ExtractionDialogState extends ConsumerState<ExtractionDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.cancelAction),
+          child: Text(l10n.actionCancel),
         ),
-        ElevatedButton(onPressed: _runExtraction, child: Text(l10n.goAction)),
+        ElevatedButton(onPressed: _runExtraction, child: Text(l10n.actionGo)),
       ],
     );
   }

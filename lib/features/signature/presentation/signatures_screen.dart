@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/routing/app_router.dart';
 import 'package:pdfapp/features/signature/presentation/providers.dart';
 import 'package:pdfapp/features/signature/presentation/widgets/signature_card.dart';
@@ -21,11 +21,11 @@ class SignaturesScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.signaturesTitle),
+        title: Text(l10n.titleSignatures),
         actions: [
           IconButton(
             icon: const Icon(Icons.verified_user_outlined),
-            tooltip: l10n.trustStoreTitle,
+            tooltip: l10n.titleTrustStore,
             onPressed: () => context.pushNamed(AppRoute.trustStore.name),
           ),
         ],
@@ -37,7 +37,7 @@ class SignaturesScreen extends ConsumerWidget {
             children: [
               const CircularProgressIndicator(),
               const SizedBox(height: 16.0),
-              Text(l10n.signaturesChecking),
+              Text(l10n.labelSignaturesChecking),
             ],
           ),
         ),
@@ -55,13 +55,13 @@ class SignaturesScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 16.0),
               Text(
-                l10n.signaturesFailed,
+                l10n.errorSignaturesFailed,
                 style: Theme.of(context).textTheme.titleMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8.0),
               Text(
-                l10n.signaturesFailedDetail,
+                l10n.descSignaturesFailedDetail,
                 style: Theme.of(context).textTheme.bodyMedium,
                 textAlign: TextAlign.center,
               ),
@@ -81,7 +81,7 @@ class SignaturesScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16.0),
                   Text(
-                    l10n.signaturesNone,
+                    l10n.descSignaturesNone,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ],
@@ -93,7 +93,7 @@ class SignaturesScreen extends ConsumerWidget {
           return SafeArea(
             top: false,
             child: ListView.builder(
-              padding: const EdgeInsets.fromLTRB(0, 8, 0, 48),
+              padding: const EdgeInsetsDirectional.fromSTEB(0, 8, 0, 48),
               itemCount: list.length,
               itemBuilder: (context, i) {
                 final verdict = list[i];
@@ -119,7 +119,7 @@ class SignaturesScreen extends ConsumerWidget {
   /// and the verdicts are recomputed from scratch afterwards — the trust rules
   /// decide the new answer, not this screen.
   Future<void> _trustSigner(BuildContext context, WidgetRef ref, int i) async {
-    final verdicts = ref.read(signatureVerdictsProvider(path)).valueOrNull;
+    final verdicts = ref.read(signatureVerdictsProvider(path)).value;
     final certificate = verdicts?[i].signature.signerCertificate;
     if (certificate == null) return;
 
@@ -138,7 +138,9 @@ class SignaturesScreen extends ConsumerWidget {
     await ref.read(signatureVerdictsProvider(path).notifier).refresh();
     ref.invalidate(trustedCertificatesProvider);
 
-    messenger.showSnackBar(SnackBar(content: Text(l10n.signatureTrustedToast)));
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.descSignatureTrustedToast)),
+    );
   }
 }
 

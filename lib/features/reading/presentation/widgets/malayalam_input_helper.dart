@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/core/search/malayalam_transliteration.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
@@ -69,7 +69,7 @@ class _MalayalamInputHelperState extends State<MalayalamInputHelper>
                         : Icons.keyboard_outlined,
                     size: 20,
                   ),
-                  tooltip: l10n.malayalamHelperTooltip,
+                  tooltip: l10n.tooltipMalayalamHelper,
                   onPressed: () => setState(() => _showKeypad = !_showKeypad),
                 ),
                 Expanded(
@@ -78,7 +78,7 @@ class _MalayalamInputHelperState extends State<MalayalamInputHelper>
                           alignment: AlignmentDirectional.centerStart,
                           child: Text(
                             widget.currentText.isEmpty
-                                ? l10n.malayalamHelperTooltip
+                                ? l10n.tooltipMalayalamHelper
                                 : widget.currentText,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
@@ -112,7 +112,7 @@ class _MalayalamInputHelperState extends State<MalayalamInputHelper>
                 ),
                 IconButton(
                   icon: const Icon(Icons.close, size: 18),
-                  tooltip: l10n.closeAction,
+                  tooltip: l10n.actionClose,
                   onPressed: widget.onClose,
                 ),
               ],
@@ -126,9 +126,9 @@ class _MalayalamInputHelperState extends State<MalayalamInputHelper>
               controller: _tabController,
               labelPadding: const EdgeInsets.symmetric(vertical: 4),
               tabs: [
-                Tab(text: l10n.malayalamKeypadTabVowels),
-                Tab(text: l10n.malayalamKeypadTabConsonants),
-                Tab(text: l10n.malayalamKeypadTabSigns),
+                Tab(text: l10n.labelMalayalamKeypadTabVowels),
+                Tab(text: l10n.labelMalayalamKeypadTabConsonants),
+                Tab(text: l10n.labelMalayalamKeypadTabSigns),
               ],
             ),
             SizedBox(

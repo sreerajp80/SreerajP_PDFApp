@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/reading/presentation/providers.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
@@ -31,7 +31,7 @@ class TtsInstallSheet extends ConsumerWidget {
       if (!opened) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(l10n.ttsInstallCannotOpen)));
+        ).showSnackBar(SnackBar(content: Text(l10n.descTtsInstallCannotOpen)));
       }
     }
 
@@ -40,33 +40,33 @@ class TtsInstallSheet extends ConsumerWidget {
     return SafeArea(
       child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(l10n.ttsInstallTitle, style: theme.textTheme.titleLarge),
+              Text(l10n.titleTtsInstall, style: theme.textTheme.titleLarge),
               const SizedBox(height: 8),
-              Text(l10n.ttsInstallBody, style: theme.textTheme.bodyMedium),
+              Text(l10n.bodyTtsInstall, style: theme.textTheme.bodyMedium),
               const SizedBox(height: 8),
               ListTile(
                 leading: const Icon(Icons.download_outlined),
-                title: Text(l10n.ttsInstallVoiceData),
+                title: Text(l10n.labelTtsInstallVoiceData),
                 onTap: () => open(channel.installVoiceData),
               ),
               ListTile(
                 leading: const Icon(Icons.settings_voice_outlined),
-                title: Text(l10n.ttsOpenTtsSettings),
+                title: Text(l10n.labelTtsOpenTtsSettings),
                 onTap: () => open(channel.openTtsSettings),
               ),
               ListTile(
                 leading: const Icon(Icons.shop_outlined),
-                title: Text(l10n.ttsOpenPlayStore),
+                title: Text(l10n.descTtsOpenPlayStore),
                 onTap: () => open(channel.openPlayStore),
               ),
               const SizedBox(height: 8),
               Text(
-                l10n.ttsInstallDoneNote,
+                l10n.descTtsInstallDoneNote,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),

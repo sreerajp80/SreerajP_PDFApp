@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AppSectionCard extends StatelessWidget {
   const AppSectionCard({
@@ -24,8 +24,8 @@ class AppSectionCard extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
           colors: [
             colorScheme.surface,
             colorScheme.surface.withValues(alpha: 0.96),

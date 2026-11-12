@@ -8,7 +8,8 @@ void main() {
     test('defaults to prod when no flavor is provided', () {
       expect(AppFlavorConfig.instance.isProd, isTrue);
       expect(AppFlavorConfig.instance.isDev, isFalse);
-      expect(AppFlavorConfig.instance.appName, 'SreerajP PDF App');
+      // The name comes from app_config.json; the flavor only adds a suffix.
+      expect(AppFlavorConfig.instance.nameSuffix, isEmpty);
     });
   });
 }

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/core/format/display_format.dart';
 import 'package:pdfapp/features/signature/domain/trusted_certificate.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
@@ -23,16 +23,16 @@ class CertificateDetails extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _row(context, l10n.signatureIssuedToLabel, certificate.subject),
-        _row(context, l10n.signatureIssuedByLabel, certificate.issuer),
+        _row(context, l10n.labelSignatureIssuedTo, certificate.subject),
+        _row(context, l10n.labelSignatureIssuedBy, certificate.issuer),
         _row(
           context,
-          l10n.signatureValidFromLabel,
+          l10n.labelSignatureValidFrom,
           DisplayFormat.dateTime(certificate.notBefore, locale),
         ),
         _row(
           context,
-          l10n.signatureValidUntilLabel,
+          l10n.labelSignatureValidUntil,
           DisplayFormat.dateTime(certificate.notAfter, locale),
         ),
         if (certificate.isSelfSigned) ...[
@@ -51,7 +51,7 @@ class CertificateDetails extends StatelessWidget {
               const SizedBox(width: 8.0),
               Expanded(
                 child: Text(
-                  l10n.signatureSelfSignedNote,
+                  l10n.descSignatureSelfSignedNote,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),

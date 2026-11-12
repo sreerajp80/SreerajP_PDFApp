@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/core/constants/build_date.g.dart';
 import 'package:pdfapp/core/widgets/made_with_love.dart';
@@ -37,11 +37,11 @@ class AboutScreen extends ConsumerWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.aboutTitle)),
+      appBar: AppBar(title: Text(l10n.titleAbout)),
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(0, 0, 0, 48),
+          padding: const EdgeInsetsDirectional.fromSTEB(0, 0, 0, 48),
           children: [
             Padding(
               padding: const EdgeInsets.all(24),
@@ -61,13 +61,13 @@ class AboutScreen extends ConsumerWidget {
               ),
             ),
             ListTile(
-              title: Text(l10n.aboutVersionLabel),
+              title: Text(l10n.labelAboutVersion),
               subtitle: Text(
-                l10n.aboutVersionBuild(config.version, config.build),
+                l10n.descAboutVersionBuild(config.version, config.build),
               ),
             ),
             ListTile(
-              title: Text(l10n.aboutBuildDateLabel),
+              title: Text(l10n.labelAboutBuildDate),
               subtitle: const Text(kBuildDate),
             ),
             const Divider(),

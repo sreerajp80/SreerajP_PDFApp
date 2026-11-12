@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
 /// The pages a user chose to print (1-based, inclusive).
@@ -45,7 +45,7 @@ class _PrintRangeDialogState extends State<PrintRangeDialog> {
         to <= widget.pageCount &&
         from <= to;
     if (!valid) {
-      setState(() => _error = l10n.printRangeInvalid(widget.pageCount));
+      setState(() => _error = l10n.descPrintRangeInvalid(widget.pageCount));
       return;
     }
     Navigator.of(context).pop(PrintRange(from, to));
@@ -55,15 +55,15 @@ class _PrintRangeDialogState extends State<PrintRangeDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: Text(l10n.printRangeTitle),
+      title: Text(l10n.titlePrintRange),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
-              Expanded(child: _field(_from, l10n.printFromLabel)),
+              Expanded(child: _field(_from, l10n.labelPrintFrom)),
               const SizedBox(width: 12),
-              Expanded(child: _field(_to, l10n.printToLabel)),
+              Expanded(child: _field(_to, l10n.labelPrintTo)),
             ],
           ),
           if (_error != null) ...[
@@ -78,9 +78,9 @@ class _PrintRangeDialogState extends State<PrintRangeDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.cancelAction),
+          child: Text(l10n.actionCancel),
         ),
-        FilledButton(onPressed: _submit, child: Text(l10n.printAction)),
+        FilledButton(onPressed: _submit, child: Text(l10n.actionPrint)),
       ],
     );
   }

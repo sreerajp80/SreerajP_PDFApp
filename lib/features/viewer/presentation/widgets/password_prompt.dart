@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
 /// Asks the user for a PDF password.
@@ -37,12 +37,12 @@ class _PasswordDialogState extends State<_PasswordDialog> {
     final l10n = AppLocalizations.of(context);
     return AlertDialog(
       icon: const Icon(Icons.lock_outline),
-      title: Text(l10n.passwordTitle),
+      title: Text(l10n.titlePassword),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(l10n.passwordMessage),
+          Text(l10n.bodyPassword),
           const SizedBox(height: 16),
           TextField(
             controller: _controller,
@@ -50,7 +50,7 @@ class _PasswordDialogState extends State<_PasswordDialog> {
             obscureText: _obscure,
             onSubmitted: (_) => _submit(),
             decoration: InputDecoration(
-              labelText: l10n.passwordHint,
+              labelText: l10n.labelPasswordHint,
               suffixIcon: IconButton(
                 tooltip: _obscure
                     ? l10n.tooltipShowPassword
@@ -69,9 +69,9 @@ class _PasswordDialogState extends State<_PasswordDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.cancelAction),
+          child: Text(l10n.actionCancel),
         ),
-        FilledButton(onPressed: _submit, child: Text(l10n.unlockAction)),
+        FilledButton(onPressed: _submit, child: Text(l10n.actionUnlock)),
       ],
     );
   }

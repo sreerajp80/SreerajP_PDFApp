@@ -1,8 +1,8 @@
-# Product Idea & Concepts — SreerajP PDF App
+# Product Idea & Concepts — Folio
 
-This document describes the core concept, feature scope, design intent, and technical trade-offs for the SreerajP PDF App. Read this before planning new features or redesigning core user journeys.
+This document describes the core concept, feature scope, design intent, and technical trade-offs for the Folio app. Read this before planning new features or redesigning core user journeys.
 
-> Read first: [../.agents/AGENTS.md](../.agents/AGENTS.md) (or [../CLAUDE.md](../CLAUDE.md)) for project rules, [architecture.md](architecture.md) for the technical architecture, and [features.md](features.md) for the current feature catalog.
+> Read first: [../CLAUDE.md](../CLAUDE.md) and [../AGENTS.md](../AGENTS.md) for project rules, [architecture.md](architecture.md) for the technical architecture, and [features.md](features.md) for the current feature catalog.
 
 ---
 

@@ -58,3 +58,10 @@ android/*.keystore
 # Debug symbols from --split-debug-info
 *.symbols/
 build/symbols/
+
+# Local environment files — never commit (engineering standard §20.4)
+.env
+.env.*
+
+# Play Console working notes and raw captures — local only, never commit
+play_store_private/

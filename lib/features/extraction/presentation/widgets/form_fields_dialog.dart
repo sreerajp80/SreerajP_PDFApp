@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/extraction/data/share_service.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
@@ -21,9 +22,8 @@ class FormFieldsDialog extends ConsumerWidget {
     final jsonStr = encoder.convert(fields);
     Clipboard.setData(ClipboardData(text: jsonStr)).then((_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.copySuccess)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.labelCopySuccess)));
       }
     });
   }
@@ -35,14 +35,14 @@ class FormFieldsDialog extends ConsumerWidget {
     final shareService = ref.read(shareServiceProvider);
 
     return AlertDialog(
-      title: Text(l10n.formFieldsTitle),
+      title: Text(l10n.titleFormFields),
       content: SizedBox(
         width: double.maxFinite,
         height: 350,
         child: fields.isEmpty
             ? Center(
                 child: Text(
-                  l10n.noFormFieldsFound,
+                  l10n.emptyFormFieldsFound,
                   style: theme.textTheme.bodyLarge,
                   textAlign: TextAlign.center,
                 ),
@@ -111,17 +111,17 @@ class FormFieldsDialog extends ConsumerWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.dismissAction),
+          child: Text(l10n.actionDismiss),
         ),
         if (fields.isNotEmpty) ...[
           IconButton(
             icon: const Icon(Icons.copy),
-            tooltip: l10n.copyClipboardAction,
+            tooltip: l10n.actionCopyClipboard,
             onPressed: () => _copyToClipboard(context, l10n),
           ),
           IconButton(
             icon: const Icon(Icons.share),
-            tooltip: l10n.shareFileAction,
+            tooltip: l10n.actionShareFile,
             onPressed: filePath.isEmpty
                 ? null
                 : () => shareService.shareFiles([

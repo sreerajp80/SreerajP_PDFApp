@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:pdfrx/pdfrx.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/annotation/domain/annotation.dart';
 import 'package:pdfapp/features/annotation/domain/annotation_geometry.dart';
 import 'package:pdfapp/features/annotation/presentation/annotation_controller.dart';
 import 'package:pdfapp/features/annotation/presentation/widgets/note_editor_dialog.dart';
+import 'package:pdfrx/pdfrx.dart';
 
 /// The per-page interactive layer, returned from pdfrx's `pageOverlaysBuilder`.
 ///
@@ -97,9 +97,8 @@ class _PageAnnotationLayerState extends State<PageAnnotationLayer> {
               child: IgnorePointer(
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: Color(
-                      widget.controller.color,
-                    ).withValues(alpha: 0.25),
+                    color: Color(widget.controller.color)
+                        .withValues(alpha: 0.25),
                     border: Border.all(color: Color(widget.controller.color)),
                   ),
                 ),
@@ -174,7 +173,7 @@ class _PageAnnotationLayerState extends State<PageAnnotationLayer> {
     if (text != null) {
       for (final fragment in text.fragments) {
         for (final charRect in fragment.charRects) {
-          final r = charRect.toRectInPageRect(
+          final r = charRect.toRectInDocument(
             page: widget.page,
             pageRect: widget.pageRect,
           );
@@ -201,7 +200,7 @@ class _PageAnnotationLayerState extends State<PageAnnotationLayer> {
     if (_pageText != null || _loadingText) return _pageText;
     _loadingText = true;
     try {
-      _pageText = await widget.page.loadText();
+      _pageText = await widget.page.loadStructuredText();
     } catch (_) {
       _pageText = null;
     } finally {

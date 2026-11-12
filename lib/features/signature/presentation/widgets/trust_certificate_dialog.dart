@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/signature/domain/trusted_certificate.dart';
 import 'package:pdfapp/features/signature/presentation/widgets/certificate_details.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
@@ -19,7 +19,7 @@ Future<bool> showTrustCertificateDialog(
   final result = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: Text(l10n.signatureTrustTitle),
+      title: Text(l10n.titleSignatureTrust),
       content: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,7 +28,7 @@ Future<bool> showTrustCertificateDialog(
             CertificateDetails(certificate: certificate),
             const SizedBox(height: 16.0),
             Text(
-              l10n.signatureTrustExplain,
+              l10n.descSignatureTrustExplain,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
@@ -37,11 +37,11 @@ Future<bool> showTrustCertificateDialog(
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
-          child: Text(l10n.cancelAction),
+          child: Text(l10n.actionCancel),
         ),
         FilledButton(
           onPressed: () => Navigator.of(context).pop(true),
-          child: Text(l10n.signatureTrustConfirm),
+          child: Text(l10n.labelSignatureTrustConfirm),
         ),
       ],
     ),

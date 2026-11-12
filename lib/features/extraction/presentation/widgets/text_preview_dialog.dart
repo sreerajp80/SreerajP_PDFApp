@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/extraction/data/share_service.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
@@ -19,9 +19,8 @@ class TextPreviewDialog extends ConsumerWidget {
   void _copyToClipboard(BuildContext context, AppLocalizations l10n) {
     Clipboard.setData(ClipboardData(text: text)).then((_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.copySuccess)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.labelCopySuccess)));
       }
     });
   }
@@ -32,7 +31,7 @@ class TextPreviewDialog extends ConsumerWidget {
     final shareService = ref.read(shareServiceProvider);
 
     return AlertDialog(
-      title: Text(l10n.previewTextTitle),
+      title: Text(l10n.titlePreviewText),
       content: SizedBox(
         width: double.maxFinite,
         height: 300,
@@ -45,7 +44,7 @@ class TextPreviewDialog extends ConsumerWidget {
           child: Scrollbar(
             child: SingleChildScrollView(
               child: SelectableText(
-                text.isEmpty ? 'No text found.' : text,
+                text.isEmpty ? l10n.emptyExtractedText : text,
                 style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
               ),
             ),
@@ -55,21 +54,21 @@ class TextPreviewDialog extends ConsumerWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.dismissAction),
+          child: Text(l10n.actionDismiss),
         ),
         IconButton(
           icon: const Icon(Icons.copy),
-          tooltip: l10n.copyClipboardAction,
+          tooltip: l10n.actionCopyClipboard,
           onPressed: () => _copyToClipboard(context, l10n),
         ),
         IconButton(
           icon: const Icon(Icons.share),
-          tooltip: l10n.shareAction,
+          tooltip: l10n.actionShare,
           onPressed: text.isEmpty ? null : () => shareService.shareText(text),
         ),
         IconButton(
           icon: const Icon(Icons.insert_drive_file),
-          tooltip: l10n.shareFileAction,
+          tooltip: l10n.actionShareFile,
           onPressed: filePath.isEmpty
               ? null
               : () =>

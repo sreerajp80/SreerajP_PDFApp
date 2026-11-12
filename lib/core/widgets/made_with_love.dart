@@ -1,12 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:pdfapp/app/theme/tokens.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
 /// The fixed "Made with ❤️ from India" badge shown at the bottom of every
 /// About screen. Text is localized; the heart is always red (guideline.md §1.7).
 class MadeWithLove extends StatelessWidget {
   const MadeWithLove({super.key});
-
-  static const Color _heartColor = Color(0xFFE53935);
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +36,7 @@ class MadeWithLove extends StatelessWidget {
                   child: Icon(
                     Icons.favorite,
                     size: (base.fontSize ?? 12) * 1.1,
-                    color: _heartColor,
+                    color: AppTokens.heartRed,
                   ),
                 ),
                 TextSpan(text: parts.length > 1 ? parts[1] : '', style: base),

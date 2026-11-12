@@ -8,6 +8,13 @@ import 'package:pdfapp/features/help/presentation/privacy_storage_help_screen.da
 import 'package:pdfapp/features/help/presentation/signatures_help_screen.dart';
 import 'package:pdfapp/features/help/presentation/tts_help_screen.dart';
 import 'package:pdfapp/features/help/presentation/unicode_printing_help_screen.dart';
+import 'package:pdfapp/features/nearby_transfer/domain/pairing_code.dart';
+import 'package:pdfapp/features/nearby_transfer/domain/send_item.dart';
+import 'package:pdfapp/features/nearby_transfer/presentation/device_sync_screen.dart';
+import 'package:pdfapp/features/nearby_transfer/presentation/receive_screen.dart';
+import 'package:pdfapp/features/nearby_transfer/presentation/scan_code_screen.dart';
+import 'package:pdfapp/features/nearby_transfer/presentation/send_files_screen.dart';
+import 'package:pdfapp/features/nearby_transfer/presentation/share_settings_screen.dart';
 import 'package:pdfapp/features/printer/presentation/import_screen.dart';
 import 'package:pdfapp/features/settings/presentation/accent_color_screen.dart';
 import 'package:pdfapp/features/settings/presentation/appearance_screen.dart';
@@ -55,6 +62,11 @@ enum AppRoute {
   import,
   signatures,
   trustStore,
+  deviceSync,
+  shareSettings,
+  scanCode,
+  receive,
+  sendFiles,
 }
 
 extension AppRoutePath on AppRoute {
@@ -84,6 +96,11 @@ extension AppRoutePath on AppRoute {
     AppRoute.import => '/import',
     AppRoute.signatures => '/signatures',
     AppRoute.trustStore => '/trust-store',
+    AppRoute.deviceSync => '/settings/device-sync',
+    AppRoute.shareSettings => '/settings/device-sync/share',
+    AppRoute.scanCode => '/settings/device-sync/scan',
+    AppRoute.receive => '/settings/device-sync/receive',
+    AppRoute.sendFiles => '/send-files',
   };
 }
 
@@ -220,6 +237,33 @@ final GoRouter appRouter = GoRouter(
       name: AppRoute.trustStore.name,
       path: AppRoute.trustStore.path,
       builder: (context, state) => const TrustStoreScreen(),
+    ),
+    GoRoute(
+      name: AppRoute.deviceSync.name,
+      path: AppRoute.deviceSync.path,
+      builder: (context, state) => const DeviceSyncScreen(),
+    ),
+    GoRoute(
+      name: AppRoute.shareSettings.name,
+      path: AppRoute.shareSettings.path,
+      builder: (context, state) => const ShareSettingsScreen(),
+    ),
+    GoRoute(
+      name: AppRoute.scanCode.name,
+      path: AppRoute.scanCode.path,
+      builder: (context, state) => const ScanCodeScreen(),
+    ),
+    GoRoute(
+      name: AppRoute.receive.name,
+      path: AppRoute.receive.path,
+      builder: (context, state) =>
+          ReceiveScreen(code: state.extra! as ScannedCode),
+    ),
+    GoRoute(
+      name: AppRoute.sendFiles.name,
+      path: AppRoute.sendFiles.path,
+      builder: (context, state) =>
+          SendFilesScreen(items: state.extra! as List<SendItem>),
     ),
   ],
 );

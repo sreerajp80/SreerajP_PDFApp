@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pdfapp/core/errors/app_exception.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:pdfapp/core/errors/user_error_message.dart';
+import 'package:pdfapp/core/logging/app_logger.dart';
 import 'package:pdfapp/features/page_ops/data/page_ops_service.dart';
 import 'package:pdfapp/features/page_ops/presentation/widgets/page_ops_result_dialog.dart';
 import 'package:pdfapp/features/printer/presentation/providers.dart';
@@ -52,21 +53,29 @@ class _NUpDialogState extends ConsumerState<NUpDialog> {
       await showDialog<void>(
         context: context,
         builder: (_) =>
-            PageOpsResultDialog(title: l10n.nUpDoneTitle, outputPaths: [out]),
+            PageOpsResultDialog(title: l10n.titleNUpDone, outputPaths: [out]),
       );
-    } on AppException catch (e) {
+    } catch (e, st) {
+      AppLogger.error(
+        'n_up_dialog: _generateAndSave failed',
+        error: e,
+        stackTrace: st,
+      );
       if (mounted) {
         setState(() => _working = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.message)));
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _working = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('${l10n.opFailed}: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              userErrorMessage(l10n, e, fallback: l10n.errorOpFailed),
+            ),
+            action: SnackBarAction(
+              label: l10n.actionTryAgain,
+              onPressed: () {
+                if (mounted && !_working) _generateAndSave();
+              },
+            ),
+          ),
+        );
       }
     }
   }
@@ -89,19 +98,27 @@ class _NUpDialogState extends ConsumerState<NUpDialog> {
 
       if (!mounted) return;
       Navigator.of(context).pop();
-    } on AppException catch (e) {
+    } catch (e, st) {
+      AppLogger.error(
+        'n_up_dialog: _printDirect failed',
+        error: e,
+        stackTrace: st,
+      );
       if (mounted) {
         setState(() => _working = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.message)));
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _working = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('${l10n.opFailed}: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              userErrorMessage(l10n, e, fallback: l10n.errorOpFailed),
+            ),
+            action: SnackBarAction(
+              label: l10n.actionTryAgain,
+              onPressed: () {
+                if (mounted && !_working) _printDirect();
+              },
+            ),
+          ),
+        );
       }
     }
   }
@@ -112,7 +129,7 @@ class _NUpDialogState extends ConsumerState<NUpDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
-      title: Text(l10n.nUpDialogTitle),
+      title: Text(l10n.titleNUpDialog),
       content: SizedBox(
         width: 380,
         child: SingleChildScrollView(
@@ -120,14 +137,14 @@ class _NUpDialogState extends ConsumerState<NUpDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text(l10n.nUpGridLabel, style: theme.textTheme.titleSmall),
+              Text(l10n.labelNUpGrid, style: theme.textTheme.titleSmall),
               const SizedBox(height: 8),
               SegmentedButton<int>(
                 segments: [
                   for (final count in const [2, 4, 6, 9])
                     ButtonSegment(
                       value: count,
-                      label: Text(l10n.nUpPagesPerSheet(count)),
+                      label: Text(l10n.labelNUpPagesPerSheet(count)),
                     ),
                 ],
                 selected: {_gridCount},
@@ -138,15 +155,18 @@ class _NUpDialogState extends ConsumerState<NUpDialog> {
               DropdownButtonFormField<String>(
                 initialValue: _sheetSize,
                 decoration: InputDecoration(
-                  labelText: l10n.nUpSheetSizeLabel,
+                  labelText: l10n.labelNUpSheetSize,
                   border: const OutlineInputBorder(),
                   isDense: true,
                 ),
                 items: [
-                  DropdownMenuItem(value: 'a4', child: Text(l10n.nUpSheetA4)),
+                  DropdownMenuItem(
+                    value: 'a4',
+                    child: Text(l10n.labelNUpSheetA4),
+                  ),
                   DropdownMenuItem(
                     value: 'letter',
-                    child: Text(l10n.nUpSheetLetter),
+                    child: Text(l10n.labelNUpSheetLetter),
                   ),
                 ],
                 onChanged: (val) => setState(() => _sheetSize = val ?? 'a4'),
@@ -155,22 +175,22 @@ class _NUpDialogState extends ConsumerState<NUpDialog> {
               DropdownButtonFormField<String>(
                 initialValue: _orientation,
                 decoration: InputDecoration(
-                  labelText: l10n.nUpOrientationLabel,
+                  labelText: l10n.labelNUpOrientation,
                   border: const OutlineInputBorder(),
                   isDense: true,
                 ),
                 items: [
                   DropdownMenuItem(
                     value: 'auto',
-                    child: Text(l10n.nUpOrientationAuto),
+                    child: Text(l10n.labelNUpOrientationAuto),
                   ),
                   DropdownMenuItem(
                     value: 'portrait',
-                    child: Text(l10n.nUpOrientationPortrait),
+                    child: Text(l10n.labelNUpOrientationPortrait),
                   ),
                   DropdownMenuItem(
                     value: 'landscape',
-                    child: Text(l10n.nUpOrientationLandscape),
+                    child: Text(l10n.labelNUpOrientationLandscape),
                   ),
                 ],
                 onChanged: (val) =>
@@ -179,8 +199,8 @@ class _NUpDialogState extends ConsumerState<NUpDialog> {
               const SizedBox(height: 12),
               SwitchListTile.adaptive(
                 contentPadding: EdgeInsets.zero,
-                title: Text(l10n.nUpBordersLabel),
-                subtitle: Text(l10n.nUpBordersDescription),
+                title: Text(l10n.labelNUpBorders),
+                subtitle: Text(l10n.descNUpBorders),
                 value: _addBorders,
                 onChanged: (val) => setState(() => _addBorders = val),
               ),
@@ -188,7 +208,7 @@ class _NUpDialogState extends ConsumerState<NUpDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(l10n.nUpMarginLabel, style: theme.textTheme.bodyMedium),
+                  Text(l10n.labelNUpMargin, style: theme.textTheme.bodyMedium),
                   Text(
                     '${_margin.round()} pt',
                     style: theme.textTheme.labelMedium,
@@ -208,12 +228,12 @@ class _NUpDialogState extends ConsumerState<NUpDialog> {
       actions: [
         TextButton(
           onPressed: _working ? null : () => Navigator.of(context).pop(),
-          child: Text(l10n.cancelAction),
+          child: Text(l10n.actionCancel),
         ),
         OutlinedButton.icon(
           onPressed: _working ? null : _printDirect,
           icon: const Icon(Icons.print, size: 18),
-          label: Text(l10n.printAction),
+          label: Text(l10n.actionPrint),
         ),
         FilledButton.icon(
           onPressed: _working ? null : _generateAndSave,
@@ -224,7 +244,7 @@ class _NUpDialogState extends ConsumerState<NUpDialog> {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(Icons.save_alt, size: 18),
-          label: Text(l10n.saveAction),
+          label: Text(l10n.actionSave),
         ),
       ],
     );

@@ -202,16 +202,18 @@ class PdfBoxChannel {
     int dpi = 150,
   }) async {
     try {
-      final result = await _method
-          .invokeListMethod<String>('renderPagesToImages', {
-            'path': cachePath,
-            'password': password,
-            'startPage': startPage,
-            'endPage': endPage,
-            'outputDir': outputDir,
-            'format': format,
-            'dpi': dpi,
-          });
+      final result = await _method.invokeListMethod<String>(
+        'renderPagesToImages',
+        {
+          'path': cachePath,
+          'password': password,
+          'startPage': startPage,
+          'endPage': endPage,
+          'outputDir': outputDir,
+          'format': format,
+          'dpi': dpi,
+        },
+      );
       return result ?? const [];
     } on PlatformException catch (e) {
       throw _mapException(e);

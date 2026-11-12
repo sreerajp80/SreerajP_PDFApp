@@ -1,12 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show GlobalWidgetsLocalizations;
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/core/constants/app_constants.dart';
 import 'package:pdfapp/features/settings/presentation/typography_screen.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../helpers/tooltip_checks.dart';
 
 void main() {
   late SharedPreferences prefs;
@@ -37,6 +41,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    expectAllIconButtonsHaveTooltips(tester);
   }
 
   testWidgets('renders font families and text scale options', (tester) async {
@@ -49,7 +54,7 @@ void main() {
 
     await pumpTypography(tester);
 
-    expect(find.text('Typography & Text Size'), findsOneWidget);
+    expect(find.text('Fonts & text size'), findsOneWidget);
     expect(find.text('Font'), findsOneWidget);
     expect(find.text('Text Size'), findsOneWidget);
     expect(find.text('System Default'), findsOneWidget);

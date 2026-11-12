@@ -1,7 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/app/theme/app_theme.dart';
+import 'package:pdfapp/core/format/display_format.dart';
 import 'package:pdfapp/features/reading/data/tts_service.dart';
 import 'package:pdfapp/features/reading/domain/tts_state.dart';
 import 'package:pdfapp/features/reading/presentation/providers.dart';
@@ -19,6 +20,7 @@ class TtsSettingsScreen extends ConsumerWidget {
     final colors = theme.extension<AppColors>();
     final muted = colors?.mutedText ?? theme.colorScheme.onSurfaceVariant;
     final accent = theme.colorScheme.primary;
+    final localeName = Localizations.localeOf(context).toString();
 
     final ttsService = ref.watch(ttsServiceProvider);
     final ttsStatus = ttsService.status;
@@ -29,32 +31,33 @@ class TtsSettingsScreen extends ConsumerWidget {
 
     ref.listen<TtsService>(ttsServiceProvider, (previous, next) {
       if (next.takeVoiceLostNotice()) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.ttsVoiceLostNotice)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.descTtsVoiceLostNotice)));
       }
     });
 
     final String ttsSubtitle;
     if (!ttsStatus.malayalamEnabled) {
-      ttsSubtitle = l10n.settingsMalayalamVoiceOff;
+      ttsSubtitle = l10n.descSettingsMalayalamVoiceOff;
     } else {
       ttsSubtitle = switch (ttsStatus.malayalam) {
-        TtsVoiceState.unknown => l10n.settingsMalayalamVoiceChecking,
-        TtsVoiceState.ready => l10n.settingsMalayalamVoiceReady,
-        TtsVoiceState.needsInstall => l10n.settingsMalayalamVoiceNeedsInstall,
-        TtsVoiceState.unavailable => l10n.settingsMalayalamVoiceUnavailable,
+        TtsVoiceState.unknown => l10n.labelSettingsMalayalamVoiceChecking,
+        TtsVoiceState.ready => l10n.descSettingsMalayalamVoiceReady,
+        TtsVoiceState.needsInstall =>
+          l10n.descSettingsMalayalamVoiceNeedsInstall,
+        TtsVoiceState.unavailable =>
+          l10n.errorSettingsMalayalamVoiceUnavailable,
       };
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.ttsSettingsTitle)),
+      appBar: AppBar(title: Text(l10n.titleTtsSettings)),
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 48),
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 48),
           children: [
-            _sectionHeader(context, l10n.settingsMalayalamVoice, accent),
+            _sectionHeader(context, l10n.labelSettingsMalayalamVoice, accent),
             Card(
               margin: EdgeInsets.zero,
               child: Column(
@@ -73,7 +76,7 @@ class TtsSettingsScreen extends ConsumerWidget {
                       ),
                     ),
                     title: Text(
-                      l10n.settingsMalayalamVoice,
+                      l10n.labelSettingsMalayalamVoice,
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
@@ -112,14 +115,14 @@ class TtsSettingsScreen extends ConsumerWidget {
                       child: Icon(Icons.sync_outlined, color: accent),
                     ),
                     title: Text(
-                      l10n.ttsAutoScrollTitle,
+                      l10n.titleTtsAutoScroll,
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
                       ),
                     ),
                     subtitle: Text(
-                      l10n.ttsAutoScrollSubtitle,
+                      l10n.descTtsAutoScrollSubtitle,
                       style: TextStyle(color: muted, fontSize: 13),
                     ),
                     value: autoScroll,
@@ -130,7 +133,7 @@ class TtsSettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            _sectionHeader(context, l10n.ttsSpeechRateTitle, accent),
+            _sectionHeader(context, l10n.titleTtsSpeechRate, accent),
             Card(
               margin: EdgeInsets.zero,
               child: Padding(
@@ -142,15 +145,19 @@ class TtsSettingsScreen extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          l10n.ttsSpeechRateTitle,
+                          l10n.titleTtsSpeechRate,
                           style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
                           ),
                         ),
                         Text(
-                          l10n.ttsSpeechRateSubtitle(
-                            speechRate.toStringAsFixed(2),
+                          l10n.descTtsSpeechRateSubtitle(
+                            DisplayFormat.decimal(
+                              speechRate,
+                              localeName,
+                              fractionDigits: 2,
+                            ),
                           ),
                           style: TextStyle(
                             color: accent,
@@ -174,7 +181,7 @@ class TtsSettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            _sectionHeader(context, l10n.ttsPitchTitle, accent),
+            _sectionHeader(context, l10n.titleTtsPitch, accent),
             Card(
               margin: EdgeInsets.zero,
               child: Padding(
@@ -186,14 +193,20 @@ class TtsSettingsScreen extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          l10n.ttsPitchTitle,
+                          l10n.titleTtsPitch,
                           style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
                           ),
                         ),
                         Text(
-                          l10n.ttsPitchSubtitle(pitch.toStringAsFixed(2)),
+                          l10n.descTtsPitchSubtitle(
+                            DisplayFormat.decimal(
+                              pitch,
+                              localeName,
+                              fractionDigits: 2,
+                            ),
+                          ),
                           style: TextStyle(
                             color: accent,
                             fontWeight: FontWeight.w700,
@@ -216,7 +229,7 @@ class TtsSettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            _sectionHeader(context, l10n.ttsSentencePauseTitle, accent),
+            _sectionHeader(context, l10n.titleTtsSentencePause, accent),
             Card(
               margin: EdgeInsets.zero,
               child: Padding(
@@ -228,15 +241,19 @@ class TtsSettingsScreen extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          l10n.ttsSentencePauseTitle,
+                          l10n.titleTtsSentencePause,
                           style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 15,
                           ),
                         ),
                         Text(
-                          l10n.ttsSentencePauseSubtitle(
-                            sentencePause.toStringAsFixed(1),
+                          l10n.descTtsSentencePauseSubtitle(
+                            DisplayFormat.decimal(
+                              sentencePause,
+                              localeName,
+                              fractionDigits: 1,
+                            ),
                           ),
                           style: TextStyle(
                             color: accent,
@@ -267,7 +284,7 @@ class TtsSettingsScreen extends ConsumerWidget {
   Widget _sectionHeader(BuildContext context, String title, Color accent) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
+      padding: const EdgeInsetsDirectional.fromSTEB(4, 4, 4, 8),
       child: Text(
         title.toUpperCase(),
         style: theme.textTheme.labelLarge?.copyWith(

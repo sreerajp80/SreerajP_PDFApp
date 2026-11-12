@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/reading/domain/text_quality.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
@@ -7,6 +7,9 @@ import 'package:pdfapp/l10n/app_localizations.dart';
 /// Shown for a scanned PDF (no text layer) and for one whose text does not
 /// decode. Both are honest dead ends rather than bugs, so the notice explains
 /// the reason and can be dismissed — the reader can still read the pages.
+///
+/// Also shown, as a warning only, for text that is probably not proper Unicode:
+/// search and read-aloud still work there, but may miss or misread words.
 class TextQualityNotice extends StatelessWidget {
   const TextQualityNotice({
     super.key,
@@ -23,8 +26,12 @@ class TextQualityNotice extends StatelessWidget {
     final theme = Theme.of(context);
 
     final (title, body) = switch (quality) {
-      TextQuality.none => (l10n.noTextTitle, l10n.noTextBody),
-      TextQuality.garbled => (l10n.garbledTextTitle, l10n.garbledTextBody),
+      TextQuality.none => (l10n.titleNoText, l10n.bodyNoText),
+      TextQuality.garbled => (l10n.titleGarbledText, l10n.bodyGarbledText),
+      TextQuality.unreliable => (
+        l10n.titleUnreliableText,
+        l10n.bodyUnreliableText,
+      ),
       // Nothing to say about a healthy PDF.
       TextQuality.good => (null, null),
     };
@@ -32,12 +39,11 @@ class TextQualityNotice extends StatelessWidget {
 
     return MaterialBanner(
       backgroundColor: theme.colorScheme.surfaceContainerHigh,
-      leading: Icon(
-        quality == TextQuality.none
-            ? Icons.image_outlined
-            : Icons.font_download_off_outlined,
-        color: theme.colorScheme.onSurfaceVariant,
-      ),
+      leading: Icon(switch (quality) {
+        TextQuality.none => Icons.image_outlined,
+        TextQuality.unreliable => Icons.warning_amber_outlined,
+        _ => Icons.font_download_off_outlined,
+      }, color: theme.colorScheme.onSurfaceVariant),
       content: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -48,7 +54,7 @@ class TextQualityNotice extends StatelessWidget {
         ],
       ),
       actions: [
-        TextButton(onPressed: onDismiss, child: Text(l10n.dismissAction)),
+        TextButton(onPressed: onDismiss, child: Text(l10n.actionDismiss)),
       ],
     );
   }

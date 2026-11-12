@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:pdfrx/pdfrx.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
+import 'package:pdfrx/pdfrx.dart';
 
 /// A grid of page thumbnails. Tapping a page jumps to it.
 ///
@@ -31,7 +31,7 @@ class ThumbnailGrid extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.all(16),
-          child: Text(l10n.thumbnailsTitle, style: theme.textTheme.titleLarge),
+          child: Text(l10n.titleThumbnails, style: theme.textTheme.titleLarge),
         ),
         const Divider(height: 1),
         Expanded(

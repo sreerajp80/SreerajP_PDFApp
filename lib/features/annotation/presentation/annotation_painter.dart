@@ -1,10 +1,10 @@
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
-import 'package:pdfrx/pdfrx.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/annotation/domain/annotation.dart';
 import 'package:pdfapp/features/annotation/domain/annotation_geometry.dart';
 import 'package:pdfapp/features/annotation/domain/annotation_type.dart';
+import 'package:pdfrx/pdfrx.dart';
 
 /// Draws stored overlay annotations straight onto the rendered page.
 ///

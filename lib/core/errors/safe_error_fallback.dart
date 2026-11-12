@@ -1,26 +1,37 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:pdfapp/app/theme/tokens.dart';
+import 'package:pdfapp/l10n/app_localizations.dart';
 
-/// Neutral, context-free widget shown in **release** builds when a widget fails
-/// to build (wired via `ErrorWidget.builder` in `main()`) — engineering
-/// standard §11.1. It shows no exception text and has no controls that could
-/// fail the same way.
+/// Neutral widget shown in **release** builds when a widget fails to build
+/// (wired via `ErrorWidget.builder` in `main()`) — engineering standard §11.1.
+/// It shows no exception text and has no controls that could fail the same way.
 class SafeErrorFallback extends StatelessWidget {
   const SafeErrorFallback({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Use a self-contained theme so this works even outside a MaterialApp.
-    return const Directionality(
-      textDirection: TextDirection.ltr,
+    // Flutter puts this widget where the failed one was, so it usually sits
+    // under MaterialApp and gets the user's language. If it does not (the
+    // failure was above the app's localizations), fall back to the template
+    // language rather than failing again.
+    final l10n =
+        Localizations.of<AppLocalizations>(context, AppLocalizations) ??
+        lookupAppLocalizations(const Locale('en'));
+    // Its own colors and direction, so it works even outside a MaterialApp.
+    return Directionality(
+      textDirection: Directionality.maybeOf(context) ?? TextDirection.ltr,
       child: ColoredBox(
-        color: Color(0xFF1C1B1F),
+        color: AppTokens.errorFallbackBackground,
         child: Center(
           child: Padding(
-            padding: EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppTokens.spaceLg),
             child: Text(
-              'Something went wrong on this screen.\nPlease go back and try again.',
+              l10n.errorScreenFallback,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFFE6E1E5), fontSize: 16),
+              style: const TextStyle(
+                color: AppTokens.errorFallbackForeground,
+                fontSize: 16,
+              ),
             ),
           ),
         ),

@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:pdfapp/core/errors/user_error_message.dart';
+import 'package:pdfapp/core/logging/app_logger.dart';
 import 'package:pdfapp/features/page_ops/data/page_ops_service.dart';
 import 'package:pdfapp/features/page_ops/presentation/widgets/page_ops_result_dialog.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
@@ -35,7 +37,7 @@ class _ProtectDialogState extends ConsumerState<ProtectDialog> {
     final l10n = AppLocalizations.of(context);
     final userPass = _userController.text;
     if (userPass.isEmpty) {
-      setState(() => _error = l10n.passwordRequiredError);
+      setState(() => _error = l10n.errorPasswordRequired);
       return;
     }
     setState(() {
@@ -56,16 +58,21 @@ class _ProtectDialogState extends ConsumerState<ProtectDialog> {
         showDialog<void>(
           context: context,
           builder: (context) => PageOpsResultDialog(
-            title: l10n.protectDoneTitle,
+            title: l10n.titleProtectDone,
             outputPaths: [out],
           ),
         );
       }
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error(
+        'protect_dialog: operation failed',
+        error: e,
+        stackTrace: st,
+      );
       if (mounted) {
         setState(() {
           _loading = false;
-          _error = '${l10n.opFailed}: $e';
+          _error = userErrorMessage(l10n, e, fallback: l10n.errorOpFailed);
         });
       }
     }
@@ -83,14 +90,14 @@ class _ProtectDialogState extends ConsumerState<ProtectDialog> {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(height: 16),
-            Text(l10n.workingProgress),
+            Text(l10n.labelWorkingProgress),
           ],
         ),
       );
     }
 
     return AlertDialog(
-      title: Text(l10n.protectTitle),
+      title: Text(l10n.titleProtect),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,7 +113,7 @@ class _ProtectDialogState extends ConsumerState<ProtectDialog> {
             controller: _userController,
             obscureText: _obscure,
             decoration: InputDecoration(
-              labelText: l10n.userPasswordLabel,
+              labelText: l10n.labelUserPassword,
               border: const OutlineInputBorder(),
               suffixIcon: IconButton(
                 tooltip: _obscure
@@ -122,8 +129,8 @@ class _ProtectDialogState extends ConsumerState<ProtectDialog> {
             controller: _ownerController,
             obscureText: _obscure,
             decoration: InputDecoration(
-              labelText: l10n.ownerPasswordLabel,
-              helperText: l10n.ownerPasswordHelp,
+              labelText: l10n.labelOwnerPassword,
+              helperText: l10n.helpOwnerPassword,
               border: const OutlineInputBorder(),
             ),
           ),
@@ -132,9 +139,9 @@ class _ProtectDialogState extends ConsumerState<ProtectDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.cancelAction),
+          child: Text(l10n.actionCancel),
         ),
-        FilledButton(onPressed: _run, child: Text(l10n.protectAction)),
+        FilledButton(onPressed: _run, child: Text(l10n.actionProtect)),
       ],
     );
   }

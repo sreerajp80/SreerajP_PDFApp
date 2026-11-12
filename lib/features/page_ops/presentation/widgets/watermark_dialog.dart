@@ -1,6 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pdfapp/core/errors/app_exception.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:pdfapp/app/theme/app_theme.dart';
+import 'package:pdfapp/app/theme/tokens.dart';
+import 'package:pdfapp/core/errors/user_error_message.dart';
+import 'package:pdfapp/core/logging/app_logger.dart';
 import 'package:pdfapp/features/page_ops/data/page_ops_service.dart';
 import 'package:pdfapp/features/page_ops/presentation/widgets/page_ops_result_dialog.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
@@ -24,7 +27,8 @@ class WatermarkDialog extends ConsumerStatefulWidget {
 
 class _WatermarkDialogState extends ConsumerState<WatermarkDialog> {
   final WatermarkType _type = WatermarkType.text;
-  final _textController = TextEditingController(text: 'CONFIDENTIAL');
+  final _textController = TextEditingController();
+  bool _defaultTextSet = false;
   double _opacity = 0.25;
   double _rotation = 45.0;
   double _fontSize = 36.0;
@@ -36,6 +40,20 @@ class _WatermarkDialogState extends ConsumerState<WatermarkDialog> {
   bool _working = false;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // The default text is localized, so it can only be read once the
+    // localizations are available. Set it once, and never over the user's text.
+    if (!_defaultTextSet) {
+      _defaultTextSet = true;
+      if (_textController.text.isEmpty) {
+        _textController.text = AppLocalizations.of(context)
+            .labelWatermarkConfidential;
+      }
+    }
+  }
+
+  @override
   void dispose() {
     _textController.dispose();
     super.dispose();
@@ -45,9 +63,8 @@ class _WatermarkDialogState extends ConsumerState<WatermarkDialog> {
     final l10n = AppLocalizations.of(context);
     final text = _textController.text.trim();
     if (_type == WatermarkType.text && text.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.watermarkEmptyTextError)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.errorWatermarkEmptyText)));
       return;
     }
 
@@ -72,23 +89,31 @@ class _WatermarkDialogState extends ConsumerState<WatermarkDialog> {
       await showDialog<void>(
         context: context,
         builder: (_) => PageOpsResultDialog(
-          title: l10n.watermarkDoneTitle,
+          title: l10n.titleWatermarkDone,
           outputPaths: [out],
         ),
       );
-    } on AppException catch (e) {
+    } catch (e, st) {
+      AppLogger.error(
+        'watermark_dialog: _apply failed',
+        error: e,
+        stackTrace: st,
+      );
       if (mounted) {
         setState(() => _working = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.message)));
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _working = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('${l10n.opFailed}: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              userErrorMessage(l10n, e, fallback: l10n.errorOpFailed),
+            ),
+            action: SnackBarAction(
+              label: l10n.actionTryAgain,
+              onPressed: () {
+                if (mounted && !_working) _apply();
+              },
+            ),
+          ),
+        );
       }
     }
   }
@@ -99,7 +124,7 @@ class _WatermarkDialogState extends ConsumerState<WatermarkDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
-      title: Text(l10n.watermarkDialogTitle),
+      title: Text(l10n.titleWatermarkDialog),
       content: SizedBox(
         width: 400,
         child: SingleChildScrollView(
@@ -110,7 +135,7 @@ class _WatermarkDialogState extends ConsumerState<WatermarkDialog> {
               TextField(
                 controller: _textController,
                 decoration: InputDecoration(
-                  labelText: l10n.watermarkTextLabel,
+                  labelText: l10n.labelWatermarkText,
                   border: const OutlineInputBorder(),
                   isDense: true,
                 ),
@@ -120,11 +145,11 @@ class _WatermarkDialogState extends ConsumerState<WatermarkDialog> {
                 spacing: 6,
                 children: [
                   for (final preset in [
-                    'CONFIDENTIAL',
-                    'DRAFT',
-                    'COPY',
-                    'SAMPLE',
-                    'ORIGINAL',
+                    l10n.labelWatermarkConfidential,
+                    l10n.labelWatermarkDraft,
+                    l10n.labelWatermarkCopy,
+                    l10n.labelWatermarkSample,
+                    l10n.labelWatermarkOriginal,
                   ])
                     ActionChip(
                       label: Text(preset, style: const TextStyle(fontSize: 11)),
@@ -139,7 +164,7 @@ class _WatermarkDialogState extends ConsumerState<WatermarkDialog> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    l10n.watermarkOpacityLabel,
+                    l10n.labelWatermarkOpacity,
                     style: theme.textTheme.bodyMedium,
                   ),
                   Text(
@@ -159,7 +184,7 @@ class _WatermarkDialogState extends ConsumerState<WatermarkDialog> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    l10n.watermarkRotationLabel,
+                    l10n.labelWatermarkRotation,
                     style: theme.textTheme.bodyMedium,
                   ),
                   Text(
@@ -180,7 +205,7 @@ class _WatermarkDialogState extends ConsumerState<WatermarkDialog> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    l10n.watermarkFontSizeLabel,
+                    l10n.labelWatermarkFontSize,
                     style: theme.textTheme.bodyMedium,
                   ),
                   Text(
@@ -196,41 +221,18 @@ class _WatermarkDialogState extends ConsumerState<WatermarkDialog> {
                 divisions: 16,
                 onChanged: (v) => setState(() => _fontSize = v),
               ),
-              // Color selection
-              Row(
+              // Color selection: 48 dp targets with a name for each color, and
+              // a check mark so the choice is not shown by color alone
+              // (engineering standard §7.1, §7.2, §7.8).
+              Text(l10n.labelWatermarkColor, style: theme.textTheme.bodyMedium),
+              Wrap(
                 children: [
-                  Text(
-                    l10n.watermarkColorLabel,
-                    style: theme.textTheme.bodyMedium,
-                  ),
-                  const Spacer(),
-                  for (final entry in {
-                    '#808080': Colors.grey,
-                    '#D32F2F': Colors.red,
-                    '#1976D2': Colors.blue,
-                    '#388E3C': Colors.green,
-                    '#F57C00': Colors.orange,
-                  }.entries)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: InkWell(
-                        onTap: () => setState(() => _colorHex = entry.key),
-                        borderRadius: BorderRadius.circular(16),
-                        child: Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: entry.value,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: _colorHex == entry.key
-                                  ? theme.colorScheme.primary
-                                  : Colors.transparent,
-                              width: 2,
-                            ),
-                          ),
-                        ),
-                      ),
+                  for (final swatch in _swatches(l10n))
+                    _ColorSwatch(
+                      color: swatch.color,
+                      label: swatch.label,
+                      selected: _colorHex == swatch.hex,
+                      onTap: () => setState(() => _colorHex = swatch.hex),
                     ),
                 ],
               ),
@@ -238,8 +240,8 @@ class _WatermarkDialogState extends ConsumerState<WatermarkDialog> {
               // Tiled switch
               SwitchListTile.adaptive(
                 contentPadding: EdgeInsets.zero,
-                title: Text(l10n.watermarkTiledLabel),
-                subtitle: Text(l10n.watermarkTiledDescription),
+                title: Text(l10n.labelWatermarkTiled),
+                subtitle: Text(l10n.descWatermarkTiled),
                 value: _isTiled,
                 onChanged: (v) => setState(() => _isTiled = v),
               ),
@@ -247,22 +249,22 @@ class _WatermarkDialogState extends ConsumerState<WatermarkDialog> {
               DropdownButtonFormField<String>(
                 initialValue: _pageRange,
                 decoration: InputDecoration(
-                  labelText: l10n.watermarkPageRangeLabel,
+                  labelText: l10n.labelWatermarkPageRange,
                   border: const OutlineInputBorder(),
                   isDense: true,
                 ),
                 items: [
                   DropdownMenuItem(
                     value: 'all',
-                    child: Text(l10n.watermarkAllPages),
+                    child: Text(l10n.labelWatermarkAllPages),
                   ),
                   DropdownMenuItem(
                     value: 'odd',
-                    child: Text(l10n.watermarkOddPages),
+                    child: Text(l10n.labelWatermarkOddPages),
                   ),
                   DropdownMenuItem(
                     value: 'even',
-                    child: Text(l10n.watermarkEvenPages),
+                    child: Text(l10n.labelWatermarkEvenPages),
                   ),
                 ],
                 onChanged: (v) => setState(() => _pageRange = v ?? 'all'),
@@ -274,7 +276,7 @@ class _WatermarkDialogState extends ConsumerState<WatermarkDialog> {
       actions: [
         TextButton(
           onPressed: _working ? null : () => Navigator.of(context).pop(),
-          child: Text(l10n.cancelAction),
+          child: Text(l10n.actionCancel),
         ),
         FilledButton(
           onPressed: _working ? null : _apply,
@@ -284,9 +286,77 @@ class _WatermarkDialogState extends ConsumerState<WatermarkDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(l10n.watermarkApplyAction),
+              : Text(l10n.actionWatermarkApply),
         ),
       ],
+    );
+  }
+}
+
+/// The watermark colors offered, by the hex value the service expects.
+List<({String hex, Color color, String label})> _swatches(
+  AppLocalizations l10n,
+) => [
+  (hex: '#808080', color: Colors.grey, label: l10n.labelColorGrey),
+  (hex: '#D32F2F', color: Colors.red, label: l10n.labelColorRed),
+  (hex: '#1976D2', color: Colors.blue, label: l10n.labelColorBlue),
+  (hex: '#388E3C', color: Colors.green, label: l10n.labelColorGreen),
+  (hex: '#F57C00', color: Colors.orange, label: l10n.labelColorOrange),
+];
+
+/// One color choice: a 48 dp target with a tooltip, a screen-reader label,
+/// and a check mark when selected.
+class _ColorSwatch extends StatelessWidget {
+  const _ColorSwatch({
+    required this.color,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final Color color;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: label,
+      child: Semantics(
+        button: true,
+        selected: selected,
+        label: label,
+        child: InkResponse(
+          onTap: onTap,
+          radius: AppTokens.minTapTarget / 2,
+          child: SizedBox.square(
+            dimension: AppTokens.minTapTarget,
+            child: Center(
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: selected ? scheme.primary : scheme.outlineVariant,
+                    width: selected ? 3 : 1,
+                  ),
+                ),
+                child: selected
+                    ? Icon(
+                        Icons.check,
+                        size: 18,
+                        color: AppTheme.contrastOn(color),
+                      )
+                    : null,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

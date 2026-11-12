@@ -1,8 +1,5 @@
 # Implementation Plan — SreerajP PDF App
 
-**Date:** 2026-07-14  
-**Status:** completed
-
 This document is the full build plan for the **SreerajP PDF App**, a Flutter Android app for
 "everything PDF". It is written from two source documents in `docs/`:
 
@@ -14,7 +11,10 @@ Read this plan top to bottom. It is split into **phases**. Each phase says what 
 what to build, and which files change. The matching progress tracker is
 [implementation_progress.md](implementation_progress.md).
 
-> Read first: [../.agents/AGENTS.md](../.agents/AGENTS.md) (or [../CLAUDE.md](../CLAUDE.md)) for project rules,
+**Date:** 2026-07-14  
+**Status:** completed
+
+> Read first: [../CLAUDE.md](../CLAUDE.md) and [../AGENTS.md](../AGENTS.md) for project rules,
 > [pdf_idea.md](pdf_idea.md) for the product concept, and
 > [GUIDELINES_MANIFEST.md](GUIDELINES_MANIFEST.md) for the shared Flutter guidelines.
 

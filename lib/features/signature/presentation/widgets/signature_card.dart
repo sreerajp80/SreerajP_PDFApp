@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/core/format/display_format.dart';
 import 'package:pdfapp/features/signature/domain/pdf_signature.dart';
 import 'package:pdfapp/features/signature/domain/signature_status.dart';
@@ -50,22 +50,22 @@ class SignatureCard extends StatelessWidget {
             const SizedBox(height: 16.0),
             _fact(
               context,
-              l10n.signatureSignerLabel,
+              l10n.labelSignatureSigner,
               signature.name?.trim().isNotEmpty == true
                   ? signature.name!
                   : (signature.signerCertificate?.commonName ??
-                        l10n.signatureSignerUnknown),
+                        l10n.labelSignatureSignerUnknown),
             ),
             if (signedAt != null)
               _fact(
                 context,
-                l10n.signatureSignedAtLabel,
+                l10n.labelSignatureSignedAt,
                 DisplayFormat.dateTime(signedAt, locale),
               ),
             if (signature.reason?.trim().isNotEmpty == true)
-              _fact(context, l10n.signatureReasonLabel, signature.reason!),
+              _fact(context, l10n.labelSignatureReason, signature.reason!),
             if (signature.location?.trim().isNotEmpty == true)
-              _fact(context, l10n.signatureLocationLabel, signature.location!),
+              _fact(context, l10n.labelSignatureLocation, signature.location!),
 
             if (verdict.notes.isNotEmpty) ...[
               const SizedBox(height: 8.0),
@@ -80,7 +80,7 @@ class SignatureCard extends StatelessWidget {
                 data: theme.copyWith(dividerColor: Colors.transparent),
                 child: ExpansionTile(
                   title: Text(
-                    l10n.signatureCertificateTitle,
+                    l10n.titleSignatureCertificate,
                     style: theme.textTheme.titleSmall,
                   ),
                   tilePadding: EdgeInsets.zero,
@@ -102,7 +102,7 @@ class SignatureCard extends StatelessWidget {
                 child: FilledButton.tonalIcon(
                   onPressed: onTrust,
                   icon: const Icon(Icons.add_moderator_outlined),
-                  label: Text(l10n.signatureTrustAction),
+                  label: Text(l10n.actionSignatureTrust),
                 ),
               ),
             ],
@@ -155,24 +155,24 @@ class SignatureCard extends StatelessWidget {
 
     final (title, detail) = switch (note) {
       SignatureNote.partialCoverage => (
-        l10n.signatureNotePartialCoverage,
-        l10n.signatureNotePartialCoverageDetail,
+        l10n.descSignatureNotePartialCoverage,
+        l10n.descSignatureNotePartialCoverageDetail,
       ),
       SignatureNote.revoked => (
-        l10n.signatureNoteRevoked,
-        l10n.signatureNoteRevokedDetail,
+        l10n.descSignatureNoteRevoked,
+        l10n.descSignatureNoteRevokedDetail,
       ),
       SignatureNote.revocationNotChecked => (
-        l10n.signatureNoteRevocationNotChecked,
-        l10n.signatureNoteRevocationNotCheckedDetail,
+        l10n.descSignatureNoteRevocationNotChecked,
+        l10n.descSignatureNoteRevocationNotCheckedDetail,
       ),
       SignatureNote.certExpiredAtSigning => (
-        l10n.signatureNoteCertExpired,
-        l10n.signatureNoteCertExpiredDetail,
+        l10n.descSignatureNoteCertExpired,
+        l10n.descSignatureNoteCertExpiredDetail,
       ),
       SignatureNote.unverifiedSigningTime => (
-        l10n.signatureNoteUnverifiedTime,
-        l10n.signatureNoteUnverifiedTimeDetail,
+        l10n.descSignatureNoteUnverifiedTime,
+        l10n.descSignatureNoteUnverifiedTimeDetail,
       ),
     };
 

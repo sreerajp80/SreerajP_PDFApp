@@ -8,13 +8,20 @@ import 'package:pdfapp/app/config/app_flavor_config.dart';
 class AppLogger {
   AppLogger._();
 
-  static Logger? _logger;
+  static Level get _level =>
+      AppFlavorConfig.instance.isDev ? Level.trace : Level.info;
 
-  /// Call once during the `main()` init sequence, before any log call.
+  /// Console-only logger used until [init] runs, so a log call made before
+  /// startup finishes (for example from a global error handler) never throws
+  /// (§14.2).
+  static Logger _logger = Logger(level: _level, printer: SimplePrinter());
+
+  /// Call once at step 2 of the `main()` init sequence (§4.5). Swaps in the
+  /// full logger.
   static void init() {
     final isDev = AppFlavorConfig.instance.isDev;
     _logger = Logger(
-      level: isDev ? Level.trace : Level.info,
+      level: _level,
       printer: PrettyPrinter(
         colors: isDev,
         printEmojis: false,
@@ -23,21 +30,13 @@ class AppLogger {
     );
   }
 
-  static Logger get _log {
-    final logger = _logger;
-    if (logger == null) {
-      throw StateError('AppLogger.init() must be called before logging.');
-    }
-    return logger;
-  }
-
-  static void trace(String message) => _log.t(message);
-  static void debug(String message) => _log.d(message);
-  static void info(String message) => _log.i(message);
+  static void trace(String message) => _logger.t(message);
+  static void debug(String message) => _logger.d(message);
+  static void info(String message) => _logger.i(message);
   static void warning(String message, {Object? error}) =>
-      _log.w(message, error: error);
+      _logger.w(message, error: error);
   static void error(String message, {Object? error, StackTrace? stackTrace}) =>
-      _log.e(message, error: error, stackTrace: stackTrace);
+      _logger.e(message, error: error, stackTrace: stackTrace);
   static void fatal(String message, {Object? error, StackTrace? stackTrace}) =>
-      _log.f(message, error: error, stackTrace: stackTrace);
+      _logger.f(message, error: error, stackTrace: stackTrace);
 }

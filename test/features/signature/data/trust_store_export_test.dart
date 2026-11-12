@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pdfapp/core/platform/signature_channel.dart';
 import 'package:pdfapp/features/signature/data/eutl_trust_list.dart';
@@ -60,8 +61,7 @@ void main() {
         serial: '1001',
         notBefore: DateTime(2026),
         notAfter: DateTime(2030),
-        der:
-            'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0TestCertificateBase64DataString',
+        der: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0TestCertificateBase64DataString',
       );
 
       final path = await repository.exportCertificate(cert);

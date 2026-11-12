@@ -140,9 +140,9 @@ void main() {
 
     test('looks at every page exactly once', () async {
       final source = FakeTextSource(['a', 'b', 'c', 'd']);
-      await PdfSearchEngine(
-        source: source,
-      ).search('zzz', startPage: 3).toList();
+      await PdfSearchEngine(source: source)
+          .search('zzz', startPage: 3)
+          .toList();
 
       expect(source.loaded, [3, 4, 1, 2]);
     });

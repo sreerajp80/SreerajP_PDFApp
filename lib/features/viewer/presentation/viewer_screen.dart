@@ -1,25 +1,41 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'dart:ui' show DisplayFeatureType;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 // Hide pdfrx's PdfDocumentRef — this app has its own domain type of that name.
 import 'package:pdfrx/pdfrx.dart' hide PdfDocumentRef;
 import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/app/routing/app_router.dart';
-import 'package:pdfapp/features/signature/presentation/providers.dart';
+import 'package:pdfapp/features/annotation/presentation/annotation_controller.dart';
+import 'package:pdfapp/features/annotation/presentation/annotation_painter.dart';
+import 'package:pdfapp/features/annotation/presentation/providers.dart';
+import 'package:pdfapp/features/annotation/presentation/widgets/annotation_overlay_notice.dart';
+import 'package:pdfapp/features/annotation/presentation/widgets/annotation_toolbar.dart';
+import 'package:pdfapp/features/annotation/presentation/widgets/bookmarks_panel.dart';
+import 'package:pdfapp/features/annotation/presentation/widgets/page_annotation_layer.dart';
+import 'package:pdfapp/features/extraction/presentation/widgets/extraction_dialog.dart';
+import 'package:pdfapp/features/page_ops/presentation/page_ops_sheet.dart';
+import 'package:pdfapp/features/printer/presentation/widgets/print_sheet.dart';
 import 'package:pdfapp/features/reading/data/pdf_text_source.dart';
 import 'package:pdfapp/features/reading/data/reading_velocity_service.dart';
 import 'package:pdfapp/features/reading/data/tts_service.dart';
+import 'package:pdfapp/features/reading/domain/search_hit.dart';
 import 'package:pdfapp/features/reading/domain/text_quality.dart';
+import 'package:pdfapp/features/nearby_transfer/domain/send_item.dart';
 import 'package:pdfapp/features/reading/presentation/pdf_search_controller.dart';
 import 'package:pdfapp/features/reading/presentation/providers.dart';
 import 'package:pdfapp/features/reading/presentation/widgets/metadata_sheet.dart';
 import 'package:pdfapp/features/reading/presentation/widgets/reader_search_bar.dart';
 import 'package:pdfapp/features/reading/presentation/widgets/search_highlight_painter.dart';
 import 'package:pdfapp/features/reading/presentation/widgets/text_quality_notice.dart';
+import 'package:pdfapp/features/signature/domain/pdf_signature.dart';
+import 'package:pdfapp/features/signature/domain/signature_status.dart';
+import 'package:pdfapp/features/signature/presentation/providers.dart';
+import 'package:pdfapp/features/signature/presentation/widgets/signature_detail_sheet.dart';
 import 'package:pdfapp/features/viewer/data/pdf_repository.dart';
 import 'package:pdfapp/features/viewer/domain/pdf_document_ref.dart';
 import 'package:pdfapp/features/viewer/domain/view_mode.dart';
@@ -28,23 +44,10 @@ import 'package:pdfapp/features/viewer/presentation/widgets/outline_drawer.dart'
 import 'package:pdfapp/features/viewer/presentation/widgets/page_jump_sheet.dart';
 import 'package:pdfapp/features/viewer/presentation/widgets/page_layouts.dart';
 import 'package:pdfapp/features/viewer/presentation/widgets/password_prompt.dart';
-import 'package:pdfapp/features/viewer/presentation/widgets/thumbnail_grid.dart';
 import 'package:pdfapp/features/viewer/presentation/widgets/pinch_zoom_wrapper.dart';
+import 'package:pdfapp/features/viewer/presentation/widgets/thumbnail_grid.dart';
 import 'package:pdfapp/features/viewer/presentation/widgets/viewer_error_view.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
-import 'package:pdfapp/features/extraction/presentation/widgets/extraction_dialog.dart';
-import 'package:pdfapp/features/page_ops/presentation/page_ops_sheet.dart';
-import 'package:pdfapp/features/printer/presentation/widgets/print_sheet.dart';
-import 'package:pdfapp/features/annotation/presentation/annotation_controller.dart';
-import 'package:pdfapp/features/annotation/presentation/annotation_painter.dart';
-import 'package:pdfapp/features/annotation/presentation/providers.dart';
-import 'package:pdfapp/features/annotation/presentation/widgets/annotation_overlay_notice.dart';
-import 'package:pdfapp/features/annotation/presentation/widgets/annotation_toolbar.dart';
-import 'package:pdfapp/features/annotation/presentation/widgets/bookmarks_panel.dart';
-import 'package:pdfapp/features/annotation/presentation/widgets/page_annotation_layer.dart';
-import 'package:pdfapp/features/signature/domain/pdf_signature.dart';
-import 'package:pdfapp/features/signature/domain/signature_status.dart';
-import 'package:pdfapp/features/signature/presentation/widgets/signature_detail_sheet.dart';
 
 /// Inverts page colors for night reading (project rule: comfortable dark read).
 const ColorFilter _invertFilter = ColorFilter.matrix(<double>[
@@ -116,6 +119,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   bool _searching = false;
   bool _ttsActive = false;
 
+  /// The match the view last moved to, so streaming results do not keep
+  /// pulling the view back to the same match.
+  SearchHit? _jumpedHit;
+
   /// Tracks reading velocity (WPM, seconds per page) and chapter remaining time.
   ReadingVelocityService? _velocityService;
 
@@ -135,7 +142,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   List<SignatureVerdict>? _currentVerdicts;
 
   /// True when search / copy can honestly be offered.
-  bool get _textUsable => _textQuality == TextQuality.good;
+  bool get _textUsable => _textQuality?.isUsable ?? false;
 
   @override
   void initState() {
@@ -381,6 +388,19 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   }
 
   /// Print options for the open document (Phase 6).
+  /// Sends this PDF to a nearby phone over the local WiFi (Device sync).
+  void _sendNearby() {
+    context.pushNamed(
+      AppRoute.sendFiles.name,
+      extra: [
+        SendItem(
+          name: widget.docRef.displayName,
+          cachePath: widget.docRef.cachePath,
+        ),
+      ],
+    );
+  }
+
   void _showPrint() {
     if (_document == null) return;
     unawaited(
@@ -401,7 +421,68 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   /// rebuild alone does not redraw them — the viewer has to be told the pages
   /// are out of date. This is how pdfrx's own text searcher does it too.
   void _onSearchChanged() {
-    if (_controller.isReady) _controller.invalidate();
+    if (!_controller.isReady) return;
+    _controller.invalidate();
+
+    // Move to the current match when it changes: the first match as soon as
+    // it is found, and each match the reader steps to with up / down.
+    final current = _search?.state.current;
+    if (current == null) {
+      _jumpedHit = null;
+    } else if (!identical(current, _jumpedHit)) {
+      _goToHit(current);
+    }
+  }
+
+  /// Brings [hit] into view without changing the zoom.
+  ///
+  /// `goToPage` would fit the whole page to the screen (losing the reader's
+  /// zoom) and show only the top of the page, not the match. Instead the view
+  /// is moved so the match sits in the middle of the part of the screen the
+  /// keyboard does not cover — and not moved at all if it is already there.
+  void _goToHit(SearchHit hit) {
+    _jumpedHit = hit;
+    if (hit.rects.isEmpty) {
+      // Same reason as below: record the start so it is not taken for a resize.
+      _lastMatrix = _controller.value;
+      _lastMatrixViewSize = _controller.viewSize;
+      unawaited(_controller.goToPage(pageNumber: hit.pageNumber));
+      return;
+    }
+    final area = _controller.calcRectForRectInsidePage(
+      pageNumber: hit.pageNumber,
+      rect: hit.rects.first,
+    );
+
+    // The viewer does not shrink for the keyboard, so take the keyboard's
+    // height off the bottom of the visible area (in document units).
+    final zoom = _controller.currentZoom;
+    final keyboard = zoom > 0
+        ? MediaQuery.viewInsetsOf(context).bottom / zoom
+        : 0.0;
+    final visible = _controller.visibleRect;
+    final shown = Rect.fromLTRB(
+      visible.left,
+      visible.top,
+      visible.right,
+      math.max(visible.top, visible.bottom - keyboard),
+    );
+    if (shown.contains(area.topLeft) && shown.contains(area.bottomRight)) {
+      return;
+    }
+
+    // Centre the match in the uncovered part: the view centre sits half a
+    // keyboard below the centre of that part.
+    final target = area.center.translate(0, keyboard / 2);
+
+    // This move starts from where the view is now, at its size now. Record
+    // that first: the view may have changed size since the last move (the
+    // search bar is taller than the app bar), and _onMatrixChanged would
+    // otherwise take the first frame of this move for a resize and put the
+    // old position back, cancelling the jump.
+    _lastMatrix = _controller.value;
+    _lastMatrixViewSize = _controller.viewSize;
+    unawaited(_controller.goTo(_controller.calcMatrixFor(target)));
   }
 
   void _onMatrixChanged() {
@@ -452,7 +533,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          AppLocalizations.of(context).annotationTextMarkupUnavailable,
+          AppLocalizations.of(context).errorAnnotationTextMarkupUnavailable,
         ),
       ),
     );
@@ -478,16 +559,16 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.annotationClearAllTitle),
-        content: Text(l10n.annotationClearAllMessage),
+        title: Text(l10n.titleAnnotationClearAll),
+        content: Text(l10n.bodyAnnotationClearAll),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.cancelAction),
+            child: Text(l10n.actionCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.annotationClearAll),
+            child: Text(l10n.labelAnnotationClearAll),
           ),
         ],
       ),
@@ -502,11 +583,13 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     final messenger = ScaffoldMessenger.of(context);
     if (!annotate.hasAnnotations) {
       messenger.showSnackBar(
-        SnackBar(content: Text(l10n.annotationNothingToExport)),
+        SnackBar(content: Text(l10n.descAnnotationNothingToExport)),
       );
       return;
     }
-    messenger.showSnackBar(SnackBar(content: Text(l10n.annotationExporting)));
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.descAnnotationExporting)),
+    );
     try {
       final outPath = await annotate.exportCopy();
       final name =
@@ -515,13 +598,13 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       if (!mounted) return;
       if (saved != null) {
         messenger.showSnackBar(
-          SnackBar(content: Text(l10n.savedFileMessage(saved))),
+          SnackBar(content: Text(l10n.bodySavedFile(saved))),
         );
       }
     } catch (_) {
       if (!mounted) return;
       messenger.showSnackBar(
-        SnackBar(content: Text(l10n.annotationExportFailed)),
+        SnackBar(content: Text(l10n.errorAnnotationExportFailed)),
       );
     }
   }
@@ -530,9 +613,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   void _paintAnnotations(Canvas canvas, Rect pageRect, PdfPage page) {
     final annotate = _annotate;
     if (annotate == null || annotate.annotations.isEmpty) return;
-    AnnotationPainter(
-      annotations: annotate.annotations,
-    ).paint(canvas, pageRect, page);
+    AnnotationPainter(annotations: annotate.annotations)
+        .paint(canvas, pageRect, page);
   }
 
   /// Draws validation overlays on top of signature fields to override their static
@@ -563,7 +645,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         .toRect(page: page, scaledPageSize: pageRect.size)
         .translate(pageRect.left, pageRect.top);
 
-    // 1. Resolve visual state (Always in English for document compliance)
+    // 1. Resolve visual state. The overlay is drawn on screen only (never
+    //    written into the PDF), so it uses the app language like every other
+    //    label — the same status words as the signature panel.
+    final l10n = AppLocalizations.of(context);
     final String statusText;
     final Color tickColor;
     final bool isTrusted;
@@ -571,34 +656,30 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
 
     switch (verdict.status) {
       case SignatureStatus.trusted:
-        statusText = 'Signature valid';
-        tickColor = const Color(
-          0xFF00C853,
-        ).withValues(alpha: 0.65); // Softer green
+        statusText = l10n.labelSignatureStatusTrusted;
+        tickColor = const Color(0xFF00C853)
+            .withValues(alpha: 0.65); // Softer green
         isTrusted = true;
         isInvalid = false;
         break;
       case SignatureStatus.validNotTrusted:
-        statusText = 'Signature valid, untrusted';
-        tickColor = const Color(
-          0xFFFF9100,
-        ).withValues(alpha: 0.65); // Softer orange
+        statusText = l10n.descSignatureStatusValidNotTrusted;
+        tickColor = const Color(0xFFFF9100)
+            .withValues(alpha: 0.65); // Softer orange
         isTrusted = false;
         isInvalid = false;
         break;
       case SignatureStatus.invalid:
-        statusText = 'Signature invalid';
-        tickColor = const Color(
-          0xFFFF1744,
-        ).withValues(alpha: 0.65); // Softer red
+        statusText = l10n.descSignatureStatusInvalid;
+        tickColor = const Color(0xFFFF1744)
+            .withValues(alpha: 0.65); // Softer red
         isTrusted = false;
         isInvalid = true;
         break;
       case SignatureStatus.unknown:
-        statusText = 'Signature could not be verified';
-        tickColor = const Color(
-          0xFF757575,
-        ).withValues(alpha: 0.65); // Softer grey
+        statusText = l10n.descSignatureStatusUnknown;
+        tickColor = const Color(0xFF757575)
+            .withValues(alpha: 0.65); // Softer grey
         isTrusted = false;
         isInvalid = false;
         break;
@@ -692,11 +773,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
 
     if (maxTextWidth <= 10.0) return;
 
-    final l10n = AppLocalizations.of(context);
     final signerName = verdict.signature.name?.trim().isNotEmpty == true
         ? verdict.signature.name!
         : (verdict.signature.signerCertificate?.commonName ??
-              l10n.signatureSignerUnknown);
+              l10n.labelSignatureSignerUnknown);
 
     final signedAt = verdict.signature.bestSignedAt;
 
@@ -819,12 +899,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               color: Colors.transparent,
               child: InkWell(
                 borderRadius: BorderRadius.circular(4),
-                splashColor: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.2),
-                highlightColor: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.1),
+                splashColor: Theme.of(context).colorScheme.primary
+                    .withValues(alpha: 0.2),
+                highlightColor: Theme.of(context).colorScheme.primary
+                    .withValues(alpha: 0.1),
                 onTap: () => showSignatureDetailSheet(
                   context,
                   verdict: verdict,
@@ -856,8 +934,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       SnackBar(
         content: Text(
           _textQuality == TextQuality.garbled
-              ? l10n.searchUnavailableGarbled
-              : l10n.searchUnavailableNoText,
+              ? l10n.descSearchUnavailableGarbled
+              : l10n.descSearchUnavailableNoText,
         ),
       ),
     );
@@ -865,6 +943,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
 
   Future<void> _closeSearch() async {
     setState(() => _searching = false);
+    _jumpedHit = null;
     await _search?.clear();
   }
 
@@ -874,29 +953,16 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     unawaited(_search?.search(query, startPage: _currentPage));
   }
 
-  /// Jumps the viewer to the current match after the reader steps to it.
-  void _goToCurrentMatch() {
-    final hit = _search?.state.current;
-    if (hit == null || !_controller.isReady) return;
-    unawaited(_controller.goToPage(pageNumber: hit.pageNumber));
-  }
+  // Stepping changes the current match; _onSearchChanged moves the view.
+  void _nextMatch() => _search?.next();
 
-  void _nextMatch() {
-    _search?.next();
-    _goToCurrentMatch();
-  }
-
-  void _previousMatch() {
-    _search?.previous();
-    _goToCurrentMatch();
-  }
+  void _previousMatch() => _search?.previous();
 
   void _showLargeWarning() {
     if (!mounted) return;
     final l10n = AppLocalizations.of(context);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(l10n.largeFileWarning)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(l10n.descLargeFileWarning)));
   }
 
   // --- Build ---
@@ -907,22 +973,23 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     final theme = Theme.of(context);
 
     final hasSignatures =
-        ref.watch(hasSignaturesProvider(widget.docRef.cachePath)).valueOrNull ??
+        ref.watch(hasSignaturesProvider(widget.docRef.cachePath)).value ??
         false;
 
     ref.listen<TtsService>(ttsServiceProvider, (previous, next) {
       if (next.takeVoiceLostNotice()) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.ttsVoiceLostNotice)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.descTtsVoiceLostNotice)));
       }
     });
 
     return Scaffold(
       key: _scaffoldKey,
       resizeToAvoidBottomInset: false,
+      // While searching, the search bar sits at the top of the body instead
+      // (see _buildSearchHeader), so it can be as tall as it needs.
       appBar: _searching
-          ? _buildSearchAppBar()
+          ? null
           : AppBar(
               title: Text(
                 widget.docRef.displayName,
@@ -942,6 +1009,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       bottomNavigationBar: _error != null ? null : _buildBottomBar(l10n),
       body: Column(
         children: [
+          if (_searching && _search != null) _buildSearchHeader(theme),
           if (_showNotice)
             TextQualityNotice(
               quality: _textQuality!,
@@ -983,25 +1051,43 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       !_annotationNoticeDismissed &&
       (_annotate?.hasAnnotations ?? false);
 
-  /// The search bar takes over the app bar, the way find-in-page normally does.
-  PreferredSizeWidget _buildSearchAppBar() {
-    final search = _search;
-    return AppBar(
-      automaticallyImplyLeading: false,
-      titleSpacing: 0,
-      toolbarHeight: 104.0,
-      title: ListenableBuilder(
-        // Rebuilds as results stream in, so the counter keeps up.
-        listenable: search!,
-        builder: (context, _) => ReaderSearchBar(
-          state: search.state,
-          options: search.options,
-          onQueryChanged: _onQueryChanged,
-          onNext: _nextMatch,
-          onPrevious: _previousMatch,
-          onClose: () => unawaited(_closeSearch()),
-          onOptionsChanged: (options) =>
-              unawaited(search.setOptions(options, startPage: _currentPage)),
+  /// The search bar takes the app bar's place, the way find-in-page normally
+  /// does.
+  ///
+  /// It is not put inside an `AppBar`: an app bar has a fixed height, and the
+  /// search bar grows when the Malayalam typing helper opens and with taller
+  /// scripts and larger text sizes. In a fixed height its top row was clipped,
+  /// cutting off the vowel signs and the chandrakkala that Malayalam draws
+  /// above the letters (so കര്മ്മണി looked like കരമ്മണ।). Here it takes the
+  /// height it needs, below the status bar, in the app bar's colour.
+  Widget _buildSearchHeader(ThemeData theme) {
+    final search = _search!;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: theme.brightness == Brightness.dark
+          ? SystemUiOverlayStyle.light
+          : SystemUiOverlayStyle.dark,
+      child: Material(
+        color:
+            AppBarTheme.of(context).backgroundColor ??
+            theme.colorScheme.surface,
+        child: SafeArea(
+          bottom: false,
+          child: ListenableBuilder(
+            // Rebuilds as results stream in, so the counter keeps up.
+            listenable: search,
+            builder: (context, _) => ReaderSearchBar(
+              state: search.state,
+              options: search.options,
+              onQueryChanged: _onQueryChanged,
+              onNext: _nextMatch,
+              onPrevious: _previousMatch,
+              onClose: () => unawaited(_closeSearch()),
+              unreliableText: _textQuality == TextQuality.unreliable,
+              onOptionsChanged: (options) => unawaited(
+                search.setOptions(options, startPage: _currentPage),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -1019,7 +1105,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     final verdictsVal = ref.watch(
       signatureVerdictsProvider(widget.docRef.cachePath),
     );
-    _currentVerdicts = verdictsVal.valueOrNull;
+    _currentVerdicts = verdictsVal.value;
 
     final search = _search;
     final mediaQuery = MediaQuery.of(context);
@@ -1057,7 +1143,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         scaleEnabled: false,
         // Select-and-copy, but only where there is real text to select.
         // Turned off while drawing so a markup drag is not eaten by selection.
-        enableTextSelection: _textUsable && !_annotateMode,
+        textSelectionParams: PdfTextSelectionParams(
+          enabled: _textUsable && !_annotateMode,
+        ),
         pagePaintCallbacks: [
           if (search != null) _paintMatches,
           if (_annotate != null) _paintAnnotations,
@@ -1104,7 +1192,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     return [
       IconButton(
         icon: const Icon(Icons.search),
-        tooltip: l10n.searchAction,
+        tooltip: l10n.actionSearch,
         // Waits for the text check rather than guessing: pressing it before we
         // know would wrongly claim the PDF has no text. Once known, it either
         // searches or says why it cannot — never a silently dead button.
@@ -1114,7 +1202,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       ),
       IconButton(
         icon: const Icon(Icons.volume_up),
-        tooltip: l10n.ttsReadAloud,
+        tooltip: l10n.labelTtsReadAloud,
         onPressed: _document == null || _textQuality == null
             ? null
             : () {
@@ -1127,12 +1215,12 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       ),
       IconButton(
         icon: Icon(_annotateMode ? Icons.edit : Icons.edit_outlined),
-        tooltip: l10n.annotateAction,
+        tooltip: l10n.actionAnnotate,
         isSelected: _annotateMode,
         onPressed: _document == null ? null : _toggleAnnotateMode,
       ),
       PopupMenuButton<_ViewerMenu>(
-        tooltip: l10n.menuTooltip,
+        tooltip: l10n.tooltipMenu,
         onSelected: (item) => switch (item) {
           _ViewerMenu.invertColors => _toggleInvert(),
           _ViewerMenu.viewMode => _showViewModeDialog(),
@@ -1145,6 +1233,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           _ViewerMenu.extract => _showExtractionDialog(),
           _ViewerMenu.pageOps => _showPageOps(),
           _ViewerMenu.print => _showPrint(),
+          _ViewerMenu.sendNearby => _sendNearby(),
           _ViewerMenu.signatures => _showSignatures(),
           _ViewerMenu.settings => context.pushNamed(AppRoute.settings.name),
         },
@@ -1158,7 +1247,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                   size: 18,
                 ),
                 const SizedBox(width: 12),
-                Text(l10n.invertColors),
+                Text(l10n.labelInvertColors),
               ],
             ),
           ),
@@ -1168,7 +1257,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               children: [
                 const Icon(Icons.visibility_outlined, size: 18),
                 const SizedBox(width: 12),
-                Text(l10n.viewModeTooltip),
+                Text(l10n.tooltipViewMode),
               ],
             ),
           ),
@@ -1178,7 +1267,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               children: [
                 const Icon(Icons.fit_screen_outlined, size: 18),
                 const SizedBox(width: 12),
-                Text(l10n.pageFit),
+                Text(l10n.labelPageFit),
               ],
             ),
           ),
@@ -1188,7 +1277,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               children: [
                 const Icon(Icons.screen_rotation_outlined, size: 18),
                 const SizedBox(width: 12),
-                Text(l10n.screenOrientationTitle),
+                Text(l10n.titleScreenOrientation),
               ],
             ),
           ),
@@ -1199,7 +1288,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               children: [
                 const Icon(Icons.grid_view_outlined, size: 18),
                 const SizedBox(width: 12),
-                Text(l10n.thumbnailsTitle),
+                Text(l10n.titleThumbnails),
               ],
             ),
           ),
@@ -1209,7 +1298,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               children: [
                 const Icon(Icons.list_alt_outlined, size: 18),
                 const SizedBox(width: 12),
-                Text(l10n.contentsTitle),
+                Text(l10n.titleContents),
               ],
             ),
           ),
@@ -1219,7 +1308,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               children: [
                 const Icon(Icons.bookmarks_outlined, size: 18),
                 const SizedBox(width: 12),
-                Text(l10n.bookmarksAction),
+                Text(l10n.actionBookmarks),
               ],
             ),
           ),
@@ -1229,7 +1318,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               children: [
                 const Icon(Icons.info_outline, size: 18),
                 const SizedBox(width: 12),
-                Text(l10n.metadataAction),
+                Text(l10n.actionMetadata),
               ],
             ),
           ),
@@ -1240,7 +1329,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               children: [
                 const Icon(Icons.transform_outlined, size: 18),
                 const SizedBox(width: 12),
-                Text(l10n.extractAndConvert),
+                Text(l10n.labelExtractAndConvert),
               ],
             ),
           ),
@@ -1250,7 +1339,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               children: [
                 const Icon(Icons.auto_stories_outlined, size: 18),
                 const SizedBox(width: 12),
-                Text(l10n.pageToolsTitle),
+                Text(l10n.titlePageTools),
               ],
             ),
           ),
@@ -1260,7 +1349,17 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               children: [
                 const Icon(Icons.print_outlined, size: 18),
                 const SizedBox(width: 12),
-                Text(l10n.printAction),
+                Text(l10n.actionPrint),
+              ],
+            ),
+          ),
+          PopupMenuItem(
+            value: _ViewerMenu.sendNearby,
+            child: Row(
+              children: [
+                const Icon(Icons.send_to_mobile_outlined, size: 18),
+                const SizedBox(width: 12),
+                Text(l10n.actionSendNearby),
               ],
             ),
           ),
@@ -1271,7 +1370,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                 children: [
                   const Icon(Icons.draw_outlined, size: 18),
                   const SizedBox(width: 12),
-                  Text(l10n.signaturesAction),
+                  Text(l10n.actionSignatures),
                 ],
               ),
             ),
@@ -1282,7 +1381,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               children: [
                 const Icon(Icons.settings_outlined, size: 18),
                 const SizedBox(width: 12),
-                Text(l10n.settingsTitle),
+                Text(l10n.titleSettings),
               ],
             ),
           ),
@@ -1297,7 +1396,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(l10n.viewModeTooltip),
+          title: Text(l10n.tooltipViewMode),
           content: RadioGroup<PdfViewMode>(
             groupValue: _viewMode,
             onChanged: (value) {
@@ -1310,20 +1409,20 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 RadioListTile<PdfViewMode>(
-                  title: Text(l10n.viewModeAuto),
-                  subtitle: Text(l10n.viewModeAutoSubtitle),
+                  title: Text(l10n.descViewModeAuto),
+                  subtitle: Text(l10n.descViewModeAutoSubtitle),
                   value: PdfViewMode.auto,
                 ),
                 RadioListTile<PdfViewMode>(
-                  title: Text(l10n.viewModeContinuous),
+                  title: Text(l10n.labelViewModeContinuous),
                   value: PdfViewMode.continuous,
                 ),
                 RadioListTile<PdfViewMode>(
-                  title: Text(l10n.viewModeSingle),
+                  title: Text(l10n.labelViewModeSingle),
                   value: PdfViewMode.single,
                 ),
                 RadioListTile<PdfViewMode>(
-                  title: Text(l10n.viewModeBook),
+                  title: Text(l10n.labelViewModeBook),
                   value: PdfViewMode.book,
                 ),
               ],
@@ -1332,7 +1431,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(l10n.cancelAction),
+              child: Text(l10n.actionCancel),
             ),
           ],
         );
@@ -1346,13 +1445,13 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(l10n.pageFit),
+          title: Text(l10n.labelPageFit),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
                 leading: const Icon(Icons.swap_horiz_outlined),
-                title: Text(l10n.fitWidth),
+                title: Text(l10n.labelFitWidth),
                 onTap: () {
                   _fitWidth();
                   Navigator.of(context).pop();
@@ -1360,7 +1459,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.fit_screen_outlined),
-                title: Text(l10n.fitPage),
+                title: Text(l10n.labelFitPage),
                 onTap: () {
                   _fitPage();
                   Navigator.of(context).pop();
@@ -1371,7 +1470,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(l10n.cancelAction),
+              child: Text(l10n.actionCancel),
             ),
           ],
         );
@@ -1413,7 +1512,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(l10n.screenOrientationTitle),
+          title: Text(l10n.titleScreenOrientation),
           content: RadioGroup<ScreenOrientationMode>(
             groupValue: _screenOrientation,
             onChanged: (value) {
@@ -1426,15 +1525,15 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 RadioListTile<ScreenOrientationMode>(
-                  title: Text(l10n.orientationAuto),
+                  title: Text(l10n.labelOrientationAuto),
                   value: ScreenOrientationMode.auto,
                 ),
                 RadioListTile<ScreenOrientationMode>(
-                  title: Text(l10n.orientationPortrait),
+                  title: Text(l10n.labelOrientationPortrait),
                   value: ScreenOrientationMode.portrait,
                 ),
                 RadioListTile<ScreenOrientationMode>(
-                  title: Text(l10n.orientationLandscape),
+                  title: Text(l10n.labelOrientationLandscape),
                   value: ScreenOrientationMode.landscape,
                 ),
               ],
@@ -1443,7 +1542,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: Text(l10n.cancelAction),
+              child: Text(l10n.actionCancel),
             ),
           ],
         );
@@ -1465,21 +1564,21 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         _pageCount,
       );
       if (chMins > 0) {
-        estimateText = l10n.readingTimeLeftChapter(chMins);
+        estimateText = l10n.descReadingTimeLeftChapter(chMins);
       } else {
         final docMins = velocity.estimateTotalMinutesLeft(
           _currentPage,
           _pageCount,
         );
         if (docMins > 0) {
-          estimateText = l10n.readingTimeLeftDoc(docMins);
+          estimateText = l10n.labelReadingTimeLeftDoc(docMins);
         }
       }
     }
 
     final indicator = _pageCount == 0
         ? ''
-        : l10n.pageOfPages(_currentPage, _pageCount);
+        : l10n.descPageOfPages(_currentPage, _pageCount);
 
     return BottomAppBar(
       height: 56.0,
@@ -1488,7 +1587,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         children: [
           IconButton(
             icon: const Icon(Icons.zoom_out_map),
-            tooltip: l10n.resetZoom,
+            tooltip: l10n.labelResetZoom,
             onPressed: _document == null ? null : _resetZoom,
           ),
           Expanded(
@@ -1515,7 +1614,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.screen_rotation_outlined),
-            tooltip: l10n.rotateScreenTooltip,
+            tooltip: l10n.tooltipRotateScreen,
             onPressed: _toggleScreenOrientation,
           ),
         ],
@@ -1529,8 +1628,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       SnackBar(
         content: Text(
           _textQuality == TextQuality.garbled
-              ? l10n.ttsUnavailableGarbled
-              : l10n.ttsUnavailableNoText,
+              ? l10n.descTtsUnavailableGarbled
+              : l10n.descTtsUnavailableNoText,
         ),
       ),
     );
@@ -1553,7 +1652,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context).ttsNothingToRead),
+            content: Text(AppLocalizations.of(context).descTtsNothingToRead),
           ),
         );
       }
@@ -1588,7 +1687,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         children: [
           IconButton(
             icon: const Icon(Icons.close),
-            tooltip: l10n.cancelAction,
+            tooltip: l10n.actionCancel,
             onPressed: () {
               unawaited(tts.stop());
               setState(() => _ttsActive = false);
@@ -1598,22 +1697,22 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           Expanded(
             child: Text(
               isSpeaking
-                  ? l10n.ttsReadingPage(speakingPage ?? _currentPage)
+                  ? l10n.descTtsReadingPage(speakingPage ?? _currentPage)
                   : (isPaused
-                        ? l10n.ttsPaused
-                        : l10n.ttsReadyToRead(_currentPage)),
+                        ? l10n.labelTtsPaused
+                        : l10n.descTtsReadyToRead(_currentPage)),
               style: Theme.of(context).textTheme.bodyMedium,
               overflow: TextOverflow.ellipsis,
             ),
           ),
           IconButton(
             icon: Icon(isSpeaking ? Icons.pause : Icons.play_arrow),
-            tooltip: isSpeaking ? l10n.ttsPause : l10n.ttsReadAloud,
+            tooltip: isSpeaking ? l10n.labelTtsPause : l10n.labelTtsReadAloud,
             onPressed: _speakCurrentPage,
           ),
           IconButton(
             icon: const Icon(Icons.stop),
-            tooltip: l10n.ttsStop,
+            tooltip: l10n.labelTtsStop,
             onPressed: () => unawaited(tts.stop()),
           ),
         ],
@@ -1634,6 +1733,7 @@ enum _ViewerMenu {
   extract,
   pageOps,
   print,
+  sendNearby,
   signatures,
   settings,
 }

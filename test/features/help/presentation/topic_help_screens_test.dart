@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show GlobalWidgetsLocalizations;
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/help/presentation/page_ops_help_screen.dart';
 import 'package:pdfapp/features/help/presentation/privacy_storage_help_screen.dart';
 import 'package:pdfapp/features/help/presentation/signatures_help_screen.dart';
@@ -85,7 +87,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Privacy & Scoped Storage'), findsOneWidget);
-      expect(find.text('100% Offline Privacy Guarantee'), findsOneWidget);
+      expect(find.text('No-Internet Privacy Guarantee'), findsOneWidget);
       expect(find.text('Open Storage & Privacy Settings'), findsOneWidget);
     },
   );

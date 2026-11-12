@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/theme/app_theme.dart';
 import 'package:pdfapp/core/platform/open_document_channel.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
@@ -43,127 +43,145 @@ class PermissionsScreen extends StatelessWidget {
     final explicitItems = <_DetailedPermissionItem>[
       _DetailedPermissionItem(
         title:
-            '${l10n.permPrintServiceTitle} (${l10n.permBindPrintServiceTitle})',
-        category: l10n.permTypeExplicit,
-        reason: l10n.permBindPrintServiceReason,
-        whatItAchieves: l10n.permBindPrintServiceWhatItAchieves,
+            '${l10n.titlePermPrintService} (${l10n.titlePermBindPrintService})',
+        category: l10n.labelPermTypeExplicit,
+        reason: l10n.descPermBindPrintServiceReason,
+        whatItAchieves: l10n.descPermBindPrintServiceWhatItAchieves,
         icon: Icons.print_outlined,
-        statusLabel: l10n.statusSystem,
+        statusLabel: l10n.labelStatusSystem,
         statusColor: systemColor,
       ),
       _DetailedPermissionItem(
-        title: l10n.permScopedStorageTitle,
-        category: l10n.permTypeExplicit,
-        reason: l10n.permScopedStorageReason,
-        whatItAchieves: l10n.permScopedStorageWhatItAchieves,
+        title: l10n.titlePermScopedStorage,
+        category: l10n.labelPermTypeExplicit,
+        reason: l10n.descPermScopedStorageReason,
+        whatItAchieves: l10n.descPermScopedStorageWhatItAchieves,
         icon: Icons.folder_open_outlined,
-        statusLabel: l10n.statusActive,
+        statusLabel: l10n.labelStatusActive,
         statusColor: activeColor,
       ),
       _DetailedPermissionItem(
-        title: l10n.permFileProviderTitle,
-        category: l10n.permTypeExplicit,
-        reason: l10n.permFileProviderReason,
-        whatItAchieves: l10n.permFileProviderWhatItAchieves,
+        title: l10n.titlePermFileProvider,
+        category: l10n.labelPermTypeExplicit,
+        reason: l10n.descPermFileProviderReason,
+        whatItAchieves: l10n.descPermFileProviderWhatItAchieves,
         icon: Icons.share_outlined,
-        statusLabel: l10n.statusSystem,
+        statusLabel: l10n.labelStatusSystem,
         statusColor: systemColor,
+      ),
+      _DetailedPermissionItem(
+        title: l10n.titlePermCamera,
+        category: l10n.labelPermTypeExplicit,
+        reason: l10n.descPermCameraReason,
+        whatItAchieves: l10n.descPermCameraWhatItAchieves,
+        icon: Icons.qr_code_scanner_outlined,
+        statusLabel: l10n.labelStatusActive,
+        statusColor: activeColor,
+      ),
+      _DetailedPermissionItem(
+        title: l10n.titlePermLocalNetwork,
+        category: l10n.labelPermTypeExplicit,
+        reason: l10n.descPermLocalNetworkReason,
+        whatItAchieves: l10n.descPermLocalNetworkWhatItAchieves,
+        icon: Icons.wifi_outlined,
+        statusLabel: l10n.labelStatusActive,
+        statusColor: activeColor,
       ),
     ];
 
     final implicitItems = <_DetailedPermissionItem>[
       _DetailedPermissionItem(
-        title: l10n.permTtsTitle,
-        category: l10n.permTypeImplicit,
-        reason: l10n.permTtsReason,
-        whatItAchieves: l10n.permTtsWhatItAchieves,
+        title: l10n.titlePermTts,
+        category: l10n.descPermTypeImplicit,
+        reason: l10n.descPermTtsReason,
+        whatItAchieves: l10n.descPermTtsWhatItAchieves,
         icon: Icons.record_voice_over_outlined,
-        statusLabel: l10n.statusSystem,
+        statusLabel: l10n.labelStatusSystem,
         statusColor: systemColor,
       ),
       _DetailedPermissionItem(
-        title: l10n.permTtsInstallTitle,
-        category: l10n.permTypeImplicit,
-        reason: l10n.permTtsInstallReason,
-        whatItAchieves: l10n.permTtsInstallWhatItAchieves,
+        title: l10n.titlePermTtsInstall,
+        category: l10n.descPermTypeImplicit,
+        reason: l10n.descPermTtsInstallReason,
+        whatItAchieves: l10n.descPermTtsInstallWhatItAchieves,
         icon: Icons.download_for_offline_outlined,
-        statusLabel: l10n.statusSystem,
+        statusLabel: l10n.labelStatusSystem,
         statusColor: systemColor,
       ),
       _DetailedPermissionItem(
-        title: l10n.permStoreQueriesTitle,
-        category: l10n.permTypeImplicit,
-        reason: l10n.permStoreQueriesReason,
-        whatItAchieves: l10n.permStoreQueriesWhatItAchieves,
+        title: l10n.titlePermStoreQueries,
+        category: l10n.descPermTypeImplicit,
+        reason: l10n.descPermStoreQueriesReason,
+        whatItAchieves: l10n.descPermStoreQueriesWhatItAchieves,
         icon: Icons.storefront_outlined,
-        statusLabel: l10n.statusSystem,
+        statusLabel: l10n.labelStatusSystem,
         statusColor: systemColor,
       ),
       _DetailedPermissionItem(
-        title: l10n.permProcessTextTitle,
-        category: l10n.permTypeImplicit,
-        reason: l10n.permProcessTextReason,
-        whatItAchieves: l10n.permProcessTextWhatItAchieves,
+        title: l10n.titlePermProcessText,
+        category: l10n.descPermTypeImplicit,
+        reason: l10n.descPermProcessTextReason,
+        whatItAchieves: l10n.descPermProcessTextWhatItAchieves,
         icon: Icons.text_fields_outlined,
-        statusLabel: l10n.statusSystem,
+        statusLabel: l10n.labelStatusSystem,
         statusColor: systemColor,
       ),
       _DetailedPermissionItem(
-        title: l10n.permViewPdfTitle,
-        category: l10n.permTypeImplicit,
-        reason: l10n.permViewPdfReason,
-        whatItAchieves: l10n.permViewPdfWhatItAchieves,
+        title: l10n.titlePermViewPdf,
+        category: l10n.descPermTypeImplicit,
+        reason: l10n.descPermViewPdfReason,
+        whatItAchieves: l10n.descPermViewPdfWhatItAchieves,
         icon: Icons.picture_as_pdf_outlined,
-        statusLabel: l10n.statusActive,
+        statusLabel: l10n.labelStatusActive,
         statusColor: activeColor,
       ),
       _DetailedPermissionItem(
-        title: l10n.permSendShareTitle,
-        category: l10n.permTypeImplicit,
-        reason: l10n.permSendShareReason,
-        whatItAchieves: l10n.permSendShareWhatItAchieves,
+        title: l10n.titlePermSendShare,
+        category: l10n.descPermTypeImplicit,
+        reason: l10n.descPermSendShareReason,
+        whatItAchieves: l10n.descPermSendShareWhatItAchieves,
         icon: Icons.input_outlined,
-        statusLabel: l10n.statusActive,
+        statusLabel: l10n.labelStatusActive,
         statusColor: activeColor,
       ),
       _DetailedPermissionItem(
-        title: l10n.permPrintManagerTitle,
-        category: l10n.permTypeImplicit,
-        reason: l10n.permPrintManagerReason,
-        whatItAchieves: l10n.permPrintManagerWhatItAchieves,
+        title: l10n.titlePermPrintManager,
+        category: l10n.descPermTypeImplicit,
+        reason: l10n.descPermPrintManagerReason,
+        whatItAchieves: l10n.descPermPrintManagerWhatItAchieves,
         icon: Icons.local_printshop_outlined,
-        statusLabel: l10n.statusSystem,
+        statusLabel: l10n.labelStatusSystem,
         statusColor: systemColor,
       ),
     ];
 
     final privacyItems = <_DetailedPermissionItem>[
       _DetailedPermissionItem(
-        title: l10n.permZeroInternetTitle,
-        category: l10n.permTypePrivacy,
-        reason: l10n.permZeroInternetReason,
-        whatItAchieves: l10n.permZeroInternetWhatItAchieves,
-        icon: Icons.wifi_off_outlined,
-        statusLabel: l10n.statusOffline,
+        title: l10n.titlePermZeroInternet,
+        category: l10n.labelPermTypePrivacy,
+        reason: l10n.descPermZeroInternetReason,
+        whatItAchieves: l10n.descPermZeroInternetWhatItAchieves,
+        icon: Icons.cloud_off_outlined,
+        statusLabel: l10n.labelStatusOffline,
         statusColor: privacyColor,
       ),
       _DetailedPermissionItem(
-        title: l10n.permNoBroadStorageTitle,
-        category: l10n.permTypePrivacy,
-        reason: l10n.permNoBroadStorageReason,
-        whatItAchieves: l10n.permNoBroadStorageWhatItAchieves,
+        title: l10n.titlePermNoBroadStorage,
+        category: l10n.labelPermTypePrivacy,
+        reason: l10n.descPermNoBroadStorageReason,
+        whatItAchieves: l10n.descPermNoBroadStorageWhatItAchieves,
         icon: Icons.lock_outline,
-        statusLabel: l10n.statusOffline,
+        statusLabel: l10n.labelStatusOffline,
         statusColor: privacyColor,
       ),
     ];
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.permissionsTitle),
+        title: Text(l10n.titlePermissions),
         actions: [
           IconButton(
-            tooltip: l10n.permissionsOpenSettings,
+            tooltip: l10n.labelPermissionsOpenSettings,
             icon: const Icon(Icons.settings_outlined),
             onPressed: () => OpenDocumentChannel().openAppSettings(),
           ),
@@ -172,12 +190,12 @@ class PermissionsScreen extends StatelessWidget {
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 48),
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 48),
           children: [
             _sectionHeader(
               context,
-              l10n.permissionsExplicitHeader,
-              l10n.permissionsExplicitSubtitle,
+              l10n.labelPermissionsExplicitHeader,
+              l10n.descPermissionsExplicitSubtitle,
               primary,
               muted,
             ),
@@ -185,8 +203,8 @@ class PermissionsScreen extends StatelessWidget {
             const SizedBox(height: 24),
             _sectionHeader(
               context,
-              l10n.permissionsImplicitHeader,
-              l10n.permissionsImplicitSubtitle,
+              l10n.descPermissionsImplicitHeader,
+              l10n.descPermissionsImplicitSubtitle,
               primary,
               muted,
             ),
@@ -194,8 +212,8 @@ class PermissionsScreen extends StatelessWidget {
             const SizedBox(height: 24),
             _sectionHeader(
               context,
-              l10n.permissionsPrivacyHeader,
-              l10n.permissionsPrivacySubtitle,
+              l10n.descPermissionsPrivacyHeader,
+              l10n.descPermissionsPrivacySubtitle,
               primary,
               muted,
             ),
@@ -215,7 +233,7 @@ class PermissionsScreen extends StatelessWidget {
   ) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 8, 4, 12),
+      padding: const EdgeInsetsDirectional.fromSTEB(4, 8, 4, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -348,7 +366,7 @@ class PermissionsScreen extends StatelessWidget {
                           ),
                           children: [
                             TextSpan(
-                              text: '${l10n.permWhyNeededHeader}: ',
+                              text: '${l10n.labelPermWhyNeededHeader}: ',
                               style: const TextStyle(
                                 fontWeight: FontWeight.w700,
                               ),
@@ -381,7 +399,7 @@ class PermissionsScreen extends StatelessWidget {
                           ),
                           children: [
                             TextSpan(
-                              text: '${l10n.permWhatItAchievesHeader}: ',
+                              text: '${l10n.labelPermWhatItAchievesHeader}: ',
                               style: const TextStyle(
                                 fontWeight: FontWeight.w700,
                               ),

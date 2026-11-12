@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.database.Cursor
 import android.net.Uri
+import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -35,6 +36,7 @@ class MainActivity : FlutterActivity() {
     private var pendingPickCert: MethodChannel.Result? = null
     private var pendingSave: MethodChannel.Result? = null
     private var pendingSaveSource: String? = null
+    private var pendingPickFolder: MethodChannel.Result? = null
     private var eventSink: EventChannel.EventSink? = null
 
     // PDF data bridge (Phase 2). Owns its own channel; see PdfBoxHandler.
@@ -52,7 +54,7 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, methodChannelName)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
-                    "pickPdf" -> startPickPdf(result)
+                    "pickPdf" -> startPickPdf(call.argument<String>("initialUri"), result)
                     "pickPdfs" -> startPickPdfs(result)
                     "pickCertificate" -> startPickCertificate(result)
                     "saveToDevice" -> {
@@ -71,6 +73,48 @@ class MainActivity : FlutterActivity() {
                             result.error("bad_args", "Missing uri.", null)
                         } else {
                             resolveToCache(uri, result)
+                        }
+                    }
+                    "hasLastingAccess" -> {
+                        val uri = call.argument<String>("uri")
+                        if (uri == null) {
+                            result.error("bad_args", "Missing uri.", null)
+                        } else {
+                            result.success(hasLastingAccess(Uri.parse(uri)))
+                        }
+                    }
+                    "checkAvailable" -> {
+                        val uris = call.argument<List<String>>("uris")
+                        if (uris == null) {
+                            result.error("bad_args", "Missing uris.", null)
+                        } else {
+                            checkAvailable(uris, result)
+                        }
+                    }
+                    "releaseAllAccess" -> result.success(releaseAllAccess())
+                    // Device sync: the folder received PDFs are saved into.
+                    "pickFolder" -> startPickFolder(result)
+                    "folderStatus" -> {
+                        val tree = call.argument<String>("uri")?.let { Uri.parse(it) }
+                        if (tree == null || !FolderSaver.hasAccess(contentResolver, tree)) {
+                            result.success(null)
+                        } else {
+                            result.success(FolderSaver.folderName(contentResolver, tree))
+                        }
+                    }
+                    "releaseFolder" -> {
+                        call.argument<String>("uri")?.let {
+                            FolderSaver.releaseAccess(contentResolver, Uri.parse(it))
+                        }
+                        result.success(null)
+                    }
+                    "saveFilesToFolder" -> {
+                        val tree = call.argument<String>("uri")
+                        val files = call.argument<List<Map<String, String>>>("files")
+                        if (tree == null || files == null) {
+                            result.error("bad_args", "Missing folder or files.", null)
+                        } else {
+                            saveFilesToFolder(Uri.parse(tree), files, result)
                         }
                     }
                     "getInitialIntent" -> result.success(consumeInitialIntent())
@@ -156,7 +200,11 @@ class MainActivity : FlutterActivity() {
 
     // --- System picker (ACTION_OPEN_DOCUMENT) ---
 
-    private fun startPickPdf(result: MethodChannel.Result) {
+    /**
+     * [initialUri], when given, asks the picker to start in that file's folder (used to
+     * find a recent file again). The picker may ignore it; that is fine.
+     */
+    private fun startPickPdf(initialUri: String?, result: MethodChannel.Result) {
         if (pendingPick != null) {
             result.error("busy", "A pick is already in progress.", null)
             return
@@ -169,6 +217,13 @@ class MainActivity : FlutterActivity() {
                 Intent.FLAG_GRANT_READ_URI_PERMISSION or
                     Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION,
             )
+            if (initialUri != null) {
+                try {
+                    putExtra(DocumentsContract.EXTRA_INITIAL_URI, Uri.parse(initialUri))
+                } catch (_: Exception) {
+                    // A bad hint must never stop the picker from opening.
+                }
+            }
         }
         try {
             startActivityForResult(intent, REQUEST_PICK_PDF)
@@ -185,7 +240,70 @@ class MainActivity : FlutterActivity() {
             REQUEST_PICK_PDFS -> handlePickMultiResult(resultCode, data)
             REQUEST_SAVE_DOC -> handleSaveResult(resultCode, data)
             REQUEST_PICK_CERT -> handlePickCertResult(resultCode, data)
+            REQUEST_PICK_FOLDER -> handlePickFolderResult(resultCode, data)
         }
+    }
+
+    // --- Device sync: receive folder (ACTION_OPEN_DOCUMENT_TREE) ---
+
+    private fun startPickFolder(result: MethodChannel.Result) {
+        if (pendingPickFolder != null) {
+            result.error("busy", "A folder pick is already in progress.", null)
+            return
+        }
+        pendingPickFolder = result
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {
+            addFlags(
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    Intent.FLAG_GRANT_WRITE_URI_PERMISSION or
+                    Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION,
+            )
+        }
+        try {
+            startActivityForResult(intent, REQUEST_PICK_FOLDER)
+        } catch (e: Exception) {
+            pendingPickFolder = null
+            result.error("no_picker", "No folder picker is available.", e.message)
+        }
+    }
+
+    private fun handlePickFolderResult(resultCode: Int, data: Intent?) {
+        val result = pendingPickFolder ?: return
+        pendingPickFolder = null
+        val tree = data?.data
+        if (resultCode != Activity.RESULT_OK || tree == null) {
+            result.success(null) // user cancelled
+            return
+        }
+        try {
+            FolderSaver.keepAccess(contentResolver, tree)
+            result.success(
+                mapOf(
+                    "uri" to tree.toString(),
+                    "name" to (FolderSaver.folderName(contentResolver, tree) ?: ""),
+                ),
+            )
+        } catch (e: Exception) {
+            result.error("no_access", "Could not keep access to the folder.", e.message)
+        }
+    }
+
+    /** Copies on a background thread: large PDFs must never block the UI. */
+    private fun saveFilesToFolder(
+        tree: Uri,
+        files: List<Map<String, String>>,
+        result: MethodChannel.Result,
+    ) {
+        Thread {
+            try {
+                val saved = FolderSaver.saveAll(contentResolver, tree, files)
+                runOnUiThread { result.success(saved) }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    result.error("save_failed", "Could not save into the folder.", e.message)
+                }
+            }
+        }.start()
     }
 
     private fun handlePickResult(resultCode: Int, data: Intent?) {
@@ -412,7 +530,10 @@ class MainActivity : FlutterActivity() {
         if (intent == null) return null
         return try {
             when (intent.action) {
-                Intent.ACTION_VIEW -> intent.data?.let { pdfPayload(it) }
+                Intent.ACTION_VIEW -> intent.data?.let {
+                    tryPersistAccess(it, intent)
+                    pdfPayload(it)
+                }
                 Intent.ACTION_SEND -> sendPayload(intent)
                 Intent.ACTION_SEND_MULTIPLE -> sendMultiplePayload(intent)
                 else -> null
@@ -431,7 +552,10 @@ class MainActivity : FlutterActivity() {
         }
         val mime = mimeOf(uri, intent.type)
         return when {
-            mime == "application/pdf" -> pdfPayload(uri)
+            mime == "application/pdf" -> {
+                tryPersistAccess(uri, intent)
+                pdfPayload(uri)
+            }
             mime.startsWith("image/") -> imagesPayload(listOf(uri))
             mime.startsWith("text/") -> {
                 val text = readText(uri)
@@ -458,7 +582,94 @@ class MainActivity : FlutterActivity() {
             "name" to name,
             "size" to cacheFile.length(),
             "path" to cacheFile.absolutePath,
+            "persisted" to hasLastingAccess(uri),
         )
+    }
+
+    /**
+     * Keeps read access to an "Open with" / shared PDF across restarts, when the sending
+     * app allows it. Most senders give only short access, which ends when our app closes;
+     * then this does nothing and Home offers to find the file again later.
+     */
+    private fun tryPersistAccess(uri: Uri, intent: Intent) {
+        if (uri.scheme != "content") return
+        if (intent.flags and Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION == 0) return
+        try {
+            contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION,
+            )
+        } catch (_: Exception) {
+            // Not allowed by the sender; short access still lets us open it now.
+        }
+    }
+
+    /**
+     * Tells, for each stored recent-file URI, whether it can still be reached. Replies with a
+     * map of URI -> true/false. Runs off the main thread: up to 30 provider look-ups.
+     */
+    private fun checkAvailable(uris: List<String>, result: MethodChannel.Result) {
+        Thread {
+            val answer = HashMap<String, Boolean>()
+            for (uri in uris) {
+                answer[uri] = isReachable(Uri.parse(uri))
+            }
+            runOnUiThread { result.success(answer) }
+        }.start()
+    }
+
+    /**
+     * A cheap check: asks the provider for the file's details only. It never opens or copies
+     * the file, so a cloud file is not downloaded just to check it. A missing row, a missing
+     * file, or lost permission all mean "not reachable".
+     */
+    private fun isReachable(uri: Uri): Boolean {
+        if (uri.scheme == "file") {
+            val path = uri.path ?: return false
+            return File(path).canRead()
+        }
+        var cursor: Cursor? = null
+        return try {
+            cursor = contentResolver.query(
+                uri,
+                arrayOf(OpenableColumns.DISPLAY_NAME),
+                null,
+                null,
+                null,
+            )
+            cursor != null && cursor.moveToFirst()
+        } catch (_: Exception) {
+            false
+        } finally {
+            cursor?.close()
+        }
+    }
+
+    /** True when we hold read access to [uri] that survives an app restart. */
+    private fun hasLastingAccess(uri: Uri): Boolean = try {
+        contentResolver.persistedUriPermissions.any { it.uri == uri && it.isReadPermission }
+    } catch (_: Exception) {
+        false
+    }
+
+    /**
+     * Gives back every lasting file permission the app holds ("Delete all data").
+     * Returns how many were released. One that fails is skipped, not fatal.
+     */
+    private fun releaseAllAccess(): Int {
+        var released = 0
+        for (permission in contentResolver.persistedUriPermissions) {
+            var flags = 0
+            if (permission.isReadPermission) flags = flags or Intent.FLAG_GRANT_READ_URI_PERMISSION
+            if (permission.isWritePermission) flags = flags or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            try {
+                contentResolver.releasePersistableUriPermission(permission.uri, flags)
+                released++
+            } catch (_: SecurityException) {
+                // Already gone; nothing to release.
+            }
+        }
+        return released
     }
 
     /** Copies each picture into the cache so PdfBox can read it by path. */
@@ -609,6 +820,7 @@ class MainActivity : FlutterActivity() {
         const val REQUEST_PICK_PDFS = 4202
         const val REQUEST_SAVE_DOC = 4203
         const val REQUEST_PICK_CERT = 4204
+        const val REQUEST_PICK_FOLDER = 4205
 
         /**
          * Types shown when picking a certificate (Phase 7). Certificates travel under a

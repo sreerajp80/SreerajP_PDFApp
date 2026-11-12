@@ -83,3 +83,37 @@ final class SignatureCheckException extends AppException {
 final class InvalidCertificateException extends AppException {
   const InvalidCertificateException(super.message, {super.cause});
 }
+
+/// Why a Device sync (nearby transfer) step failed. The UI turns each reason
+/// into a plain message; none of them carries the pairing key or any data.
+enum TransferFailure {
+  /// The other phone could not be reached (different WiFi, or the WiFi blocks
+  /// phone-to-phone traffic).
+  unreachable,
+
+  /// Nothing happened within the allowed time.
+  timedOut,
+
+  /// The other side did not hold the right one-time key (wrong or old code).
+  wrongCode,
+
+  /// The data did not follow the transfer format (damaged or not Folio).
+  badData,
+
+  /// The other phone runs a newer, unknown transfer format.
+  unsupportedVersion,
+
+  /// The connection closed before the transfer finished.
+  connectionLost,
+
+  /// A received file could not be written (phone storage full, or the folder
+  /// can no longer be written to).
+  cannotSave,
+}
+
+/// A Device sync step failed. [reason] decides the message shown to the user.
+final class TransferException extends AppException {
+  const TransferException(this.reason, super.message, {super.cause});
+
+  final TransferFailure reason;
+}

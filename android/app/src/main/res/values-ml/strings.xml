@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Launcher name, Malayalam. Must match appName.ml in assets/config/app_config.json (guideline.md §1.8). -->
+<resources>
+    <string name="app_name">ഗ്രന്ഥം</string>
+</resources>

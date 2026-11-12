@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/app/routing/app_router.dart';
 import 'package:pdfapp/app/theme/app_theme.dart';
@@ -22,34 +22,35 @@ class SettingsScreen extends ConsumerWidget {
 
     final locale = ref.watch(appLocaleProvider);
     final String currentLangSubtitle = switch (locale?.languageCode) {
-      'en' => l10n.languageEnglish,
-      'ml' => l10n.languageMalayalam,
-      _ => l10n.languageSystem,
+      'en' => l10n.labelLanguageEnglish,
+      'ml' => l10n.labelLanguageMalayalam,
+      _ => l10n.labelLanguageSystem,
     };
 
     final ttsService = ref.watch(ttsServiceProvider);
     final ttsStatus = ttsService.status;
     final String ttsSubtitle = !ttsStatus.malayalamEnabled
-        ? l10n.settingsMalayalamVoiceOff
+        ? l10n.descSettingsMalayalamVoiceOff
         : switch (ttsStatus.malayalam) {
-            TtsVoiceState.unknown => l10n.settingsMalayalamVoiceChecking,
-            TtsVoiceState.ready => l10n.settingsMalayalamVoiceReady,
+            TtsVoiceState.unknown => l10n.labelSettingsMalayalamVoiceChecking,
+            TtsVoiceState.ready => l10n.descSettingsMalayalamVoiceReady,
             TtsVoiceState.needsInstall =>
-              l10n.settingsMalayalamVoiceNeedsInstall,
-            TtsVoiceState.unavailable => l10n.settingsMalayalamVoiceUnavailable,
+              l10n.descSettingsMalayalamVoiceNeedsInstall,
+            TtsVoiceState.unavailable =>
+              l10n.errorSettingsMalayalamVoiceUnavailable,
           };
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.settingsTitle)),
+      appBar: AppBar(title: Text(l10n.titleSettings)),
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 48),
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 48),
           children: [
             _SettingsCard(
               icon: Icons.palette_outlined,
-              title: l10n.appearanceTitle,
-              subtitle: l10n.appearanceSubtitle,
+              title: l10n.titleAppearance,
+              subtitle: l10n.descAppearanceSubtitle,
               trailingWidget: Container(
                 width: 20,
                 height: 20,
@@ -63,57 +64,64 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             _SettingsCard(
               icon: Icons.stars_outlined,
-              title: l10n.featuresTitle,
-              subtitle: l10n.featuresSubtitle,
+              title: l10n.titleFeatures,
+              subtitle: l10n.descFeaturesSubtitle,
               onTap: () => context.pushNamed(AppRoute.features.name),
             ),
             const SizedBox(height: 12),
             _SettingsCard(
               icon: Icons.translate_outlined,
-              title: l10n.languageTitle,
+              title: l10n.titleLanguage,
               subtitle: currentLangSubtitle,
               onTap: () => context.pushNamed(AppRoute.language.name),
             ),
             const SizedBox(height: 12),
             _SettingsCard(
               icon: Icons.chrome_reader_mode_outlined,
-              title: l10n.readerSettingsTitle,
-              subtitle: l10n.readerSettingsSubtitle,
+              title: l10n.titleReaderSettings,
+              subtitle: l10n.descReaderSettingsSubtitle,
               onTap: () => context.pushNamed(AppRoute.readerSettings.name),
             ),
             const SizedBox(height: 12),
             _SettingsCard(
               icon: Icons.record_voice_over_outlined,
-              title: l10n.ttsSettingsTitle,
+              title: l10n.titleTtsSettings,
               subtitle: ttsSubtitle,
               onTap: () => context.pushNamed(AppRoute.ttsSettings.name),
             ),
             const SizedBox(height: 12),
             _SettingsCard(
               icon: Icons.print_outlined,
-              title: l10n.printerSettingsTitle,
-              subtitle: l10n.printerSettingsSubtitle,
+              title: l10n.titlePrinterSettings,
+              subtitle: l10n.descPrinterSettingsSubtitle,
               onTap: () => context.pushNamed(AppRoute.printerSettings.name),
             ),
             const SizedBox(height: 12),
             _SettingsCard(
               icon: Icons.storage_outlined,
-              title: l10n.storageSettingsTitle,
-              subtitle: l10n.storageSettingsSubtitle,
+              title: l10n.titleStorageSettings,
+              subtitle: l10n.descStorageSettingsSubtitle,
               onTap: () => context.pushNamed(AppRoute.storageSettings.name),
             ),
             const SizedBox(height: 12),
             _SettingsCard(
+              icon: Icons.devices_outlined,
+              title: l10n.titleDeviceSync,
+              subtitle: l10n.descDeviceSyncSubtitle,
+              onTap: () => context.pushNamed(AppRoute.deviceSync.name),
+            ),
+            const SizedBox(height: 12),
+            _SettingsCard(
               icon: Icons.verified_user_outlined,
-              title: l10n.trustStoreTitle,
-              subtitle: l10n.trustStoreSubtitle,
+              title: l10n.titleTrustStore,
+              subtitle: l10n.descTrustStoreSubtitle,
               onTap: () => context.pushNamed(AppRoute.trustStore.name),
             ),
             const SizedBox(height: 12),
             _SettingsCard(
               icon: Icons.security_outlined,
-              title: l10n.permissionsTitle,
-              subtitle: l10n.permissionsSubtitle,
+              title: l10n.titlePermissions,
+              subtitle: l10n.descPermissionsSubtitle,
               onTap: () => context.pushNamed(AppRoute.permissions.name),
             ),
             const SizedBox(height: 12),
@@ -126,8 +134,8 @@ class SettingsScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             _SettingsCard(
               icon: Icons.info_outline,
-              title: l10n.aboutTitle,
-              subtitle: l10n.aboutSubtitle,
+              title: l10n.titleAbout,
+              subtitle: l10n.descAboutSubtitle,
               onTap: () => context.pushNamed(AppRoute.about.name),
             ),
           ],

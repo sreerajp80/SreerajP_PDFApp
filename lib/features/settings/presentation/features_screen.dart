@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/theme/app_theme.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
@@ -32,384 +32,433 @@ class _FeatureCategory {
   });
 }
 
-/// Lists all features of SreerajP PDF App, grouped by category with visual cards.
+/// Lists all features of Folio, grouped by category with visual cards.
 class FeaturesScreen extends StatelessWidget {
   const FeaturesScreen({super.key});
 
   List<_FeatureCategory> _buildCategories(AppLocalizations l10n) {
     return [
       _FeatureCategory(
-        name: l10n.featuresCategoryViewing,
-        subtitle: l10n.featuresCategoryViewingSubtitle,
+        name: l10n.descFeaturesCategoryViewing,
+        subtitle: l10n.descFeaturesCategoryViewingSubtitle,
         icon: Icons.auto_stories_outlined,
-        features: const [
+        features: [
           _AppFeature(
-            title: 'High-Performance Rendering',
-            description:
-                'Fast, crisp PDF page rendering powered by native pdfium engine with zero network overhead.',
+            title: l10n.helpFeatureRenderingTitle,
+            description: l10n.helpFeatureRenderingBody,
             icon: Icons.speed_outlined,
-            highlights: ['pdfium Engine', 'Crisp Scaling', 'Offline Fast'],
+            highlights: [
+              l10n.helpFeatureRenderingTag1,
+              l10n.helpFeatureRenderingTag2,
+              l10n.helpFeatureRenderingTag3,
+            ],
           ),
           _AppFeature(
-            title: 'Flexible Viewing & Fit Modes',
-            description:
-                'Switch between Single Page, Continuous Vertical Scrolling, and Two-Page Book view with Fit to Width or Fit to Page options.',
+            title: l10n.helpFeatureViewModesTitle,
+            description: l10n.helpFeatureViewModesBody,
             icon: Icons.view_carousel_outlined,
             highlights: [
-              'Single Page',
-              'Continuous Scroll',
-              'Book View',
-              'Fit Modes',
+              l10n.helpFeatureViewModesTag1,
+              l10n.helpFeatureViewModesTag2,
+              l10n.helpFeatureViewModesTag3,
+              l10n.helpFeatureViewModesTag4,
             ],
           ),
           _AppFeature(
-            title: 'Foldable & Dual-Screen Support',
-            description:
-                'Adaptive dual-page layout on foldable devices and tablets with display hinge gap spacing.',
+            title: l10n.helpFeatureFoldableTitle,
+            description: l10n.helpFeatureFoldableBody,
             icon: Icons.devices_outlined,
-            highlights: ['Foldable Aware', 'Hinge Gap', 'Tablet Optimized'],
+            highlights: [
+              l10n.helpFeatureFoldableTag1,
+              l10n.helpFeatureFoldableTag2,
+              l10n.helpFeatureFoldableTag3,
+            ],
           ),
           _AppFeature(
-            title: 'Reading Velocity & Time Estimates',
-            description:
-                'Tracks reading speed in real time to calculate remaining reading time for chapters and the entire document.',
+            title: l10n.helpFeatureVelocityTitle,
+            description: l10n.helpFeatureVelocityBody,
             icon: Icons.timer_outlined,
-            highlights: ['WPM Tracking', 'Chapter Estimates', 'Total Time'],
+            highlights: [
+              l10n.helpFeatureVelocityTag1,
+              l10n.helpFeatureVelocityTag2,
+              l10n.helpFeatureVelocityTag3,
+            ],
           ),
           _AppFeature(
-            title: 'Thumbnail Grid & Direct Jump',
-            description:
-                'Quickly preview all document pages in an interactive grid or jump directly to any page number.',
+            title: l10n.helpFeatureThumbnailsTitle,
+            description: l10n.helpFeatureThumbnailsBody,
             icon: Icons.grid_view_outlined,
-            highlights: ['Thumbnail Grid', 'Page Slider', 'Quick Jump'],
+            highlights: [
+              l10n.helpFeatureThumbnailsTag1,
+              l10n.helpFeatureThumbnailsTag2,
+              l10n.helpFeatureThumbnailsTag3,
+            ],
           ),
           _AppFeature(
-            title: 'Document Outline & Bookmarks',
-            description:
-                'Browse document table of contents hierarchies with one-tap section jumping and page bookmarking.',
+            title: l10n.helpFeatureOutlineTitle,
+            description: l10n.helpFeatureOutlineBody,
             icon: Icons.format_list_bulleted_outlined,
-            highlights: ['TOC Hierarchy', '1-Tap Jump', 'Page Bookmarks'],
+            highlights: [
+              l10n.helpFeatureOutlineTag1,
+              l10n.helpFeatureOutlineTag2,
+              l10n.helpFeatureOutlineTag3,
+            ],
           ),
           _AppFeature(
-            title: 'Content Fingerprinting & Recents',
-            description:
-                'SHA-256 fingerprinting preserves reading positions, zoom, and annotations even if files are renamed or moved.',
+            title: l10n.helpFeatureFingerprintTitle,
+            description: l10n.helpFeatureFingerprintBody,
             icon: Icons.history_outlined,
             highlights: [
-              'SHA-256 Fingerprint',
-              'Last Read State',
-              'Recent Files',
+              l10n.helpFeatureFingerprintTag1,
+              l10n.helpFeatureFingerprintTag2,
+              l10n.helpFeatureFingerprintTag3,
             ],
           ),
         ],
       ),
       _FeatureCategory(
-        name: l10n.featuresCategorySearch,
-        subtitle: l10n.featuresCategorySearchSubtitle,
+        name: l10n.descFeaturesCategorySearch,
+        subtitle: l10n.descFeaturesCategorySearchSubtitle,
         icon: Icons.search_outlined,
-        features: const [
+        features: [
           _AppFeature(
-            title: 'On-Page Full-Text Search',
-            description:
-                'Instant keyword search with match counting, bright highlight overlays, and grapheme-aligned navigation.',
+            title: l10n.helpFeatureSearchTitle,
+            description: l10n.helpFeatureSearchBody,
             icon: Icons.find_in_page_outlined,
             highlights: [
-              'Instant Search',
-              'Match Counter',
-              'Grapheme Alignment',
+              l10n.helpFeatureSearchTag1,
+              l10n.helpFeatureSearchTag2,
+              l10n.helpFeatureSearchTag3,
             ],
           ),
           _AppFeature(
-            title: 'Sandhi-Aware Indic Search',
-            description:
-                'Rule-based Sandhi compound splitting and joining supporting Malayalam, Sanskrit, and Devanagari rules.',
+            title: l10n.helpFeatureSandhiTitle,
+            description: l10n.helpFeatureSandhiBody,
             icon: Icons.merge_type_outlined,
             highlights: [
-              'Sandhi Splitting',
-              'Compound Joining',
-              'Sanskrit & Malayalam',
+              l10n.helpFeatureSandhiTag1,
+              l10n.helpFeatureSandhiTag2,
+              l10n.helpFeatureSandhiTag3,
             ],
           ),
           _AppFeature(
-            title: 'Indic Phonetic Sound-Alike Engine',
-            description:
-                'Unifies Anusvara nasal conjuncts, chillu and virama forms, NTA ligatures, and Samvruthokaram endings.',
+            title: l10n.helpFeaturePhoneticTitle,
+            description: l10n.helpFeaturePhoneticBody,
             icon: Icons.hearing_outlined,
             highlights: [
-              'Sound-Alike Matching',
-              'Chillu Unification',
-              'NFC Normalization',
+              l10n.helpFeaturePhoneticTag1,
+              l10n.helpFeaturePhoneticTag2,
+              l10n.helpFeaturePhoneticTag3,
             ],
           ),
           _AppFeature(
-            title: 'Malayalam Input Helper & Virtual Keypad',
-            description:
-                'Live Manglish transliteration suggestions and a 3-tab virtual keypad for vowels, consonants, and signs.',
+            title: l10n.helpFeatureMalayalamInputTitle,
+            description: l10n.helpFeatureMalayalamInputBody,
             icon: Icons.keyboard_outlined,
             highlights: [
-              'Manglish Suggestions',
-              'Virtual Keypad',
-              'Zero Extra Setup',
+              l10n.helpFeatureMalayalamInputTag1,
+              l10n.helpFeatureMalayalamInputTag2,
+              l10n.helpFeatureMalayalamInputTag3,
             ],
           ),
           _AppFeature(
-            title: 'Offline Text-to-Speech (TTS)',
-            description:
-                'Read PDF text aloud in English and Malayalam with speech rate, pitch, sentence pause sliders, and media notifications.',
+            title: l10n.helpFeatureTtsTitle,
+            description: l10n.helpFeatureTtsBody,
             icon: Icons.record_voice_over_outlined,
             highlights: [
-              'English & Malayalam',
-              'Speed & Pitch Controls',
-              'Background Playback',
+              l10n.helpFeatureTtsTag1,
+              l10n.helpFeatureTtsTag2,
+              l10n.helpFeatureTtsTag3,
             ],
           ),
         ],
       ),
       _FeatureCategory(
-        name: l10n.featuresCategoryAnnotations,
-        subtitle: l10n.featuresCategoryAnnotationsSubtitle,
+        name: l10n.descFeaturesCategoryAnnotations,
+        subtitle: l10n.descFeaturesCategoryAnnotationsSubtitle,
         icon: Icons.edit_note_outlined,
-        features: const [
+        features: [
           _AppFeature(
-            title: 'Text Markups & Color Presets',
-            description:
-                'Highlight, underline, and strikethrough text with 7 vibrant color presets and customizable opacity.',
+            title: l10n.helpFeatureMarkupsTitle,
+            description: l10n.helpFeatureMarkupsBody,
             icon: Icons.brush_outlined,
-            highlights: ['Highlight', 'Underline', 'Strikethrough', '7 Colors'],
+            highlights: [
+              l10n.helpFeatureMarkupsTag1,
+              l10n.helpFeatureMarkupsTag2,
+              l10n.helpFeatureMarkupsTag3,
+              l10n.helpFeatureMarkupsTag4,
+            ],
           ),
           _AppFeature(
-            title: 'Freehand Ink Drawing & Sticky Notes',
-            description:
-                'Draw smooth sketches with the pen tool and anchor movable sticky notes anywhere on pages.',
+            title: l10n.helpFeatureInkTitle,
+            description: l10n.helpFeatureInkBody,
             icon: Icons.note_alt_outlined,
-            highlights: ['Freehand Ink', 'Anchored Notes', 'Eraser Tool'],
+            highlights: [
+              l10n.helpFeatureInkTag1,
+              l10n.helpFeatureInkTag2,
+              l10n.helpFeatureInkTag3,
+            ],
           ),
           _AppFeature(
-            title: 'Flatten & Export Annotations',
-            description:
-                'Export annotations permanently into standard PDF annotation objects in a new copy of your document.',
+            title: l10n.helpFeatureFlattenTitle,
+            description: l10n.helpFeatureFlattenBody,
             icon: Icons.picture_as_pdf_outlined,
             highlights: [
-              'Copy-on-Write',
-              'Standard PDF Annotations',
-              'Non-Destructive',
+              l10n.helpFeatureFlattenTag1,
+              l10n.helpFeatureFlattenTag2,
+              l10n.helpFeatureFlattenTag3,
             ],
           ),
         ],
       ),
       _FeatureCategory(
-        name: l10n.featuresCategoryPageOps,
-        subtitle: l10n.featuresCategoryPageOpsSubtitle,
+        name: l10n.descFeaturesCategoryPageOps,
+        subtitle: l10n.descFeaturesCategoryPageOpsSubtitle,
         icon: Icons.dashboard_customize_outlined,
-        features: const [
+        features: [
           _AppFeature(
-            title: 'Visual Organize Pages Grid',
-            description:
-                'Drag-and-drop page reordering, 90-degree rotations, and page deletion with multi-selection support.',
+            title: l10n.helpFeatureOrganizeTitle,
+            description: l10n.helpFeatureOrganizeBody,
             icon: Icons.grid_goldenratio_outlined,
-            highlights: ['Drag & Drop', 'Rotate & Delete', 'Multi-Select Mode'],
+            highlights: [
+              l10n.helpFeatureOrganizeTag1,
+              l10n.helpFeatureOrganizeTag2,
+              l10n.helpFeatureOrganizeTag3,
+            ],
           ),
           _AppFeature(
-            title: 'Custom Text Watermarks',
-            description:
-                'Add customizable diagonal or horizontal text watermarks with opacity, color, and repeating grid tiling.',
+            title: l10n.helpFeatureWatermarkTitle,
+            description: l10n.helpFeatureWatermarkBody,
             icon: Icons.branding_watermark_outlined,
-            highlights: ['Custom Text', 'Opacity & Angle', 'Grid Tiling'],
+            highlights: [
+              l10n.helpFeatureWatermarkTag1,
+              l10n.helpFeatureWatermarkTag2,
+              l10n.helpFeatureWatermarkTag3,
+            ],
           ),
           _AppFeature(
-            title: 'N-Up Multi-Page Imposition',
-            description:
-                'Place 2, 4, 6, or 9 pages per sheet on A4 or Letter paper with customizable borders and margins.',
+            title: l10n.helpFeatureNUpTitle,
+            description: l10n.helpFeatureNUpBody,
             icon: Icons.space_dashboard_outlined,
-            highlights: ['2/4/6/9 Up', 'Page Borders', 'Sheet Orientation'],
+            highlights: [
+              l10n.helpFeatureNUpTag1,
+              l10n.helpFeatureNUpTag2,
+              l10n.helpFeatureNUpTag3,
+            ],
           ),
           _AppFeature(
-            title: 'Printable Booklet Creator',
-            description:
-                'Imposes pages into foldable saddle-stitch booklet order with automatic 4-page padding.',
+            title: l10n.helpFeatureBookletTitle,
+            description: l10n.helpFeatureBookletBody,
             icon: Icons.menu_book_outlined,
-            highlights: ['Saddle-Stitch', 'Fold Guidelines', 'Auto-Padding'],
+            highlights: [
+              l10n.helpFeatureBookletTag1,
+              l10n.helpFeatureBookletTag2,
+              l10n.helpFeatureBookletTag3,
+            ],
           ),
           _AppFeature(
-            title: 'Merge, Split & Compress',
-            description:
-                'Combine multiple PDFs, split pages into individual files, and compress PDFs to reduce file size.',
+            title: l10n.helpFeatureMergeSplitTitle,
+            description: l10n.helpFeatureMergeSplitBody,
             icon: Icons.call_split_outlined,
             highlights: [
-              'Merge Multiple',
-              'Page Splitter',
-              'Smart Compression',
+              l10n.helpFeatureMergeSplitTag1,
+              l10n.helpFeatureMergeSplitTag2,
+              l10n.helpFeatureMergeSplitTag3,
             ],
           ),
           _AppFeature(
-            title: 'PDF Encryption & Decryption',
-            description:
-                'Protect documents with AES-256 passwords or unlock encrypted files into unencrypted copies.',
+            title: l10n.helpFeatureEncryptionTitle,
+            description: l10n.helpFeatureEncryptionBody,
             icon: Icons.lock_outline,
             highlights: [
-              'AES-256 Protection',
-              'Owner Passwords',
-              'Unlock Decryption',
+              l10n.helpFeatureEncryptionTag1,
+              l10n.helpFeatureEncryptionTag2,
+              l10n.helpFeatureEncryptionTag3,
             ],
           ),
           _AppFeature(
-            title: 'Batch Operations Engine',
-            description:
-                'Execute watermarking, compression, encryption, decryption, and extraction across multiple files at once.',
+            title: l10n.helpFeatureBatchTitle,
+            description: l10n.helpFeatureBatchBody,
             icon: Icons.dynamic_feed_outlined,
-            highlights: ['Multi-File Batch', 'Step Progress', 'SAF Output'],
+            highlights: [
+              l10n.helpFeatureBatchTag1,
+              l10n.helpFeatureBatchTag2,
+              l10n.helpFeatureBatchTag3,
+            ],
           ),
         ],
       ),
       _FeatureCategory(
-        name: l10n.featuresCategoryExtraction,
-        subtitle: l10n.featuresCategoryExtractionSubtitle,
+        name: l10n.descFeaturesCategoryExtraction,
+        subtitle: l10n.descFeaturesCategoryExtractionSubtitle,
         icon: Icons.file_download_outlined,
-        features: const [
+        features: [
           _AppFeature(
-            title: 'Text & Image Extraction',
-            description:
-                'Extract plain text and save embedded PNG/JPEG images from any page range without quality loss.',
+            title: l10n.helpFeatureExtractionTitle,
+            description: l10n.helpFeatureExtractionBody,
             icon: Icons.text_snippet_outlined,
-            highlights: ['Plain Text Export', 'Embedded Images', 'Page Ranges'],
+            highlights: [
+              l10n.helpFeatureExtractionTag1,
+              l10n.helpFeatureExtractionTag2,
+              l10n.helpFeatureExtractionTag3,
+            ],
           ),
           _AppFeature(
-            title: 'Interactive Form Fields Inspector',
-            description:
-                'Detect and inspect interactive form field values, checkboxes, radio groups, and export as JSON.',
+            title: l10n.helpFeatureFormFieldsTitle,
+            description: l10n.helpFeatureFormFieldsBody,
             icon: Icons.assignment_outlined,
-            highlights: ['Form Parser', 'JSON Export', 'Field Inspector'],
+            highlights: [
+              l10n.helpFeatureFormFieldsTag1,
+              l10n.helpFeatureFormFieldsTag2,
+              l10n.helpFeatureFormFieldsTag3,
+            ],
           ),
           _AppFeature(
-            title: 'Render Pages to High-DPI Images',
-            description:
-                'Export PDF pages as crisp PNG or JPEG images with customizable DPI resolution up to 300 DPI.',
+            title: l10n.helpFeatureRenderImagesTitle,
+            description: l10n.helpFeatureRenderImagesBody,
             icon: Icons.image_outlined,
-            highlights: ['High-DPI PNG/JPEG', '100-300 DPI', 'Batch Rendering'],
+            highlights: [
+              l10n.helpFeatureRenderImagesTag1,
+              l10n.helpFeatureRenderImagesTag2,
+              l10n.helpFeatureRenderImagesTag3,
+            ],
           ),
           _AppFeature(
-            title: 'Document Metadata Inspector',
-            description:
-                'View detailed document metadata including title, author, producer, creation date, and encryption state.',
+            title: l10n.helpFeatureMetadataTitle,
+            description: l10n.helpFeatureMetadataBody,
             icon: Icons.info_outline,
-            highlights: ['PDF Metadata', 'Creation Dates', 'Security State'],
+            highlights: [
+              l10n.helpFeatureMetadataTag1,
+              l10n.helpFeatureMetadataTag2,
+              l10n.helpFeatureMetadataTag3,
+            ],
           ),
         ],
       ),
       _FeatureCategory(
-        name: l10n.featuresCategoryPrinter,
-        subtitle: l10n.featuresCategoryPrinterSubtitle,
+        name: l10n.descFeaturesCategoryPrinter,
+        subtitle: l10n.descFeaturesCategoryPrinterSubtitle,
         icon: Icons.print_outlined,
-        features: const [
+        features: [
           _AppFeature(
-            title: 'Android System Virtual Printer',
-            description:
-                'Receives print jobs from any Android app to generate crisp PDFs with full Indic font shaping.',
+            title: l10n.helpFeatureVirtualPrinterTitle,
+            description: l10n.helpFeatureVirtualPrinterBody,
             icon: Icons.print_outlined,
-            highlights: ['System Spooler', 'Font Embedding', 'Indic Shaping'],
+            highlights: [
+              l10n.helpFeatureVirtualPrinterTag1,
+              l10n.helpFeatureVirtualPrinterTag2,
+              l10n.helpFeatureVirtualPrinterTag3,
+            ],
           ),
           _AppFeature(
-            title: 'Web Content Cleaner (Reader Mode)',
-            description:
-                'Strips ads, tracking, banners, sidebars, and scripts from shared web pages before converting to PDF.',
+            title: l10n.helpFeatureWebCleanerTitle,
+            description: l10n.helpFeatureWebCleanerBody,
             icon: Icons.cleaning_services_outlined,
-            highlights: ['Ad & Clutter Stripping', 'Reader View', 'Clean PDFs'],
+            highlights: [
+              l10n.helpFeatureWebCleanerTag1,
+              l10n.helpFeatureWebCleanerTag2,
+              l10n.helpFeatureWebCleanerTag3,
+            ],
           ),
           _AppFeature(
-            title: 'Images & Text to PDF Converter',
-            description:
-                'Convert up to 100 gallery images or shared plain text into formatted multi-page PDF documents.',
+            title: l10n.helpFeatureImagesToPdfTitle,
+            description: l10n.helpFeatureImagesToPdfBody,
             icon: Icons.collections_outlined,
             highlights: [
-              'Up to 100 Images',
-              'Plain Text Importer',
-              'Custom Margins',
+              l10n.helpFeatureImagesToPdfTag1,
+              l10n.helpFeatureImagesToPdfTag2,
+              l10n.helpFeatureImagesToPdfTag3,
             ],
           ),
         ],
       ),
       _FeatureCategory(
-        name: l10n.featuresCategorySignatures,
-        subtitle: l10n.featuresCategorySignaturesSubtitle,
+        name: l10n.descFeaturesCategorySignatures,
+        subtitle: l10n.descFeaturesCategorySignaturesSubtitle,
         icon: Icons.verified_user_outlined,
-        features: const [
+        features: [
           _AppFeature(
-            title: 'Cryptographic Signature Verification',
-            description:
-                'Validates document integrity, byte coverage, and certificate validity offline using Bouncy Castle.',
+            title: l10n.helpFeatureSignatureCheckTitle,
+            description: l10n.helpFeatureSignatureCheckBody,
             icon: Icons.security_outlined,
             highlights: [
-              'Byte Integrity',
-              'Byte Coverage Scope',
-              'Offline Validation',
+              l10n.helpFeatureSignatureCheckTag1,
+              l10n.helpFeatureSignatureCheckTag2,
+              l10n.helpFeatureSignatureCheckTag3,
             ],
           ),
           _AppFeature(
-            title: 'Custom Trust Store & EU Lists',
-            description:
-                'Bundled EU Trusted Lists root certificates with support for importing custom CA/root certificates.',
+            title: l10n.helpFeatureTrustStoreTitle,
+            description: l10n.helpFeatureTrustStoreBody,
             icon: Icons.vpn_key_outlined,
-            highlights: ['EU Trusted Lists', 'Import X.509 PEM', 'PEM Export'],
+            highlights: [
+              l10n.helpFeatureTrustStoreTag1,
+              l10n.helpFeatureTrustStoreTag2,
+              l10n.helpFeatureTrustStoreTag3,
+            ],
           ),
           _AppFeature(
-            title: 'Visual Signature Stamp Overlay',
-            description:
-                'Interactive signature stamp badges on PDF pages with one-tap access to certificate chain details.',
+            title: l10n.helpFeatureSignatureStampsTitle,
+            description: l10n.helpFeatureSignatureStampsBody,
             icon: Icons.badge_outlined,
             highlights: [
-              'On-Page Badges',
-              'Certificate Chains',
-              'Signer Details',
+              l10n.helpFeatureSignatureStampsTag1,
+              l10n.helpFeatureSignatureStampsTag2,
+              l10n.helpFeatureSignatureStampsTag3,
             ],
           ),
         ],
       ),
       _FeatureCategory(
-        name: l10n.featuresCategoryThemes,
-        subtitle: l10n.featuresCategoryThemesSubtitle,
+        name: l10n.descFeaturesCategoryThemes,
+        subtitle: l10n.descFeaturesCategoryThemesSubtitle,
         icon: Icons.palette_outlined,
-        features: const [
+        features: [
           _AppFeature(
-            title: 'Light, Dark & OLED Pitch-Black',
-            description:
-                'Support for Light, Dark, Sepia, and OLED Pitch-Black (#000000) for maximum battery savings.',
+            title: l10n.helpFeatureThemesTitle,
+            description: l10n.helpFeatureThemesBody,
             icon: Icons.brightness_6_outlined,
             highlights: [
-              'OLED Pitch-Black',
-              'Sepia Reading',
-              'System Adaptive',
+              l10n.helpFeatureThemesTag1,
+              l10n.helpFeatureThemesTag2,
+              l10n.helpFeatureThemesTag3,
             ],
           ),
           _AppFeature(
-            title: 'Custom Typography & Scale',
-            description:
-                'Switch between Manjari, Anek Malayalam, Noto Sans Malayalam, and System font with text scaling.',
+            title: l10n.helpFeatureTypographyTitle,
+            description: l10n.helpFeatureTypographyBody,
             icon: Icons.text_fields_outlined,
-            highlights: ['Malayalam Fonts', 'Font Scaling', 'Dynamic Switch'],
+            highlights: [
+              l10n.helpFeatureTypographyTag1,
+              l10n.helpFeatureTypographyTag2,
+              l10n.helpFeatureTypographyTag3,
+            ],
           ),
           _AppFeature(
-            title: 'Interactive Accent Color Picker',
-            description:
-                'Custom color presets and full HSV color wheel with real-time app theme preview.',
+            title: l10n.helpFeatureAccentTitle,
+            description: l10n.helpFeatureAccentBody,
             icon: Icons.color_lens_outlined,
-            highlights: ['HSV Color Wheel', '8 Presets', 'Live Preview'],
+            highlights: [
+              l10n.helpFeatureAccentTag1,
+              l10n.helpFeatureAccentTag2,
+              l10n.helpFeatureAccentTag3,
+            ],
           ),
         ],
       ),
       _FeatureCategory(
-        name: l10n.featuresCategoryGuides,
-        subtitle: l10n.featuresCategoryGuidesSubtitle,
+        name: l10n.labelFeaturesCategoryGuides,
+        subtitle: l10n.descFeaturesCategoryGuidesSubtitle,
         icon: Icons.help_outline,
-        features: const [
+        features: [
           _AppFeature(
-            title: '6 Dedicated Step-by-Step Guides',
-            description:
-                'In-depth guides covering PDF printer setup, Unicode printing, TTS voice configuration, page operations, signatures, and privacy.',
+            title: l10n.helpFeatureGuidesTitle,
+            description: l10n.helpFeatureGuidesBody,
             icon: Icons.menu_book_outlined,
             highlights: [
-              '100% Offline Guides',
-              'Troubleshooting',
-              'Step-by-Step',
+              l10n.helpFeatureGuidesTag1,
+              l10n.helpFeatureGuidesTag2,
+              l10n.helpFeatureGuidesTag3,
             ],
           ),
         ],
@@ -425,21 +474,34 @@ class FeaturesScreen extends StatelessWidget {
     final categories = _buildCategories(l10n);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.featuresTitle)),
+      appBar: AppBar(title: Text(l10n.titleFeatures)),
       body: SafeArea(
         top: false,
-        child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 48),
-          children: [
-            _buildHeaderCard(context, l10n, colors),
-            const SizedBox(height: 20),
-            for (final category in categories) ...[
-              _buildCategoryHeader(context, category, colors),
-              const SizedBox(height: 10),
-              _buildCategoryCard(context, category, colors),
-              const SizedBox(height: 24),
-            ],
-          ],
+        // Built lazily: the screen lists many features (engineering standard
+        // §10.3). Item 0 is the header card; each category is one item.
+        child: ListView.builder(
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 48),
+          itemCount: categories.length + 1,
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 20),
+                child: _buildHeaderCard(context, l10n, colors),
+              );
+            }
+            final category = categories[index - 1];
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildCategoryHeader(context, category, colors),
+                  const SizedBox(height: 10),
+                  _buildCategoryCard(context, category, colors),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
@@ -457,8 +519,8 @@ class FeaturesScreen extends StatelessWidget {
         colors?.brandGradient ??
         LinearGradient(
           colors: [primary, secondary],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
         );
     final gradientStart = colors?.gradientStart ?? primary;
     final muted = colors?.mutedText ?? theme.colorScheme.onSurfaceVariant;
@@ -474,8 +536,8 @@ class FeaturesScreen extends StatelessWidget {
               primary.withValues(alpha: 0.12),
               secondary.withValues(alpha: 0.04),
             ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: AlignmentDirectional.topStart,
+            end: AlignmentDirectional.bottomEnd,
           ),
         ),
         child: Row(
@@ -506,14 +568,14 @@ class FeaturesScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    l10n.featuresHeaderTitle,
+                    l10n.titleFeaturesHeader,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    l10n.featuresHeaderSubtitle,
+                    l10n.descFeaturesHeaderSubtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: muted,
                       height: 1.35,

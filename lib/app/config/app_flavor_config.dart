@@ -37,7 +37,9 @@ class AppFlavorConfig {
   bool get isDev => flavor == AppFlavor.dev;
   bool get isProd => flavor == AppFlavor.prod;
 
-  String get appName => isDev ? 'SreerajP PDF App Dev' : 'SreerajP PDF App';
+  /// Added after the localized `appName` from `app_config.json` (guideline.md
+  /// §1.8). The name itself is never written in Dart.
+  String get nameSuffix => isDev ? ' Dev' : '';
   bool get showEnvironmentBanner => isDev;
   bool get enableVerboseLogging => isDev;
 }

@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show GlobalWidgetsLocalizations;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/signature/domain/signature_status.dart';
 import 'package:pdfapp/features/signature/presentation/widgets/signature_badge.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';

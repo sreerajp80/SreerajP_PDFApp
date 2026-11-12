@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/annotation/presentation/annotation_controller.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
@@ -58,13 +58,13 @@ class _BookmarksPanelState extends State<_BookmarksPanel> {
                 children: [
                   Expanded(
                     child: Text(
-                      l10n.bookmarksTitle,
+                      l10n.titleBookmarks,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close),
-                    tooltip: l10n.cancelAction,
+                    tooltip: l10n.actionCancel,
                     onPressed: () => Navigator.of(context).pop(),
                   ),
                 ],
@@ -76,15 +76,15 @@ class _BookmarksPanelState extends State<_BookmarksPanel> {
               ),
               title: Text(
                 onCurrent
-                    ? l10n.bookmarkRemoveCurrent(widget.currentPage)
-                    : l10n.bookmarkAddCurrent(widget.currentPage),
+                    ? l10n.descBookmarkRemoveCurrent(widget.currentPage)
+                    : l10n.labelBookmarkAddCurrent(widget.currentPage),
               ),
               onTap: () => widget.controller.toggleBookmark(widget.currentPage),
             ),
             const Divider(height: 1),
             Expanded(
               child: bookmarks.isEmpty
-                  ? Center(child: Text(l10n.bookmarksEmpty))
+                  ? Center(child: Text(l10n.emptyBookmarks))
                   : ListView.builder(
                       itemCount: bookmarks.length,
                       itemBuilder: (context, i) {
@@ -93,15 +93,15 @@ class _BookmarksPanelState extends State<_BookmarksPanel> {
                           leading: const Icon(Icons.bookmark_outline),
                           title: Text(
                             b.label.isEmpty
-                                ? l10n.bookmarkPageLabel(b.page)
+                                ? l10n.labelBookmarkPage(b.page)
                                 : b.label,
                           ),
                           subtitle: b.label.isEmpty
                               ? null
-                              : Text(l10n.bookmarkPageLabel(b.page)),
+                              : Text(l10n.labelBookmarkPage(b.page)),
                           trailing: IconButton(
                             icon: const Icon(Icons.delete_outline),
-                            tooltip: l10n.deleteAction,
+                            tooltip: l10n.actionDelete,
                             onPressed: () => widget.controller.delete(b),
                           ),
                           onTap: () {

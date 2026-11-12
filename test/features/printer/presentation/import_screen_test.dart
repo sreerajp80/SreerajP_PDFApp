@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/core/platform/open_document_channel.dart';
 import 'package:pdfapp/features/printer/presentation/import_screen.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
@@ -48,9 +48,16 @@ void main() {
           ),
         ),
       );
-      await Future<void>.delayed(const Duration(milliseconds: 50));
     });
-    await tester.pump();
+    // Wait for the real work to finish instead of guessing a delay: a fixed
+    // wait was flaky when the whole suite ran in parallel.
+    for (var i = 0; i < 100; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 20)),
+      );
+      await tester.pump();
+      if (find.byType(CircularProgressIndicator).evaluate().isEmpty) break;
+    }
   }
 
   testWidgets('a built PDF from pictures offers to save it', (tester) async {
@@ -119,14 +126,16 @@ void main() {
       const IncomingText(text: 'മലയാളം', suggestedName: 'note'),
     );
 
-    expect(find.text('These letters cannot be saved yet'), findsOneWidget);
+    expect(find.text('Unsupported letters'), findsOneWidget);
     expect(find.textContaining('Malayalam'), findsOneWidget);
     // Nothing was built, so there must be no save button to press. (The screen
     // title reads "Save as PDF" too, so look for the button itself.)
     expect(find.widgetWithText(FilledButton, 'Save as PDF'), findsNothing);
   });
 
-  testWidgets('a build failure shows the reason', (tester) async {
+  testWidgets('a build failure is explained without raw error text', (
+    tester,
+  ) async {
     messenger.setMockMethodCallHandler(pdfBoxChannel, (call) async {
       throw PlatformException(code: 'op_failed', message: 'disk full');
     });
@@ -136,8 +145,13 @@ void main() {
       const IncomingImages(paths: ['/a.jpg'], suggestedName: 'shot'),
     );
 
-    expect(find.text('Could not make the PDF'), findsOneWidget);
-    expect(find.textContaining('disk full'), findsOneWidget);
+    expect(find.text('PDF not created'), findsOneWidget);
+    expect(
+      find.text('Something went wrong while making the PDF. Please try again.'),
+      findsOneWidget,
+    );
+    // The platform's own message is for the logs, never the screen (§11.2).
+    expect(find.textContaining('disk full'), findsNothing);
     expect(find.widgetWithText(FilledButton, 'Save as PDF'), findsNothing);
   });
 }

@@ -1,10 +1,33 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- No INTERNET permission: the app is offline-first (project rule).
-         An optional online feature (opening remote links) would add it in a later phase. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <!-- Device sync (plan 20261112_104132_device_sync_qr_wifi.md, Hard Rule 2).
+         Android needs INTERNET for ANY socket, even phone-to-phone on the same
+         WiFi. The app never contacts an internet host: sockets exist only in
+         lib/features/nearby_transfer/data/ (CI check), bind to the private
+         WiFi address, accept private LAN addresses only, and live only while
+         the Device sync screen is open. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Scanning a Device sync QR code. Asked only when the scan screen opens. -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <!-- Phones without a camera can still install the app and share settings. -->
+    <uses-feature android:name="android.hardware.camera.any" android:required="false"
+        tools:replace="android:required"/>
+    <!-- The camera plugin also asks for these. Folio never records audio and
+         never uses broad storage (Hard Rule 3), so they are removed. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" tools:node="remove"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" tools:node="remove"/>
+    <!-- The manifest merger adds READ_EXTERNAL_STORAGE by itself ("implied")
+         whenever a library asks for WRITE_EXTERNAL_STORAGE, even though WRITE
+         is removed above. Remove it too, or the release build asks for broad
+         storage access. -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove"/>
     <application
-        android:label="${appLabel}"
+        android:label="@string/app_name"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -109,6 +132,11 @@
                 <data android:mimeType="image/*"/>
             </intent-filter>
         </activity>
+        <!-- flutter_zxing pulls in image_picker (its gallery button, which Folio
+             hides). Its Google Play services module hint is not wanted: Folio
+             uses no Google services. -->
+        <service android:name="com.google.android.gms.metadata.ModuleDependencies"
+            tools:node="remove"/>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
@@ -125,7 +153,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- System Virtual Print Service: allows other apps to print to SreerajP PDF App -->
+        <!-- System Virtual Print Service: allows other apps to print to Folio -->
         <service
             android:name=".PdfPrintService"
             android:permission="android.permission.BIND_PRINT_SERVICE"

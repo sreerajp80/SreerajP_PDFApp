@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/features/settings/presentation/widgets/app_section_card.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
@@ -10,18 +10,18 @@ class TypographyScreen extends ConsumerWidget {
 
   static String fontLabel(AppLocalizations l10n, AppFont font) =>
       switch (font) {
-        AppFont.system => l10n.fontSystemDefault,
-        AppFont.manjari => l10n.fontManjari,
-        AppFont.anekMalayalam => l10n.fontAnekMalayalam,
-        AppFont.notoSansMalayalam => l10n.fontNotoSansMalayalam,
+        AppFont.system => l10n.labelFontSystemDefault,
+        AppFont.manjari => l10n.labelFontManjari,
+        AppFont.anekMalayalam => l10n.labelFontAnekMalayalam,
+        AppFont.notoSansMalayalam => l10n.labelFontNotoSansMalayalam,
       };
 
   static String textScaleLabel(AppLocalizations l10n, AppTextScale scale) =>
       switch (scale) {
-        AppTextScale.small => l10n.textSizeSmall,
-        AppTextScale.normal => l10n.textSizeDefault,
-        AppTextScale.large => l10n.textSizeLarge,
-        AppTextScale.larger => l10n.textSizeLarger,
+        AppTextScale.small => l10n.labelTextSizeSmall,
+        AppTextScale.normal => l10n.labelTextSizeDefault,
+        AppTextScale.large => l10n.labelTextSizeLarge,
+        AppTextScale.larger => l10n.labelTextSizeLarger,
       };
 
   @override
@@ -31,12 +31,12 @@ class TypographyScreen extends ConsumerWidget {
     final currentScale = ref.watch(appTextScaleProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.typographyTitle)),
+      appBar: AppBar(title: Text(l10n.titleTypography)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           AppSectionCard(
-            title: l10n.typographyFontLabel,
+            title: l10n.labelTypographyFont,
             child: Column(
               children: [
                 for (final font in AppFont.values) ...[
@@ -53,7 +53,7 @@ class TypographyScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           AppSectionCard(
-            title: l10n.typographyTextSizeLabel,
+            title: l10n.labelTypographyTextSize,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: SegmentedButton<AppTextScale>(
@@ -129,7 +129,7 @@ class _FontTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      l10n.typographySampleLatin,
+                      l10n.descTypographySampleLatin,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontFamily: fontFamily,
                         color: colorScheme.onSurfaceVariant,
@@ -137,7 +137,7 @@ class _FontTile extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      l10n.typographySampleMalayalam,
+                      l10n.labelTypographySampleMalayalam,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontFamily: fontFamily,
                         color: colorScheme.onSurfaceVariant,

@@ -14,6 +14,7 @@ class OpenedDocument {
     required this.displayName,
     required this.sizeBytes,
     required this.cachePath,
+    this.hasLastingAccess = false,
   });
 
   final String uri;
@@ -21,11 +22,16 @@ class OpenedDocument {
   final int sizeBytes;
   final String cachePath;
 
+  /// True when the app can still read [uri] after it restarts. Files picked
+  /// with "Open PDF" have it; most "Open with" files do not.
+  final bool hasLastingAccess;
+
   static OpenedDocument fromMap(Map<Object?, Object?> map) => OpenedDocument(
     uri: map['uri']! as String,
     displayName: map['name']! as String,
     sizeBytes: (map['size']! as num).toInt(),
     cachePath: map['path']! as String,
+    hasLastingAccess: map['persisted'] as bool? ?? false,
   );
 }
 
@@ -107,10 +113,14 @@ class OpenDocumentChannel {
 
   /// Opens the system picker. Returns the chosen PDF, or null if the user
   /// cancelled. Throws [StorageException] on a platform failure.
-  Future<OpenedDocument?> pickPdf() async {
+  ///
+  /// [initialUri] is a hint to start in that file's folder (used to find a
+  /// recent file again). The picker may ignore it.
+  Future<OpenedDocument?> pickPdf({String? initialUri}) async {
     try {
       final result = await _method.invokeMethod<Map<Object?, Object?>>(
         'pickPdf',
+        {'initialUri': initialUri},
       );
       if (result == null) return null;
       return OpenedDocument.fromMap(result);
@@ -181,6 +191,120 @@ class OpenDocumentChannel {
       return OpenedDocument.fromMap(result);
     } on PlatformException catch (e) {
       throw StorageException('This file could not be reopened.', cause: e);
+    }
+  }
+
+  /// Whether the app still holds read access to [uri] that survives a restart.
+  /// Returns false on any platform failure.
+  Future<bool> hasLastingAccess(String uri) async {
+    try {
+      return await _method.invokeMethod<bool>('hasLastingAccess', {
+            'uri': uri,
+          }) ??
+          false;
+    } on PlatformException catch (e) {
+      AppLogger.warning('Could not check file access.', error: e);
+      return false;
+    }
+  }
+
+  /// Checks, without opening them, whether the stored [uris] can still be
+  /// reached. Returns URI -> reachable. A URI missing from the map is
+  /// "unknown"; on any platform failure the map is empty (never a crash and
+  /// never a wrong "unavailable" mark).
+  Future<Map<String, bool>> checkAvailable(List<String> uris) async {
+    if (uris.isEmpty) return const {};
+    try {
+      final result = await _method.invokeMapMethod<String, bool>(
+        'checkAvailable',
+        {'uris': uris},
+      );
+      return result ?? const {};
+    } on PlatformException catch (e) {
+      AppLogger.warning('Could not check recent files.', error: e);
+      return const {};
+    } on MissingPluginException catch (e) {
+      AppLogger.warning('Recent file check not available.', error: e);
+      return const {};
+    }
+  }
+
+  /// Gives back every lasting file permission the app holds, so no file stays
+  /// reachable after "Delete all data". A failure is logged, not thrown: the
+  /// rest of the purge must still run.
+  Future<void> releaseAllAccess() async {
+    try {
+      await _method.invokeMethod<int>('releaseAllAccess');
+    } on PlatformException catch (e) {
+      AppLogger.warning('Could not release file access.', error: e);
+    } on MissingPluginException catch (e) {
+      AppLogger.warning('File access release not available.', error: e);
+    }
+  }
+
+  // --- Device sync: the folder received PDFs are saved into ---
+
+  /// Opens the system folder picker and keeps lasting read + write access to
+  /// the chosen folder. Returns `(uri, name)`, or null if the user cancelled.
+  Future<({String uri, String name})?> pickFolder() async {
+    try {
+      final result = await _method.invokeMethod<Map<Object?, Object?>>(
+        'pickFolder',
+      );
+      if (result == null) return null;
+      return (
+        uri: result['uri']! as String,
+        name: result['name'] as String? ?? '',
+      );
+    } on PlatformException catch (e) {
+      throw StorageException('Could not open the folder picker.', cause: e);
+    }
+  }
+
+  /// The display name of a remembered folder, or null when the app no longer
+  /// has access to it or it is gone. Never throws.
+  Future<String?> folderName(String uri) async {
+    try {
+      return await _method.invokeMethod<String>('folderStatus', {'uri': uri});
+    } on PlatformException catch (e) {
+      AppLogger.warning('Could not check the receive folder.', error: e);
+      return null;
+    }
+  }
+
+  /// Gives back lasting access to a folder. Never throws.
+  Future<void> releaseFolder(String uri) async {
+    try {
+      await _method.invokeMethod<void>('releaseFolder', {'uri': uri});
+    } on PlatformException catch (e) {
+      AppLogger.warning('Could not release the receive folder.', error: e);
+    }
+  }
+
+  /// Copies each cache file into the folder [treeUri] as a new PDF. Returns
+  /// one result per file, in order: the saved name and its document URI, or
+  /// `uri == null` when that file could not be saved.
+  Future<List<({String name, String? uri})>> saveFilesToFolder(
+    String treeUri,
+    List<({String path, String name})> files,
+  ) async {
+    try {
+      final result = await _method.invokeListMethod<Object?>(
+        'saveFilesToFolder',
+        {
+          'uri': treeUri,
+          'files': [
+            for (final f in files) {'path': f.path, 'name': f.name},
+          ],
+        },
+      );
+      return [
+        for (final item
+            in (result ?? const <Object?>[]).whereType<Map<Object?, Object?>>())
+          (name: item['name'] as String? ?? '', uri: item['uri'] as String?),
+      ];
+    } on PlatformException catch (e) {
+      throw StorageException('Could not save into the folder.', cause: e);
     }
   }
 

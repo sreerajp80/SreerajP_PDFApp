@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/routing/app_router.dart';
 import 'package:pdfapp/app/theme/app_theme.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
@@ -19,7 +19,7 @@ class HelpScreen extends StatelessWidget {
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 48),
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 16, 16, 48),
           children: [
             _buildHeaderCard(context, l10n, colors),
             const SizedBox(height: 20),
@@ -114,8 +114,8 @@ class HelpScreen extends StatelessWidget {
         colors?.brandGradient ??
         LinearGradient(
           colors: [primary, secondary],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
         );
     final gradientStart = colors?.gradientStart ?? primary;
     final muted = colors?.mutedText ?? theme.colorScheme.onSurfaceVariant;
@@ -131,8 +131,8 @@ class HelpScreen extends StatelessWidget {
               primary.withValues(alpha: 0.12),
               secondary.withValues(alpha: 0.04),
             ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+            begin: AlignmentDirectional.topStart,
+            end: AlignmentDirectional.bottomEnd,
           ),
         ),
         child: Row(

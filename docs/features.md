@@ -1,10 +1,10 @@
-# Features — SreerajP PDF App
+# Features — Folio
 
 This document is the complete catalog of what the app does today: every screen, every
 PDF operation, and every system integration it offers. Read it before adding or changing
 a feature, so you know what already exists.
 
-> Read first: [../.agents/AGENTS.md](../.agents/AGENTS.md) (or [../CLAUDE.md](../CLAUDE.md)) for the project rules,
+> Read first: [../CLAUDE.md](../CLAUDE.md) and [../AGENTS.md](../AGENTS.md) for the project rules,
 > [architecture.md](architecture.md) for how the app is built, and
 > [feature_analysis_and_roadmap.md](feature_analysis_and_roadmap.md) for what is planned next.
 
@@ -12,12 +12,12 @@ a feature, so you know what already exists.
 
 ## 1. App Overview & Description
 
-**SreerajP PDF App** (`pdfapp` / `in.sreerajp.pdfapp`) is an offline-first, open-source, privacy-focused Android application built with **Flutter** (3.44.8+) and **native Kotlin** (minSdk 26 / Android 8.0+). It serves as a comprehensive tool for viewing, navigating, searching, reading aloud (text-to-speech), selecting/copying text, annotating, reorganizing, watermarking, imposing (N-up and booklet), trimming, extracting data from, encrypting/decrypting, compressing, verifying digital signatures of, and printing PDF documents. Additionally, it functions as a system-wide PDF printer and content conversion hub for Android, allowing other applications to share images, plain text, or web content to be cleaned, saved, or printed as PDFs.
+**Folio** (`pdfapp` / `in.sreerajp.pdfapp`) is an offline-first, open-source, privacy-focused Android application built with **Flutter** (3.47.0+) and **native Kotlin** (minSdk 26 / Android 8.0+). It serves as a comprehensive tool for viewing, navigating, searching, reading aloud (text-to-speech), selecting/copying text, annotating, reorganizing, watermarking, imposing (N-up and booklet), trimming, extracting data from, encrypting/decrypting, compressing, verifying digital signatures of, and printing PDF documents. Additionally, it functions as a system-wide PDF printer and content conversion hub for Android, allowing other applications to share images, plain text, or web content to be cleaned, saved, or printed as PDFs.
 
 ### Key Architectural Principles & Hard Rules
 
 1. **100% Open Source Stack**: Core functionality relies exclusively on open-source libraries:
-   - **Rendering**: `pdfrx` (pdfium, BSD license).
+   - **Rendering**: `pdfrx` (pdfium, MIT license).
    - **Document Processing & Page Operations**: `PdfBox-Android` (Apache 2.0 license).
    - **Cryptography & Signatures**: Bouncy Castle (`org.bouncycastle`) & native `CertPathValidator`.
    - **Text-to-Speech**: `flutter_tts` (MIT license) & native Android TTS engine integration.
@@ -34,8 +34,8 @@ a feature, so you know what already exists.
    - **Localization Framework**: `flutter_localizations` (Flutter SDK), backing the dual-language (English/Malayalam) UI.
    - **Bundled Fonts**: Open-source Malayalam and multilingual fonts (`Manjari`, `Anek Malayalam`, `Noto Sans Malayalam`).
    *Commercial or proprietary SDKs (e.g., Syncfusion, PSPDFKit, Apryse) are strictly forbidden.*
-2. **Offline-First & Zero Telemetry**: Fully functional without network access. The app requests no internet permission (`android.permission.INTERNET` is absent) and collects zero user data or telemetry. Local cryptographic signature verification is performed entirely offline using bundled and user-imported trust stores.
-3. **Scoped Storage & SAF URI Persistence**: Files are accessed strictly via system file pickers (Storage Access Framework — `ACTION_OPEN_DOCUMENT`) and Android share/view intents (`ACTION_VIEW`, `ACTION_SEND`, `ACTION_SEND_MULTIPLE`). No broad storage permissions (`READ_EXTERNAL_STORAGE` / `MANAGE_EXTERNAL_STORAGE`) are requested. Persistable URI permissions (`takePersistableUriPermission`) are maintained so recently opened documents remain accessible across app reboots. Stale or moved file URIs degrade gracefully with clear error prompts.
+2. **Offline-First, No Internet & Zero Telemetry**: Fully functional without network access. The app never contacts an internet server and collects zero user data or telemetry. `android.permission.INTERNET` is declared only for Device sync (§2.10), which works phone-to-phone on the local WiFi. Local cryptographic signature verification is performed entirely offline using bundled and user-imported trust stores.
+3. **Scoped Storage & SAF URI Persistence**: Files are accessed strictly via system file pickers (Storage Access Framework — `ACTION_OPEN_DOCUMENT`) and Android share/view intents (`ACTION_VIEW`, `ACTION_SEND`, `ACTION_SEND_MULTIPLE`). No broad storage permissions (`READ_EXTERNAL_STORAGE` / `MANAGE_EXTERNAL_STORAGE`) are requested. Persistable URI permissions (`takePersistableUriPermission`) are maintained so recently opened documents remain accessible across app reboots. Files opened through "Open with" usually get only short access from the sending app, which ends when this app closes; the app keeps lasting access when the sender allows it, and never replaces a still-working saved link with a short one. Stale, moved, or no-longer-accessible files open a dialog that explains why and offers "Find file" (the system picker, started near the old file) or "Remove".
 4. **Copy-on-Write Operations**: Every page modification or document operation (merge, split, reorder, rotate, delete, watermark, N-up, booklet, trim margins, compress, encrypt, decrypt, export annotations, print/save) generates a **new output file**. Original PDF files are **never** overwritten in place.
 5. **Never Crash on Bad Input**: Corrupt, truncated, empty, or password-protected files trigger clear, friendly error UI instead of app crashes.
 6. **Never a Dead Button**: Shared components (e.g., TTS speech engines, system print services) report their operational state and provide clear setup or fallback paths when unavailable.
@@ -64,11 +64,11 @@ a feature, so you know what already exists.
 - **Password-Protected PDF Support**: On-demand password dialog for opening encrypted documents with full password validation and retry handling.
 - **Document Content Fingerprinting**: Unique SHA-256 content fingerprinting (`size:sha256`) ensuring document identity, annotations, bookmarks, and reading positions persist across file renaming or path relocation.
 - **Reading Position Persistence**: Automatically saves and restores last-read page number and viewing mode per document in a local SQLite database (`reading_positions` table).
-- **Recent Files Dashboard**: Home screen recents gallery detailing display name, page count, thumbnail/icon, and last-opened date. Features one-tap reopening, single-item deletion, bulk history clearing in Storage Settings, and stale URI removal. Keeps the 30 most recently opened files.
+- **Recent Files Dashboard**: Home screen recents gallery detailing display name, page count, thumbnail/icon, and last-opened date. Features one-tap reopening, single-item deletion, bulk history clearing in Storage Settings, stale URI removal, and a "Find file" recovery dialog for files that can no longer be reopened. Files that were deleted, moved, or can no longer be read are marked "Not available" (warning icon, dimmed name) so they can be removed without trying to open them; the check reads file details only, never the file itself, and re-runs when the list changes or the app comes back to the front. Tapping a marked file still tries to open it and shows the recovery dialog if that fails. Keeps the 30 most recently opened files.
 
 ### 2.2 Search, Indic Phonetic & Sandhi Engine, and Text-to-Speech (TTS)
 
-- **On-Page Full-Text Search**: Real-time keyword search with match counting, next/previous match navigation, and bright match highlighting on rendered pages.
+- **On-Page Full-Text Search**: Real-time keyword search with match counting, next/previous match navigation, and bright match highlighting on rendered pages. The view moves to each match itself (including the first one as soon as it is found) and keeps the reader's zoom; the keyboard is put away while stepping through matches.
 - **Select & Copy Text**: Native text selection on rendered pages wherever a real text layer exists, allowing users to select and copy passages. Automatically disabled when the page has no usable text layer, and disabled during active annotation drawing.
 - **Indic Phonetic & Sandhi-Aware Search (Malayalam & Devanagari/Sanskrit)**:
   - **Sandhi Compound Joining & Splitting Engine**: Rule-based Sandhi compound transformation supporting Vowel Sandhi (Savarna Deergha, Guna, Vriddhi, Yan, Ayadi, Poorvaroopa with Avagraha `ഽ`/`ऽ`), Consonant Sandhi (Jashthva, Anunasika, Schutva, Parasavarna), Visarga Sandhi (Ruthva, Sathva, Uthva, Lopa), and Malayalam Dravidian Sandhi (Agama, Dvitva, Lopa, Adesha). Multi-word queries automatically match joined compounds and vice versa.
@@ -83,7 +83,8 @@ a feature, so you know what already exists.
 - **Malayalam Input Helper & Virtual Keypad**:
   - Live Manglish-to-Malayalam phonetic transliteration suggestions displayed directly above the search bar.
   - Expandable 3-tab virtual Malayalam keypad (Vowels, Consonants, Signs & Chillu) providing complete Malayalam input even without a native Indic system keyboard.
-- **Text Quality Inspector & Notice**: Automatically inspects extracted page text for missing or garbled `ToUnicode` maps, displaying a friendly info banner (`TextQualityNotice`) and disabling text operations safely when text layer is absent or corrupted.
+- **Word Spacing Repair**: Page text is read from PDFium's raw characters and boxes (`TextLayoutRepair`). Spaces that PDFium places inside a word, or drops after a word-final virama (`്` / `्`), are fixed from where each character sits on the page. This makes search, copy and read-aloud work on PDFs made by LibreOffice (99.3% of words right on a 41-page Malayalam test book, up from about 85%).
+- **Text Quality Inspector & Notice**: Automatically inspects extracted page text for missing or garbled `ToUnicode` maps, displaying a friendly info banner (`TextQualityNotice`) and disabling text operations safely when text layer is absent or corrupted. It also spots text that is probably not proper Unicode — Indic letters stored in drawing order (a vowel sign before its consonant) or an old font mapped onto Latin-1 symbols (Kruti Dev / ML-TT style). For such PDFs search, copy and read-aloud stay on, but a warning banner and a warning icon in the search bar say that matches may be missing or wrong.
 - **Text-to-Speech (TTS) & Playback Controls**:
   - Reads PDF text aloud in English (`en-US`) and Malayalam (`ml-IN`) via `flutter_tts` and native Android TTS.
   - Fine-grained playback controls in TTS Settings: Speech Rate slider (0.5x to 2.0x), Pitch slider (0.5x to 2.0x), Sentence Pause slider (0.0s to 2.0s), and Auto-Scroll toggle.
@@ -104,7 +105,7 @@ a feature, so you know what already exists.
 ### 2.4 Page Operations & Document Reorganization (Copy-on-Write)
 
 - **Visual Organize Pages Grid**: Interactive thumbnail grid screen allowing users to reorder pages via drag-and-drop, rotate pages (0°, 90°, 180°, 270°), or delete specific pages with an immediate "Undo" action. Supports multi-selection mode (select all, invert selection, bulk rotate, and bulk delete).
-- **Custom Text Watermarks**: Add custom text watermarks to single pages or page ranges with configurable opacity, diagonal/horizontal rotation angle, font size, color presets, and optional repeating grid tiling.
+- **Custom Text Watermarks**: Add custom text watermarks to single pages or page ranges with configurable opacity, diagonal/horizontal rotation angle, font size, color presets, and optional repeating grid tiling. Watermark text can be in any script: Latin text is written as real PDF text; Malayalam, Sanskrit (Devanagari) and other scripts are shaped by Android's text engine with the bundled Noto fonts and placed as a sharp transparent image, so conjuncts and vowel signs join correctly and the page's own text layer is not disturbed. The default text and the preset words follow the app language.
 - **N-Up Multi-Page Imposition**: Combine multiple pages onto a single sheet (2-in-1, 4-in-1, 6-in-1, 9-in-1 layouts) on A4 or US Letter sheets with customizable page borders, sheet orientation, and margin sliders.
 - **Batch PDF Operations**: Execute batch operations across multiple SAF-picked PDF files (Batch Compress, Batch Watermark, Batch Encrypt/Protect, Batch Decrypt/Unlock, Batch Margin Trim, Batch Text Extraction, Batch Merge) with real-time step progress reporting.
 - **Smart Margin Trim / Crop**: Auto-detects white space margins with live preview and trims unnecessary margins for improved reading on mobile screens.
@@ -168,7 +169,7 @@ a feature, so you know what already exists.
   3. **Reader Preferences**: Remember last-read position, page number indicator, reading time estimates, inverted colors, default layout (Auto, Continuous, Single Page), and double-tap zoom behavior.
   4. **Read Aloud (TTS)**: Malayalam voice toggle, voice installer helper, auto-scroll toggle, speech rate slider, pitch slider, and sentence pause slider.
   5. **Virtual PDF Printer**: Virtual printer enable/disable toggle, default paper size (A4, Letter, Legal), color mode (Color, Grayscale, Monochrome), default orientation (Auto, Portrait, Landscape), and printer cache cleaner.
-  6. **Storage & Privacy**: Remember recent files toggle, bulk "Clear Recent Files History" action, and temporary cache cleaner.
+  6. **Storage & Privacy**: Remember recent files toggle, bulk "Clear recent files" action, temporary cache cleaner, and "Delete all data" (removes recents, reading positions, marks, trusted certificates, settings, cached and printed files, and saved file permissions — never the user's own PDFs).
   7. **Trust Store**: Certificate list, import custom certificates, export individual/all certificates, and delete certificates.
   8. **App Permissions**: Transparent breakdown explaining Scoped Storage, zero internet access, no broad storage permissions, and no audio recording.
   9. **Help Center**: Centralized access to 6 detailed user guides.
@@ -181,4 +182,17 @@ a feature, so you know what already exists.
 - **Read Aloud & Malayalam Voice Guide (`/help/tts`)**: Guide to setting up TTS, downloading offline Malayalam voice engines, and configuring speech speeds and sentence pauses.
 - **Organizing & Modifying Pages Guide (`/help/page-ops`)**: Overview of page operations (reorder, rotate, delete), booklets, N-up grids, and the strict copy-on-write safety guarantee.
 - **Digital Signatures & Trust Store Guide (`/help/signatures`)**: Explanation of cryptographic signature validation, certificate chains, and trust store management.
-- **Privacy & Scoped Storage Guide (`/help/privacy-storage`)**: Details on the zero-internet privacy guarantee, Scoped Storage (SAF) boundaries, and cache cleanup.
+- **Privacy & Scoped Storage Guide (`/help/privacy-storage`)**: Details on the no-internet privacy guarantee, Scoped Storage (SAF) boundaries, and cache cleanup.
+
+### 2.10 Device Sync (Settings and PDFs, by QR Code or Local WiFi)
+
+- **Where**: Settings › Device sync (`/settings/device-sync`). One rule: the phone that has the settings shows a code, the other phone scans it.
+- **Settings by QR only**: the settings travel inside the QR code itself. No network is used.
+- **Settings by WiFi**: the QR code holds the phone's private WiFi/hotspot address, a random port and a one-time 256-bit key. The other phone connects directly, and every message is encrypted and checked with AES-256-GCM. The session accepts one phone, then stops listening, and ends after 3 minutes, when the screen closes, or when the app goes to the background.
+- **What is copied**: an allow-list of settings (theme, accent colors, font, text size, language, reader options, read-aloud speed/pitch/pause/scroll, print defaults, remember options, auto signature check). The Malayalam voice choice and the PDF printer switch are not copied because they depend on each phone. Recent files, reading positions, annotations, bookmarks and trusted certificates are never copied.
+- **Safe receiving**: the receiving phone lists the settings that will change and applies nothing until the user taps Apply. Unknown or out-of-range values are skipped. A scanned code that points outside the local network is refused.
+- **Never a dead button**: no WiFi shows how to fix it (same WiFi, hotspot, or QR only); a camera that cannot start shows why and offers the system settings.
+- **Send PDFs (local WiFi only)**: on Home, long-press a recent file to start selecting (tap more to add, up to 50), then tap **Send to nearby phone**; or use **Send to nearby phone** in the viewer menu for the open PDF. The phone shows a QR code; the other phone scans it in Device sync › Receive.
+- **Receive PDFs**: the receiving phone lists the file names and sizes and the folder they will be saved in. The folder is chosen once with the system folder picker and remembered (**Saving to: <folder>** with a **Change** button). Nothing is received until the user taps **Accept**.
+- **Checks on every file**: exact size, SHA-256 and the `%PDF-` header are checked after the last byte arrives. A file that fails is not saved and is named in the result. Saved files are new files (a name clash becomes `name (2).pdf`), are added to Recents (if "Remember recents" is on), and are never opened automatically.
+- **Large files**: content travels in 256 KiB encrypted pieces with flow control, so a big PDF never has to fit in memory on either phone.

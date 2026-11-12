@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show GlobalWidgetsLocalizations;
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/core/constants/app_constants.dart';
 import 'package:pdfapp/features/reading/data/tts_engine.dart';
@@ -12,6 +14,8 @@ import 'package:pdfapp/features/settings/presentation/settings_screen.dart';
 import 'package:pdfapp/features/settings/presentation/tts_settings_screen.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../helpers/tooltip_checks.dart';
 
 class _FakeTtsEngine implements TtsEngine {
   List<String> languages = ['en-us', 'ml-in'];
@@ -92,6 +96,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    expectAllIconButtonsHaveTooltips(tester);
   }
 
   Future<void> pumpTtsSettings(WidgetTester tester) async {
@@ -144,10 +149,7 @@ void main() {
 
       // Features card
       expect(find.text('Features'), findsOneWidget);
-      expect(
-        find.text('Explore all features of SreerajP PDF App'),
-        findsOneWidget,
-      );
+      expect(find.text('Explore all features of Folio'), findsOneWidget);
 
       // Language card
       expect(find.text('Language'), findsOneWidget);
@@ -201,7 +203,7 @@ void main() {
 
       // Verify install sheet pops up because voice is missing
       expect(find.byType(TtsInstallSheet), findsOneWidget);
-      expect(find.text('Get the Malayalam voice'), findsOneWidget);
+      expect(find.text('Get Malayalam voice'), findsOneWidget);
     },
   );
 

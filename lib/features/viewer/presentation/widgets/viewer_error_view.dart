@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
 /// Which friendly error state the viewer is showing.
@@ -61,8 +61,8 @@ class ViewerErrorView extends StatelessWidget {
                 icon: const Icon(Icons.refresh),
                 label: Text(
                   kind == ViewerErrorKind.password
-                      ? l10n.unlockAction
-                      : l10n.tryAgainAction,
+                      ? l10n.actionUnlock
+                      : l10n.actionTryAgain,
                 ),
               ),
             ],

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:characters/characters.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -42,5 +43,41 @@ void main() {
         );
       });
     }
+  });
+
+  test('every key names its category with a prefix', () {
+    // Engineering standard section 8.6: the prefix decides which keys must
+    // stay short, so a key without one would escape the budget check.
+    const allPrefixes = [
+      ...shortPrefixes,
+      'desc',
+      'help',
+      'empty',
+      'error',
+      'body',
+      'aboutDetail',
+    ];
+    // Key names fixed by guideline.md section 1.7 (the About badge).
+    const fixedNames = {'madeWithLove', 'madeWithLoveA11y'};
+    final map = jsonDecode(
+      File('lib/l10n/app_en.arb').readAsStringSync(),
+    ) as Map<String, dynamic>;
+    final missing = [
+      for (final key in map.keys)
+        if (!key.startsWith('@') &&
+            !fixedNames.contains(key) &&
+            !allPrefixes.any(
+              (p) =>
+                  key.startsWith(p) &&
+                  key.length > p.length &&
+                  RegExp('[A-Z0-9]').hasMatch(key[p.length]),
+            ))
+          key,
+    ];
+    expect(
+      missing,
+      isEmpty,
+      reason: 'Keys without a category prefix: $missing',
+    );
   });
 }

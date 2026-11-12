@@ -1,8 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show GlobalWidgetsLocalizations;
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/help/presentation/help_screen.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
+
+import '../../../helpers/tooltip_checks.dart';
 
 void main() {
   testWidgets('renders Help screen with all 6 help topic cards', (
@@ -28,6 +32,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    expectAllIconButtonsHaveTooltips(tester);
 
     // Verify Screen Title
     expect(find.text('Help'), findsOneWidget);
@@ -80,7 +85,7 @@ void main() {
     // 6. Privacy & Storage
     expect(find.text('Privacy & Scoped Storage'), findsOneWidget);
     expect(
-      find.text('Zero internet permissions and Scoped Storage security'),
+      find.text('No internet servers, and Scoped Storage security'),
       findsOneWidget,
     );
     expect(find.byIcon(Icons.security_outlined), findsNWidgets(2));

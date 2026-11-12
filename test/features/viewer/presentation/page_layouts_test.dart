@@ -12,15 +12,12 @@ void main() {
       expect(PdfViewMode.fromStorage('invalid'), PdfViewMode.auto);
     });
 
-    test(
-      'layoutFor picks null (continuous) for auto on phones and book for wide/foldables',
-      () {
-        final phoneLayout = layoutFor(PdfViewMode.auto);
-        expect(phoneLayout, isNull);
+    test('layoutFor picks null (continuous) for auto on phones and book for wide/foldables', () {
+      final phoneLayout = layoutFor(PdfViewMode.auto);
+      expect(phoneLayout, isNull);
 
-        final wideLayout = layoutFor(PdfViewMode.auto, isWideOrFoldable: true);
-        expect(wideLayout, isNotNull);
-      },
-    );
+      final wideLayout = layoutFor(PdfViewMode.auto, isWideOrFoldable: true);
+      expect(wideLayout, isNotNull);
+    });
   });
 }

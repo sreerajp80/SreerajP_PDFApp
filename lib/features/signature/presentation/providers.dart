@@ -42,10 +42,14 @@ final signatureVerdictsProvider =
       String
     >(SignatureVerdictsNotifier.new);
 
-class SignatureVerdictsNotifier
-    extends FamilyAsyncNotifier<List<SignatureVerdict>, String> {
+class SignatureVerdictsNotifier extends AsyncNotifier<List<SignatureVerdict>> {
+  SignatureVerdictsNotifier(this.path);
+
+  /// The cache path of the document whose signatures are checked.
+  final String path;
+
   @override
-  Future<List<SignatureVerdict>> build(String path) async {
+  Future<List<SignatureVerdict>> build() async {
     // Watch trusted certificates so this provider automatically rebuilds/recomputes
     // whenever the trust store changes (certificates are added or removed).
     ref.watch(trustedCertificatesProvider);
@@ -58,7 +62,7 @@ class SignatureVerdictsNotifier
   Future<void> refresh() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(
-      () => ref.read(signatureRepositoryProvider).verify(arg),
+      () => ref.read(signatureRepositoryProvider).verify(path),
     );
   }
 }

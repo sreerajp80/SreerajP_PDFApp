@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/core/format/display_format.dart';
 import 'package:pdfapp/core/platform/pdfbox_channel.dart';
 import 'package:pdfapp/features/reading/presentation/providers.dart';
@@ -36,18 +36,18 @@ class MetadataSheet extends ConsumerWidget {
     final metadata = ref.watch(pdfMetadataProvider(docRef.cachePath));
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      padding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 24),
       children: [
-        Text(l10n.metadataTitle, style: theme.textTheme.titleLarge),
+        Text(l10n.titleMetadata, style: theme.textTheme.titleLarge),
         const SizedBox(height: 16),
-        _SectionHeader(l10n.metadataFileSection),
-        _Row(label: l10n.metadataFileName, value: docRef.displayName),
+        _SectionHeader(l10n.labelMetadataFileSection),
+        _Row(label: l10n.labelMetadataFileName, value: docRef.displayName),
         _Row(
-          label: l10n.metadataFileSize,
+          label: l10n.labelMetadataFileSize,
           value: DisplayFormat.bytes(docRef.sizeBytes),
         ),
         const SizedBox(height: 16),
-        _SectionHeader(l10n.metadataPdfSection),
+        _SectionHeader(l10n.labelMetadataPdfSection),
         ...metadata.when(
           loading: () => const [
             Padding(
@@ -56,7 +56,7 @@ class MetadataSheet extends ConsumerWidget {
             ),
           ],
           error: (error, _) => [
-            _Unavailable(message: l10n.metadataUnavailable),
+            _Unavailable(message: l10n.errorMetadataUnavailable),
           ],
           data: (data) => _pdfRows(l10n, context, data),
         ),
@@ -74,26 +74,30 @@ class MetadataSheet extends ConsumerWidget {
         value == null ? null : DisplayFormat.dateTime(value, locale);
 
     final rows = <Widget>[
-      _Row(label: l10n.metadataTitleField, value: data.title),
-      _Row(label: l10n.metadataAuthor, value: data.author),
-      _Row(label: l10n.metadataSubject, value: data.subject),
-      _Row(label: l10n.metadataKeywords, value: data.keywords),
-      _Row(label: l10n.metadataCreator, value: data.creator),
-      _Row(label: l10n.metadataProducer, value: data.producer),
-      _Row(label: l10n.metadataCreated, value: date(data.creationDate)),
-      _Row(label: l10n.metadataModified, value: date(data.modificationDate)),
+      _Row(label: l10n.labelMetadataTitleField, value: data.title),
+      _Row(label: l10n.labelMetadataAuthor, value: data.author),
+      _Row(label: l10n.labelMetadataSubject, value: data.subject),
+      _Row(label: l10n.labelMetadataKeywords, value: data.keywords),
+      _Row(label: l10n.labelMetadataCreator, value: data.creator),
+      _Row(label: l10n.labelMetadataProducer, value: data.producer),
+      _Row(label: l10n.labelMetadataCreated, value: date(data.creationDate)),
       _Row(
-        label: l10n.metadataPages,
+        label: l10n.labelMetadataModified,
+        value: date(data.modificationDate),
+      ),
+      _Row(
+        label: l10n.labelMetadataPages,
         value: data.pageCount?.toString() ?? docRef.pageCount?.toString(),
       ),
-      _Row(label: l10n.metadataPdfVersion, value: data.pdfVersion),
-      if (data.encrypted) _Row(label: l10n.metadataProtected, value: l10n.yes),
+      _Row(label: l10n.labelMetadataPdfVersion, value: data.pdfVersion),
+      if (data.encrypted)
+        _Row(label: l10n.labelMetadataProtected, value: l10n.labelYes),
     ];
     // Many PDFs carry no descriptive fields at all; say so once rather than
     // showing a wall of dashes.
     if (data.isEmpty) {
       return [
-        _Unavailable(message: l10n.metadataNoFields),
+        _Unavailable(message: l10n.descMetadataNoFields),
         ...rows.where((row) => row is _Row && row.value != null),
       ];
     }

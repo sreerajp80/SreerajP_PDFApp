@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -7,21 +8,22 @@ void main() {
 
   /// Strings allowed to match English: brand names and symbols. Keep this list short.
   const sameAsEnglishAllowed = <String>{
-    'fontManjari',
-    'fontAnekMalayalam',
-    'fontNotoSansMalayalam',
-    'typographySampleLatin',
-    'typographySampleMalayalam',
-    'languageEnglish',
-    'languageMalayalam',
-    'languageSanskrit',
-    'readingSpeedLabel',
-    'nUpSheetA4',
-    'nUpSheetLetter',
-    'imageFormatJpeg',
-    'pageJumpRangeHint',
-    'bookletPaperLetter',
-    'permBindPrintServiceTitle',
+    'labelFontManjari',
+    'labelFontAnekMalayalam',
+    'labelFontNotoSansMalayalam',
+    'descTypographySampleLatin',
+    'labelTypographySampleMalayalam',
+    'labelLanguageEnglish',
+    'labelLanguageMalayalam',
+    'labelLanguageSanskrit',
+    'labelReadingSpeed',
+    'labelNUpSheetA4',
+    'labelPaperA4',
+    'labelNUpSheetLetter',
+    'labelImageFormatJpeg',
+    'labelPageJumpRangeHint',
+    'labelBookletPaperLetter',
+    'titlePermBindPrintService',
   };
 
   group('ARB parity tests', () {

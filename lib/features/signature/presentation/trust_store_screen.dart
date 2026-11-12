@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/core/errors/app_exception.dart';
+import 'package:pdfapp/core/errors/user_error_message.dart';
 import 'package:pdfapp/features/signature/domain/trusted_certificate.dart';
 import 'package:pdfapp/features/signature/presentation/providers.dart';
 import 'package:pdfapp/features/signature/presentation/widgets/trust_certificate_dialog.dart';
@@ -22,13 +23,13 @@ class TrustStoreScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.trustStoreTitle),
+        title: Text(l10n.titleTrustStore),
         actions: [
           certificates.maybeWhen(
             data: (list) => list.isNotEmpty
                 ? IconButton(
                     icon: const Icon(Icons.file_download_outlined),
-                    tooltip: l10n.trustStoreExportAllAction,
+                    tooltip: l10n.actionTrustStoreExportAll,
                     onPressed: () => _exportAll(context, ref),
                   )
                 : const SizedBox.shrink(),
@@ -39,7 +40,7 @@ class TrustStoreScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _addCertificate(context, ref),
         icon: const Icon(Icons.add),
-        label: Text(l10n.trustStoreAddAction),
+        label: Text(l10n.actionTrustStoreAdd),
       ),
       body: certificates.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -47,7 +48,7 @@ class TrustStoreScreen extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.all(32.0),
             child: Text(
-              error is AppException ? error.message : l10n.trustStoreEmpty,
+              userErrorMessage(l10n, error, fallback: l10n.errorTrustStoreLoad),
               textAlign: TextAlign.center,
             ),
           ),
@@ -67,13 +68,13 @@ class TrustStoreScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 16.0),
                     Text(
-                      l10n.trustStoreEmpty,
+                      l10n.emptyTrustStore,
                       style: Theme.of(context).textTheme.titleMedium,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8.0),
                     Text(
-                      l10n.trustStoreEmptyDetail,
+                      l10n.descTrustStoreEmptyDetail,
                       style: Theme.of(context).textTheme.bodyMedium,
                       textAlign: TextAlign.center,
                     ),
@@ -112,7 +113,7 @@ class TrustStoreScreen extends ConsumerWidget {
           Text(cert.issuerCommonName, style: theme.textTheme.bodySmall),
           if (expired)
             Text(
-              l10n.trustStoreExpiredWarning,
+              l10n.descTrustStoreExpiredWarning,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: theme.colorScheme.error,
               ),
@@ -125,12 +126,12 @@ class TrustStoreScreen extends ConsumerWidget {
         children: [
           IconButton(
             icon: const Icon(Icons.file_download_outlined),
-            tooltip: l10n.trustStoreExportAction,
+            tooltip: l10n.actionTrustStoreExport,
             onPressed: () => _exportOne(context, ref, cert),
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline),
-            tooltip: l10n.trustStoreRemoveAction,
+            tooltip: l10n.actionTrustStoreRemove,
             onPressed: () => _remove(context, ref, cert),
           ),
         ],
@@ -157,11 +158,23 @@ class TrustStoreScreen extends ConsumerWidget {
           );
       if (saved != null) {
         messenger.showSnackBar(
-          SnackBar(content: Text(l10n.trustStoreExportSuccess(saved))),
+          SnackBar(content: Text(l10n.descTrustStoreExportSuccess(saved))),
         );
       }
     } on AppException catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            userErrorMessage(l10n, e, fallback: l10n.errorCertificateExport),
+          ),
+          action: SnackBarAction(
+            label: l10n.actionTryAgain,
+            onPressed: () {
+              if (context.mounted) _exportOne(context, ref, cert);
+            },
+          ),
+        ),
+      );
     }
   }
 
@@ -180,11 +193,23 @@ class TrustStoreScreen extends ConsumerWidget {
           );
       if (saved != null) {
         messenger.showSnackBar(
-          SnackBar(content: Text(l10n.trustStoreExportSuccess(saved))),
+          SnackBar(content: Text(l10n.descTrustStoreExportSuccess(saved))),
         );
       }
     } on AppException catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            userErrorMessage(l10n, e, fallback: l10n.errorCertificateExport),
+          ),
+          action: SnackBarAction(
+            label: l10n.actionTryAgain,
+            onPressed: () {
+              if (context.mounted) _exportAll(context, ref);
+            },
+          ),
+        ),
+      );
     }
   }
 
@@ -202,7 +227,13 @@ class TrustStoreScreen extends ConsumerWidget {
     try {
       certificate = await repository.readCertificateFile(picked);
     } on AppException catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            userErrorMessage(l10n, e, fallback: l10n.errorInvalidCertificate),
+          ),
+        ),
+      );
       return;
     }
 
@@ -215,7 +246,9 @@ class TrustStoreScreen extends ConsumerWidget {
 
     await repository.trust(certificate);
     await ref.read(trustedCertificatesProvider.notifier).refresh();
-    messenger.showSnackBar(SnackBar(content: Text(l10n.signatureTrustedToast)));
+    messenger.showSnackBar(
+      SnackBar(content: Text(l10n.descSignatureTrustedToast)),
+    );
   }
 
   Future<void> _remove(
@@ -227,16 +260,18 @@ class TrustStoreScreen extends ConsumerWidget {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.trustStoreRemoveTitle),
-        content: Text('${cert.commonName}\n\n${l10n.trustStoreRemoveExplain}'),
+        title: Text(l10n.titleTrustStoreRemove),
+        content: Text(
+          '${cert.commonName}\n\n${l10n.descTrustStoreRemoveExplain}',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: Text(l10n.cancelAction),
+            child: Text(l10n.actionCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: Text(l10n.trustStoreRemoveAction),
+            child: Text(l10n.actionTrustStoreRemove),
           ),
         ],
       ),

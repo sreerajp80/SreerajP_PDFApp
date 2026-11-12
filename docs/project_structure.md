@@ -1,8 +1,8 @@
-# Project Structure — SreerajP PDF App
+# Project Structure — Folio
 
-This document details the folder structure and architectural responsibilities of the SreerajP PDF App codebase. Read this before adding new modules, features, or screens.
+This document details the folder structure and architectural responsibilities of the Folio app codebase. Read this before adding new modules, features, or screens.
 
-> Read first: [../.agents/AGENTS.md](../.agents/AGENTS.md) (or [../CLAUDE.md](../CLAUDE.md)) for project rules, [architecture.md](architecture.md) for full architectural details, and [guidelines/guideline.md](guidelines/guideline.md) for folder-structure conventions.
+> Read first: [../CLAUDE.md](../CLAUDE.md) and [../AGENTS.md](../AGENTS.md) for project rules, [architecture.md](architecture.md) for full architectural details, and [guidelines/guideline.md](guidelines/guideline.md) for folder-structure conventions.
 
 ---
 
@@ -19,7 +19,9 @@ This document details the folder structure and architectural responsibilities of
 |   `-- trust/               # Bundled root certificates for signature checking
 |-- change_log/              # Implemented change logs (yyyymmdd_hhMMss_<slug>.md)
 |-- docs/                    # Architectural, security, and process documentation
-|   `-- guidelines/          # Shared Flutter guidelines Git submodule
+|   |-- PROJECT_PROFILE.md   # Declared platforms, stores, languages, identity, About options
+|   |-- GUIDELINES_MANIFEST.md # Pointer to the shared guidelines (unchanged copy)
+|   `-- guidelines/          # Shared Flutter guidelines Git submodule (read-only here)
 |-- lib/                     # Application source code (Tier 2 Feature-First)
 |-- plans/                   # Implementation plans (yyyymmdd_hhMMss_<slug>.md)
 |-- samples/                 # Sample PDFs used for manual testing
@@ -70,6 +72,7 @@ lib/
 |   |-- reading/             # Search engine (Indic/Sandhi), TTS integration, bookmarks
 |   |-- settings/            # Appearance, Malayalam TTS toggle, permissions, and preferences
 |   |-- signature/           # Digital signature verification and custom trust store
+|   |-- nearby_transfer/     # Device sync: settings by QR code or local WiFi (the only socket code)
 |   `-- viewer/              # Home recents screen, core PDF rendering, zoom, and navigation
 `-- l10n/                    # ARB localizations (app_en.arb, app_ml.arb, generated classes)
 ```

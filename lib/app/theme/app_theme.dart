@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/theme/tokens.dart';
 
 /// User-selectable theme. `system` follows the device; `sepia` is a reading-comfort
@@ -36,8 +36,8 @@ class AppColors extends ThemeExtension<AppColors> {
 
   LinearGradient get brandGradient => LinearGradient(
     colors: [gradientStart, gradientEnd],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
+    begin: AlignmentDirectional.topStart,
+    end: AlignmentDirectional.bottomEnd,
   );
 
   @override
@@ -200,6 +200,10 @@ class AppTheme {
               fontFamily != 'system')
           ? fontFamily
           : null,
+      // Bundled fonts for every declared non-Latin script, so Malayalam and
+      // Sanskrit (Devanagari) never render as boxes, whatever font is chosen
+      // (engineering standard §8.3.3, language pack §2).
+      fontFamilyFallback: AppTokens.scriptFontFallback,
       colorScheme: scheme,
       appBarTheme: const AppBarTheme(centerTitle: false),
       cardTheme: CardThemeData(

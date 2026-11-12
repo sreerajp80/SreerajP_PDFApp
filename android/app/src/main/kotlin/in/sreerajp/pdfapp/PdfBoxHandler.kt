@@ -3,6 +3,7 @@ package `in`.sreerajp.pdfapp
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
@@ -35,6 +36,8 @@ import java.io.File
 import java.io.FileOutputStream
 import java.util.Calendar
 import java.util.concurrent.Executors
+import kotlin.math.ceil
+import kotlin.math.roundToInt
 
 /**
  * PdfBox-Android bridge (Phase 2).
@@ -959,6 +962,22 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
     }
 
     /**
+     * Loads a font bundled under `assets/fonts/` by the Flutter app. Release builds keep
+     * Flutter assets under `flutter_assets/`; the plain path is a fallback. If both fail,
+     * the system sans-serif font with [style] is used, so drawing never stops here.
+     */
+    private fun loadBundledTypeface(fileName: String, style: Int): Typeface =
+        try {
+            Typeface.createFromAsset(appContext.assets, "flutter_assets/assets/fonts/$fileName")
+        } catch (_: Exception) {
+            try {
+                Typeface.createFromAsset(appContext.assets, "assets/fonts/$fileName")
+            } catch (_: Exception) {
+                Typeface.create("sans-serif", style)
+            }
+        }
+
+    /**
      * Builds a new PDF at [outputPath] holding [text], wrapped onto A4 pages.
      *
      * Uses Android's native [PdfDocument] with [StaticLayout] and [TextPaint]. This utilizes
@@ -982,15 +1001,7 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
 
                 val hasMalayalam = normalized.any { it in '\u0D00'..'\u0D7F' }
                 val typeface: Typeface = if (hasMalayalam) {
-                    try {
-                        Typeface.createFromAsset(appContext.assets, "flutter_assets/assets/fonts/NotoSansMalayalam-Regular.ttf")
-                    } catch (_: Exception) {
-                        try {
-                            Typeface.createFromAsset(appContext.assets, "assets/fonts/NotoSansMalayalam-Regular.ttf")
-                        } catch (_: Exception) {
-                            Typeface.create("sans-serif", Typeface.NORMAL)
-                        }
-                    }
+                    loadBundledTypeface("NotoSansMalayalam-Regular.ttf", Typeface.NORMAL)
                 } else {
                     Typeface.create("sans-serif", Typeface.NORMAL)
                 }
@@ -1407,6 +1418,92 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
         cs.restoreGraphicsState()
     }
 
+    /** A text watermark drawn as an image, with its size in PDF points. */
+    private class TextStamp(val image: PDImageXObject, val width: Float, val height: Float)
+
+    /** True when [font] can write every character of [text] (no glyph is missing). */
+    private fun canEncode(font: PDType1Font, text: String): Boolean =
+        try {
+            font.encode(text)
+            true
+        } catch (_: Exception) {
+            false
+        }
+
+    /**
+     * Draws [text] once with Android's text engine, which shapes complex scripts
+     * (Malayalam conjuncts, Devanagari vowel signs) correctly, and turns it into a
+     * transparent PDF image. The bitmap is freed before returning.
+     */
+    private fun renderTextStamp(
+        doc: PDDocument,
+        text: String,
+        fontSize: Float,
+        r: Float,
+        g: Float,
+        b: Float,
+    ): TextStamp {
+        val normalized = Normalizer.normalize(normalizeMalayalamChillu(text), Normalizer.Form.NFC)
+        val typeface = when {
+            normalized.any { it in 'ഀ'..'ൿ' } ->
+                loadBundledTypeface("NotoSansMalayalam-Bold.ttf", Typeface.BOLD)
+            normalized.any { it in 'ऀ'..'ॿ' } ->
+                loadBundledTypeface("NotoSansDevanagari-Bold.ttf", Typeface.BOLD)
+            else -> Typeface.create("sans-serif", Typeface.BOLD)
+        }
+        val paint = TextPaint().apply {
+            isAntiAlias = true
+            this.typeface = typeface
+            color = Color.rgb(
+                (r * 255f).roundToInt(),
+                (g * 255f).roundToInt(),
+                (b * 255f).roundToInt(),
+            )
+        }
+
+        var scale = STAMP_SCALE
+        paint.textSize = fontSize * scale
+        var widthPx = paint.measureText(normalized)
+        var metrics = paint.fontMetrics
+        var heightPx = metrics.descent - metrics.ascent
+        val longest = maxOf(widthPx, heightPx)
+        if (longest > MAX_STAMP_PX) {
+            scale *= MAX_STAMP_PX / longest
+            paint.textSize = fontSize * scale
+            widthPx = paint.measureText(normalized)
+            metrics = paint.fontMetrics
+            heightPx = metrics.descent - metrics.ascent
+        }
+
+        // A small side margin, so bold glyphs that reach past their advance width
+        // are not cut off at the image edge.
+        val padPx = paint.textSize * 0.05f
+        val bitmap = Bitmap.createBitmap(
+            ceil(widthPx + 2 * padPx).toInt().coerceAtLeast(1),
+            ceil(heightPx).toInt().coerceAtLeast(1),
+            Bitmap.Config.ARGB_8888,
+        )
+        try {
+            Canvas(bitmap).drawText(normalized, padPx, -metrics.ascent, paint)
+            val image = LosslessFactory.createFromImage(doc, bitmap)
+            return TextStamp(image, bitmap.width / scale, bitmap.height / scale)
+        } finally {
+            bitmap.recycle()
+        }
+    }
+
+    /** Places [stamp] centred on ([x], [y]) and rotated by [rad], like the vector text. */
+    private fun drawStamp(cs: PDPageContentStream, stamp: TextStamp, x: Float, y: Float, rad: Float) {
+        cs.saveGraphicsState()
+        val m = com.tom_roush.pdfbox.util.Matrix()
+        m.translate(x, y)
+        m.rotate(rad.toDouble())
+        m.translate(-stamp.width / 2f, -stamp.height / 2f)
+        cs.transform(m)
+        cs.drawImage(stamp.image, 0f, 0f, stamp.width, stamp.height)
+        cs.restoreGraphicsState()
+    }
+
     private fun applyWatermark(
         path: String,
         password: String?,
@@ -1451,6 +1548,20 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
 
                     val font = PDType1Font.HELVETICA_BOLD
                     val rad = Math.toRadians(rotationDegrees.toDouble()).toFloat()
+
+                    // Channel arguments are outside input: keep them in a safe range.
+                    val safeFontSize = fontSize.coerceIn(MIN_WATERMARK_PT, MAX_WATERMARK_PT)
+                    val safeText = text?.take(MAX_WATERMARK_CHARS)
+                    // Helvetica only knows Western characters. Any other text (Malayalam,
+                    // Devanagari, ₹, ...) is drawn once by Android's shaping text engine into
+                    // a transparent image stamp, which is then placed on every page.
+                    val useVectorText = !safeText.isNullOrBlank() && canEncode(font, safeText)
+                    val textStamp: TextStamp? =
+                        if (!safeText.isNullOrBlank() && !useVectorText) {
+                            renderTextStamp(doc, safeText, safeFontSize, r, g, b)
+                        } else {
+                            null
+                        }
 
                     val imageObj: PDImageXObject? = if (!imagePath.isNullOrEmpty() && File(imagePath).exists()) {
                         try {
@@ -1511,14 +1622,32 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
                                 }
                             }
 
-                            if (!text.isNullOrBlank()) {
+                            if (textStamp != null) {
+                                if (isTiled) {
+                                    val stepX = maxOf(textStamp.width + tileSpacingX, 120f)
+                                    val stepY = maxOf(safeFontSize + tileSpacingY, 100f)
+                                    var y = stepY / 2f
+                                    while (y < pageH) {
+                                        var x = stepX / 2f
+                                        while (x < pageW) {
+                                            drawStamp(cs, textStamp, x, y, rad)
+                                            x += stepX
+                                        }
+                                        y += stepY
+                                    }
+                                } else {
+                                    drawStamp(cs, textStamp, pageW / 2f, pageH / 2f, rad)
+                                }
+                            }
+
+                            if (useVectorText && safeText != null) {
                                 cs.setNonStrokingColor(r, g, b)
-                                val textWidth = (font.getStringWidth(text) / 1000f) * fontSize
-                                val textHeight = fontSize * 0.75f
+                                val textWidth = (font.getStringWidth(safeText) / 1000f) * safeFontSize
+                                val textHeight = safeFontSize * 0.75f
 
                                 if (isTiled) {
                                     val stepX = maxOf(textWidth + tileSpacingX, 120f)
-                                    val stepY = maxOf(fontSize + tileSpacingY, 100f)
+                                    val stepY = maxOf(safeFontSize + tileSpacingY, 100f)
                                     var y = stepY / 2f
                                     while (y < pageH) {
                                         var x = stepX / 2f
@@ -1530,8 +1659,8 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
                                             m.translate(-textWidth / 2f, -textHeight / 2f)
                                             cs.transform(m)
                                             cs.beginText()
-                                            cs.setFont(font, fontSize)
-                                            cs.showText(text)
+                                            cs.setFont(font, safeFontSize)
+                                            cs.showText(safeText)
                                             cs.endText()
                                             cs.restoreGraphicsState()
                                             x += stepX
@@ -1546,8 +1675,8 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
                                     m.translate(-textWidth / 2f, -textHeight / 2f)
                                     cs.transform(m)
                                     cs.beginText()
-                                    cs.setFont(font, fontSize)
-                                    cs.showText(text)
+                                    cs.setFont(font, safeFontSize)
+                                    cs.showText(safeText)
                                     cs.endText()
                                     cs.restoreGraphicsState()
                                 }
@@ -1715,5 +1844,16 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
         private const val TEXT_LEADING = 14f
         /** Refuse absurdly long text rather than grinding the device to a halt. */
         private const val MAX_TEXT_PAGES = 500
+
+        // --- Watermark text ---
+        /** Point-size range accepted from the channel (the dialog offers 12–96). */
+        private const val MIN_WATERMARK_PT = 6f
+        private const val MAX_WATERMARK_PT = 200f
+        /** Longest watermark text accepted from the channel. */
+        private const val MAX_WATERMARK_CHARS = 200
+        /** Pixels per PDF point for a drawn text stamp (4x = about 288 DPI). */
+        private const val STAMP_SCALE = 4f
+        /** Longest side of a text stamp bitmap, to keep memory use small. */
+        private const val MAX_STAMP_PX = 4096f
     }
 }

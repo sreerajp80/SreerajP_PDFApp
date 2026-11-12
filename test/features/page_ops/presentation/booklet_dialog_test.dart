@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/core/platform/open_document_channel.dart';
 import 'package:pdfapp/core/platform/pdfbox_channel.dart';
 import 'package:pdfapp/features/page_ops/data/page_ops_service.dart';
@@ -107,8 +107,8 @@ void main() {
       await tester.tap(find.text('Open Dialog'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Foldable Booklet (2-Up)'), findsOneWidget);
-      expect(find.text('Booklet layout summary'), findsOneWidget);
+      expect(find.text('Foldable booklet'), findsOneWidget);
+      expect(find.text('Booklet layout'), findsOneWidget);
       expect(find.text('6 original pages -> 8 booklet pages'), findsOneWidget);
       expect(
         find.text('2 physical landscape sheets (4 printable sides)'),

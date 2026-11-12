@@ -37,6 +37,17 @@ class PdfRepository {
     return _prepare(opened);
   }
 
+  /// Lets the user pick a recent file again when it can no longer be reopened
+  /// (usually because short "Open with" access ended). The picker starts near
+  /// the old file where Android allows it. Picking the same file refreshes the
+  /// same recent entry, since entries are keyed by content. Returns null if the
+  /// user cancelled.
+  Future<PdfDocumentRef?> relocateRecent(RecentFile recent) async {
+    final opened = await channel.pickPdf(initialUri: recent.uri);
+    if (opened == null) return null;
+    return _prepare(opened);
+  }
+
   /// Prepares a document handed to us by an "Open with" / share intent.
   Future<PdfDocumentRef> openFromIntent(OpenedDocument opened) =>
       _prepare(opened);
@@ -49,7 +60,7 @@ class PdfRepository {
     await recentFilesDao.upsert(
       RecentFile(
         fingerprint: fingerprint,
-        uri: opened.uri,
+        uri: await _uriToRemember(opened, existing),
         displayName: opened.displayName,
         sizeBytes: opened.sizeBytes,
         pageCount: existing?.pageCount,
@@ -66,7 +77,35 @@ class PdfRepository {
     );
   }
 
+  /// The link to store for reopening later. A short-lived "Open with" link must
+  /// not replace an older link that still works after a restart.
+  Future<String> _uriToRemember(
+    OpenedDocument opened,
+    RecentFile? existing,
+  ) async {
+    if (opened.hasLastingAccess ||
+        existing == null ||
+        existing.uri == opened.uri) {
+      return opened.uri;
+    }
+    return await channel.hasLastingAccess(existing.uri)
+        ? existing.uri
+        : opened.uri;
+  }
+
   Future<List<RecentFile>> recents() => recentFilesDao.list();
+
+  /// Which recent files can still be reached, by fingerprint. Checks details
+  /// only, never opens the files. A fingerprint missing from the map is
+  /// "unknown" and should look normal.
+  Future<Map<String, bool>> availabilityOf(List<RecentFile> files) async {
+    if (files.isEmpty) return const {};
+    final byUri = await channel.checkAvailable([for (final f in files) f.uri]);
+    return {
+      for (final f in files)
+        if (byUri[f.uri] != null) f.fingerprint: byUri[f.uri]!,
+    };
+  }
 
   Future<void> removeRecent(String fingerprint) =>
       recentFilesDao.remove(fingerprint);

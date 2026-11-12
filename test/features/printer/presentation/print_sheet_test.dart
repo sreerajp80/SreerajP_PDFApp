@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/printer/presentation/widgets/print_sheet.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
+
+import '../../../helpers/tooltip_checks.dart';
 
 /// Phase 6: the Print sheet. Each option closes the sheet and then does the
 /// work — so the work must survive the sheet going away.
@@ -42,6 +44,7 @@ void main() {
     );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
+    expectAllIconButtonsHaveTooltips(tester);
   }
 
   testWidgets('the sheet offers the three print choices', (tester) async {

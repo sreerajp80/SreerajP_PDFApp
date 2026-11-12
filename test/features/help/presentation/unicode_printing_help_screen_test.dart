@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show GlobalWidgetsLocalizations;
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/help/presentation/unicode_printing_help_screen.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
@@ -35,7 +37,7 @@ void main() {
       );
       expect(
         find.text(
-          'Standard Android printing can sometimes garble complex scripts (such as Malayalam, Hindi, or Sanskrit), resulting in broken chillu characters, disconnected conjuncts, or missing fonts. SreerajP PDF App handles complex script shaping and font embedding to generate pristine PDFs.',
+          'Standard Android printing can sometimes garble complex scripts (such as Malayalam, Hindi, or Sanskrit), resulting in broken chillu characters, disconnected conjuncts, or missing fonts. Folio handles complex script shaping and font embedding to generate pristine PDFs.',
         ),
         findsOneWidget,
       );
@@ -61,7 +63,7 @@ void main() {
       );
       expect(
         find.text(
-          'Select \'SreerajP PDF App\' as the target printer instead of the standard Android \'Save as PDF\'.',
+          'Select \'Folio\' as the target printer instead of the standard Android \'Save as PDF\'.',
         ),
         findsOneWidget,
       );

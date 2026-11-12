@@ -1,13 +1,17 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show GlobalWidgetsLocalizations;
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/core/config/app_config.dart';
 import 'package:pdfapp/core/constants/build_date.g.dart';
 import 'package:pdfapp/core/widgets/made_with_love.dart';
 import 'package:pdfapp/features/about/presentation/about_screen.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
+
+import '../../../helpers/tooltip_checks.dart';
 
 void main() {
   testWidgets(
@@ -40,6 +44,7 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      expectAllIconButtonsHaveTooltips(tester);
 
       expect(find.text('Test PDF App'), findsOneWidget);
       expect(find.text('Build date'), findsOneWidget);

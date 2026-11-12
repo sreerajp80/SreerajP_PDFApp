@@ -1,17 +1,17 @@
-# Feature Analysis and Product Roadmap — SreerajP PDF App
+# Feature Analysis and Product Roadmap — Folio
+
+This document details completed features, upcoming unique features, existing feature enhancements, and ecosystem app integrations for the **Folio** app. It focuses on features that are absent from mainstream Android PDF applications (such as Adobe Acrobat, Foxit, PDF Extra, ReadEra, and Xodo), while respecting all project rules: **open-source only**, **offline-first**, **scoped storage only**, **copy-on-write**, and **no OCR**.
 
 **Date:** 2026-08-19
 **Scope:** Feature inventory and forward roadmap for the app.
 
-This document details completed features, upcoming unique features, existing feature enhancements, and ecosystem app integrations for the **SreerajP PDF App**. It focuses on features that are absent from mainstream Android PDF applications (such as Adobe Acrobat, Foxit, PDF Extra, ReadEra, and Xodo), while respecting all project rules: **open-source only**, **offline-first**, **scoped storage only**, **copy-on-write**, and **no OCR**.
-
-> Read first: [../.agents/AGENTS.md](../.agents/AGENTS.md) (or [../CLAUDE.md](../CLAUDE.md)) for project rules, [features.md](features.md) for what already ships, and [architecture.md](architecture.md) for the technical design.
+> Read first: [../CLAUDE.md](../CLAUDE.md) and [../AGENTS.md](../AGENTS.md) for project rules, [features.md](features.md) for what already ships, and [architecture.md](architecture.md) for the technical design.
 
 ---
 
 ## 1. Executive Summary & Core App Philosophy
 
-The SreerajP PDF App is an open-source, privacy-focused Android PDF reader and printer built with Flutter and native Kotlin.
+The Folio is an open-source, privacy-focused Android PDF reader and printer built with Flutter and native Kotlin.
 
 ### Implementation Status Notice (Phases 0–8, Features 2.1 & 2.7, and Features 3.1, 3.2, 3.4, 3.5 & 3.6 Completed)
 Phases 0 through 8, Features 2.1 & 2.7, and Enhancements 3.1, 3.2, 3.4, 3.5 & 3.6 are 100% completed, tested (384 unit/widget tests passing), and release-hardened.

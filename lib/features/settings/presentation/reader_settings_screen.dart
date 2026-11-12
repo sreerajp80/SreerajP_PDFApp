@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/config/providers.dart';
 import 'package:pdfapp/app/theme/app_theme.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
@@ -24,13 +24,13 @@ class ReaderSettingsScreen extends ConsumerWidget {
     final doubleTapZoom = ref.watch(doubleTapZoomProvider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.readerSettingsTitle)),
+      appBar: AppBar(title: Text(l10n.titleReaderSettings)),
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 48),
+          padding: const EdgeInsetsDirectional.fromSTEB(16, 12, 16, 48),
           children: [
-            _sectionHeader(context, l10n.readerSettingsTitle, accent),
+            _sectionHeader(context, l10n.titleReaderSettings, accent),
             Card(
               margin: EdgeInsets.zero,
               child: Column(
@@ -46,14 +46,14 @@ class ReaderSettingsScreen extends ConsumerWidget {
                       child: Icon(Icons.bookmark_outline, color: accent),
                     ),
                     title: Text(
-                      l10n.saveLastPositionTitle,
+                      l10n.titleSaveLastPosition,
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
                       ),
                     ),
                     subtitle: Text(
-                      l10n.saveLastPositionSubtitle,
+                      l10n.descSaveLastPositionSubtitle,
                       style: TextStyle(color: muted, fontSize: 13),
                     ),
                     value: rememberPos,
@@ -78,14 +78,14 @@ class ReaderSettingsScreen extends ConsumerWidget {
                       child: Icon(Icons.numbers_outlined, color: accent),
                     ),
                     title: Text(
-                      l10n.showPageIndicatorTitle,
+                      l10n.titleShowPageIndicator,
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
                       ),
                     ),
                     subtitle: Text(
-                      l10n.showPageIndicatorSubtitle,
+                      l10n.descShowPageIndicatorSubtitle,
                       style: TextStyle(color: muted, fontSize: 13),
                     ),
                     value: showIndicator,
@@ -109,14 +109,14 @@ class ReaderSettingsScreen extends ConsumerWidget {
                       child: Icon(Icons.timer_outlined, color: accent),
                     ),
                     title: Text(
-                      l10n.readingTimeEstimatesToggle,
+                      l10n.descReadingTimeEstimatesToggle,
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
                       ),
                     ),
                     subtitle: Text(
-                      l10n.readingTimeEstimatesToggleSubtitle,
+                      l10n.descReadingTimeEstimatesToggleSubtitle,
                       style: TextStyle(color: muted, fontSize: 13),
                     ),
                     value: showEstimates,
@@ -141,14 +141,14 @@ class ReaderSettingsScreen extends ConsumerWidget {
                       child: Icon(Icons.invert_colors_outlined, color: accent),
                     ),
                     title: Text(
-                      l10n.invertColorsTitle,
+                      l10n.titleInvertColors,
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 15,
                       ),
                     ),
                     subtitle: Text(
-                      l10n.invertColorsSubtitle,
+                      l10n.descInvertColorsSubtitle,
                       style: TextStyle(color: muted, fontSize: 13),
                     ),
                     value: invertColors,
@@ -159,7 +159,7 @@ class ReaderSettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            _sectionHeader(context, l10n.defaultPageLayoutTitle, accent),
+            _sectionHeader(context, l10n.titleDefaultPageLayout, accent),
             Card(
               margin: EdgeInsets.zero,
               child: Column(
@@ -170,7 +170,7 @@ class ReaderSettingsScreen extends ConsumerWidget {
                       color: layout == 'auto' ? accent : muted,
                     ),
                     title: Text(
-                      l10n.viewModeAuto,
+                      l10n.descViewModeAuto,
                       style: TextStyle(
                         fontWeight: layout == 'auto'
                             ? FontWeight.w700
@@ -179,7 +179,7 @@ class ReaderSettingsScreen extends ConsumerWidget {
                       ),
                     ),
                     subtitle: Text(
-                      l10n.viewModeAutoSubtitle,
+                      l10n.descViewModeAutoSubtitle,
                       style: TextStyle(color: muted, fontSize: 12),
                     ),
                     trailing: layout == 'auto'
@@ -201,7 +201,7 @@ class ReaderSettingsScreen extends ConsumerWidget {
                       color: layout == 'continuous' ? accent : muted,
                     ),
                     title: Text(
-                      l10n.layoutContinuous,
+                      l10n.labelLayoutContinuous,
                       style: TextStyle(
                         fontWeight: layout == 'continuous'
                             ? FontWeight.w700
@@ -228,7 +228,7 @@ class ReaderSettingsScreen extends ConsumerWidget {
                       color: layout == 'single_page' ? accent : muted,
                     ),
                     title: Text(
-                      l10n.layoutSinglePage,
+                      l10n.labelLayoutSinglePage,
                       style: TextStyle(
                         fontWeight: layout == 'single_page'
                             ? FontWeight.w700
@@ -247,7 +247,7 @@ class ReaderSettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            _sectionHeader(context, l10n.doubleTapZoomTitle, accent),
+            _sectionHeader(context, l10n.titleDoubleTapZoom, accent),
             Card(
               margin: EdgeInsets.zero,
               child: Column(
@@ -258,7 +258,7 @@ class ReaderSettingsScreen extends ConsumerWidget {
                       color: doubleTapZoom == 'fit_width' ? accent : muted,
                     ),
                     title: Text(
-                      l10n.zoomFitWidth,
+                      l10n.labelZoomFitWidth,
                       style: TextStyle(
                         fontWeight: doubleTapZoom == 'fit_width'
                             ? FontWeight.w700
@@ -285,7 +285,7 @@ class ReaderSettingsScreen extends ConsumerWidget {
                       color: doubleTapZoom == 'zoom_200' ? accent : muted,
                     ),
                     title: Text(
-                      l10n.zoom200,
+                      l10n.labelZoom200,
                       style: TextStyle(
                         fontWeight: doubleTapZoom == 'zoom_200'
                             ? FontWeight.w700
@@ -312,7 +312,7 @@ class ReaderSettingsScreen extends ConsumerWidget {
   Widget _sectionHeader(BuildContext context, String title, Color accent) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
+      padding: const EdgeInsetsDirectional.fromSTEB(4, 4, 4, 8),
       child: Text(
         title.toUpperCase(),
         style: theme.textTheme.labelLarge?.copyWith(

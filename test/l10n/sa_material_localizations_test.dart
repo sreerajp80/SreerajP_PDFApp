@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show GlobalWidgetsLocalizations;
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 import 'package:pdfapp/l10n/sa_material_localizations.dart';
 
@@ -53,8 +55,8 @@ void main() {
             builder: (context) {
               final l10n = AppLocalizations.of(context);
               return Scaffold(
-                appBar: AppBar(title: Text(l10n.settingsTitle)),
-                body: Center(child: Text(l10n.saveAction)),
+                appBar: AppBar(title: Text(l10n.titleSettings)),
+                body: Center(child: Text(l10n.actionSave)),
               );
             },
           ),

@@ -1,8 +1,9 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/core/errors/app_exception.dart';
+import 'package:pdfapp/core/errors/user_error_message.dart';
 import 'package:pdfapp/features/extraction/data/extraction_service.dart';
 import 'package:pdfapp/features/printer/presentation/providers.dart';
 import 'package:pdfapp/features/printer/presentation/widgets/n_up_dialog.dart';
@@ -48,31 +49,31 @@ class _PrintSheet extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
-              child: Text(l10n.printTitle, style: theme.textTheme.titleLarge),
+              padding: const EdgeInsetsDirectional.fromSTEB(20, 4, 20, 12),
+              child: Text(l10n.titlePrint, style: theme.textTheme.titleLarge),
             ),
             ListTile(
               leading: const Icon(Icons.print),
-              title: Text(l10n.printWholeAction),
-              subtitle: Text(l10n.printWholeDescription),
+              title: Text(l10n.actionPrintWhole),
+              subtitle: Text(l10n.descPrintWhole),
               onTap: () => _printWhole(context, ref),
             ),
             ListTile(
               leading: const Icon(Icons.filter_none),
-              title: Text(l10n.printRangeAction),
-              subtitle: Text(l10n.printRangeDescription),
+              title: Text(l10n.actionPrintRange),
+              subtitle: Text(l10n.descPrintRange),
               onTap: () => _printRange(context, ref),
             ),
             ListTile(
               leading: const Icon(Icons.subject),
-              title: Text(l10n.printTextAction),
-              subtitle: Text(l10n.printTextDescription),
+              title: Text(l10n.actionPrintText),
+              subtitle: Text(l10n.descPrintText),
               onTap: () => _printText(context, ref),
             ),
             ListTile(
               leading: const Icon(Icons.grid_4x4),
-              title: Text(l10n.printNUpAction),
-              subtitle: Text(l10n.printNUpDescription),
+              title: Text(l10n.actionPrintNUp),
+              subtitle: Text(l10n.descPrintNUp),
               onTap: () {
                 Navigator.of(context).pop();
                 showDialog<void>(
@@ -130,7 +131,7 @@ class _PrintSheet extends ConsumerWidget {
           .extractText(path, startPage: 1, endPage: pageCount);
       if (text.trim().isEmpty) {
         // A scanned PDF has no text layer. Say so rather than print blank pages.
-        throw PdfEmptyException(job.l10n.printNoText);
+        throw PdfEmptyException(job.l10n.descPrintNoText);
       }
       await ref.read(printServiceProvider).printText(text, jobName);
     }, showProgress: true);
@@ -165,7 +166,7 @@ class _PrintSheet extends ConsumerWidget {
               children: [
                 const CircularProgressIndicator(),
                 const SizedBox(height: 16),
-                Text(job.l10n.printPreparing),
+                Text(job.l10n.descPrintPreparing),
               ],
             ),
           ),
@@ -176,10 +177,16 @@ class _PrintSheet extends ConsumerWidget {
       await run();
     } on PdfUnsupportedTextException {
       job.messenger.showSnackBar(
-        SnackBar(content: Text(job.l10n.importUnsupportedTextDetail)),
+        SnackBar(content: Text(job.l10n.descImportUnsupportedTextDetail)),
       );
     } on AppException catch (e) {
-      job.messenger.showSnackBar(SnackBar(content: Text(e.message)));
+      job.messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            userErrorMessage(job.l10n, e, fallback: job.l10n.errorPrintFailed),
+          ),
+        ),
+      );
     } finally {
       if (progressShown) job.navigator.pop();
     }
@@ -190,7 +197,7 @@ class _PrintSheet extends ConsumerWidget {
     final available = await ref.read(printServiceProvider).isAvailable();
     if (!available) {
       job.messenger.showSnackBar(
-        SnackBar(content: Text(job.l10n.printUnavailable)),
+        SnackBar(content: Text(job.l10n.errorPrintUnavailable)),
       );
     }
     return available;

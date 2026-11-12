@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/annotation/presentation/annotation_controller.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
@@ -58,52 +58,52 @@ class AnnotationToolbar extends StatelessWidget {
                       tool,
                       AnnotationTool.highlight,
                       Icons.border_color_outlined,
-                      l10n.annotationHighlight,
+                      l10n.labelAnnotationHighlight,
                     ),
                     _toolButton(
                       context,
                       tool,
                       AnnotationTool.underline,
                       Icons.format_underlined,
-                      l10n.annotationUnderline,
+                      l10n.labelAnnotationUnderline,
                     ),
                     _toolButton(
                       context,
                       tool,
                       AnnotationTool.strikethrough,
                       Icons.format_strikethrough,
-                      l10n.annotationStrikethrough,
+                      l10n.labelAnnotationStrikethrough,
                     ),
                     _toolButton(
                       context,
                       tool,
                       AnnotationTool.ink,
                       Icons.gesture,
-                      l10n.annotationInk,
+                      l10n.labelAnnotationInk,
                     ),
                     _toolButton(
                       context,
                       tool,
                       AnnotationTool.note,
                       Icons.sticky_note_2_outlined,
-                      l10n.annotationNote,
+                      l10n.descAnnotationNote,
                     ),
                     _toolButton(
                       context,
                       tool,
                       AnnotationTool.eraser,
                       Icons.auto_fix_off,
-                      l10n.annotationEraser,
+                      l10n.labelAnnotationEraser,
                     ),
                     const VerticalDivider(width: 8),
                     IconButton(
                       icon: const Icon(Icons.delete_sweep_outlined),
-                      tooltip: l10n.annotationClearAll,
+                      tooltip: l10n.labelAnnotationClearAll,
                       onPressed: controller.hasAnnotations ? onClearAll : null,
                     ),
                     IconButton(
                       icon: const Icon(Icons.ios_share),
-                      tooltip: l10n.annotationExport,
+                      tooltip: l10n.descAnnotationExport,
                       onPressed: controller.hasAnnotations ? onExport : null,
                     ),
                   ],
@@ -203,12 +203,12 @@ class AnnotationToolbar extends StatelessWidget {
 
   String _colorName(AppLocalizations l10n, int color) {
     return switch (color) {
-      0xFFFFEB3B => l10n.colorYellow,
-      0xFF4CAF50 => l10n.colorGreen,
-      0xFF2196F3 => l10n.colorBlue,
-      0xFFE53935 => l10n.colorRed,
-      0xFF9C27B0 => l10n.colorPurple,
-      0xFFFF9800 => l10n.colorOrange,
+      0xFFFFEB3B => l10n.labelColorYellow,
+      0xFF4CAF50 => l10n.labelColorGreen,
+      0xFF2196F3 => l10n.labelColorBlue,
+      0xFFE53935 => l10n.labelColorRed,
+      0xFF9C27B0 => l10n.labelColorPurple,
+      0xFFFF9800 => l10n.labelColorOrange,
       _ =>
         '#${color.toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}',
     };

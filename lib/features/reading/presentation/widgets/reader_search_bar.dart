@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/core/search/search_normalizer.dart';
 import 'package:pdfapp/features/reading/domain/search_hit.dart';
 import 'package:pdfapp/features/reading/presentation/widgets/malayalam_input_helper.dart';
@@ -23,6 +23,7 @@ class ReaderSearchBar extends StatefulWidget {
     required this.onPrevious,
     required this.onClose,
     required this.onOptionsChanged,
+    this.unreliableText = false,
   });
 
   final SearchState state;
@@ -32,6 +33,10 @@ class ReaderSearchBar extends StatefulWidget {
   final VoidCallback onPrevious;
   final VoidCallback onClose;
   final ValueChanged<SearchOptions> onOptionsChanged;
+
+  /// True when the PDF's text is probably not proper Unicode, so matches may
+  /// be missing or wrong. Shows a warning icon next to the match counter.
+  final bool unreliableText;
 
   @override
   State<ReaderSearchBar> createState() => _ReaderSearchBarState();
@@ -76,6 +81,13 @@ class _ReaderSearchBarState extends State<ReaderSearchBar> {
     _focus.requestFocus();
   }
 
+  /// Steps through matches with the keyboard put away, so it does not cover
+  /// the page being looked at. Tapping the field brings it back.
+  void _step(VoidCallback move) {
+    _focus.unfocus();
+    move();
+  }
+
   void _insertMalayalamText(String text) {
     final curText = _field.text;
     final selection = _field.selection;
@@ -106,7 +118,7 @@ class _ReaderSearchBarState extends State<ReaderSearchBar> {
           children: [
             IconButton(
               icon: const Icon(Icons.arrow_back),
-              tooltip: l10n.searchClose,
+              tooltip: l10n.labelSearchClose,
               onPressed: widget.onClose,
             ),
             Expanded(
@@ -125,7 +137,7 @@ class _ReaderSearchBarState extends State<ReaderSearchBar> {
                   widget.onQueryChanged(value);
                 },
                 decoration: InputDecoration(
-                  hintText: l10n.searchHint,
+                  hintText: l10n.labelSearchHint,
                   border: InputBorder.none,
                   isDense: true,
                 ),
@@ -141,14 +153,14 @@ class _ReaderSearchBarState extends State<ReaderSearchBar> {
                     ? theme.colorScheme.primary
                     : theme.colorScheme.onSurfaceVariant,
               ),
-              tooltip: l10n.malayalamHelperTooltip,
+              tooltip: l10n.tooltipMalayalamHelper,
               onPressed: () =>
                   setState(() => _showMalayalamHelper = !_showMalayalamHelper),
             ),
             if (_field.text.isNotEmpty)
               IconButton(
                 icon: const Icon(Icons.close),
-                tooltip: l10n.searchClear,
+                tooltip: l10n.labelSearchClear,
                 onPressed: _clear,
               ),
           ],
@@ -164,6 +176,20 @@ class _ReaderSearchBarState extends State<ReaderSearchBar> {
         Row(
           children: [
             const SizedBox(width: 16),
+            if (widget.unreliableText)
+              Tooltip(
+                message: l10n.descSearchUnreliable,
+                triggerMode: TooltipTriggerMode.tap,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Icon(
+                    Icons.warning_amber_outlined,
+                    size: 18,
+                    semanticLabel: l10n.descSearchUnreliable,
+                    color: theme.colorScheme.error,
+                  ),
+                ),
+              ),
             Expanded(child: _Status(state: widget.state)),
             _OptionsMenu(
               options: widget.options,
@@ -171,14 +197,18 @@ class _ReaderSearchBarState extends State<ReaderSearchBar> {
             ),
             IconButton(
               icon: const Icon(Icons.keyboard_arrow_up),
-              tooltip: l10n.searchPreviousMatch,
+              tooltip: l10n.labelSearchPreviousMatch,
               // Never a dead button: greyed out with an obvious reason (no results).
-              onPressed: widget.state.hits.isEmpty ? null : widget.onPrevious,
+              onPressed: widget.state.hits.isEmpty
+                  ? null
+                  : () => _step(widget.onPrevious),
             ),
             IconButton(
               icon: const Icon(Icons.keyboard_arrow_down),
-              tooltip: l10n.searchNextMatch,
-              onPressed: widget.state.hits.isEmpty ? null : widget.onNext,
+              tooltip: l10n.labelSearchNextMatch,
+              onPressed: widget.state.hits.isEmpty
+                  ? null
+                  : () => _step(widget.onNext),
             ),
           ],
         ),
@@ -204,11 +234,14 @@ class _Status extends StatelessWidget {
     if (!state.hasQuery) {
       label = null;
     } else if (state.hits.isNotEmpty) {
-      label = l10n.searchMatchOf(state.currentIndex + 1, state.hits.length);
+      label = l10n.labelSearchMatchOf(
+        state.currentIndex + 1,
+        state.hits.length,
+      );
     } else if (state.running) {
-      label = l10n.searchSearching;
+      label = l10n.labelSearchSearching;
     } else if (state.isEmptyResult) {
-      label = l10n.searchNoMatches;
+      label = l10n.labelSearchNoMatches;
     } else {
       label = null;
     }
@@ -241,7 +274,7 @@ class _OptionsMenu extends StatelessWidget {
 
     return PopupMenuButton<_Option>(
       icon: const Icon(Icons.tune),
-      tooltip: l10n.searchOptionsTooltip,
+      tooltip: l10n.tooltipSearchOptions,
       onSelected: (option) => onChanged(switch (option) {
         _Option.strict => options.copyWith(strict: !options.strict),
         _Option.ignoreAccents => options.copyWith(
@@ -256,8 +289,8 @@ class _OptionsMenu extends StatelessWidget {
           checked: options.sandhi,
           child: ListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text(l10n.searchOptionSandhi),
-            subtitle: Text(l10n.searchOptionSandhiNote),
+            title: Text(l10n.descSearchOptionSandhi),
+            subtitle: Text(l10n.descSearchOptionSandhiNote),
           ),
         ),
         CheckedPopupMenuItem(
@@ -265,8 +298,8 @@ class _OptionsMenu extends StatelessWidget {
           checked: options.phonetic,
           child: ListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text(l10n.searchOptionPhonetic),
-            subtitle: Text(l10n.searchOptionPhoneticNote),
+            title: Text(l10n.labelSearchOptionPhonetic),
+            subtitle: Text(l10n.descSearchOptionPhoneticNote),
           ),
         ),
         CheckedPopupMenuItem(
@@ -274,8 +307,8 @@ class _OptionsMenu extends StatelessWidget {
           checked: options.strict,
           child: ListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text(l10n.searchOptionStrict),
-            subtitle: Text(l10n.searchOptionStrictNote),
+            title: Text(l10n.labelSearchOptionStrict),
+            subtitle: Text(l10n.descSearchOptionStrictNote),
           ),
         ),
         CheckedPopupMenuItem(
@@ -283,8 +316,8 @@ class _OptionsMenu extends StatelessWidget {
           checked: options.ignoreAccents,
           child: ListTile(
             contentPadding: EdgeInsets.zero,
-            title: Text(l10n.searchOptionIgnoreAccents),
-            subtitle: Text(l10n.searchOptionIgnoreAccentsNote),
+            title: Text(l10n.labelSearchOptionIgnoreAccents),
+            subtitle: Text(l10n.descSearchOptionIgnoreAccentsNote),
           ),
         ),
       ],

@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdfapp/core/constants/app_constants.dart';
@@ -58,6 +59,58 @@ class CacheService {
     }
   }
 
+  /// Working folders the app itself creates under the temp directory for
+  /// short-lived files. The printer spool folder is not listed: it holds the
+  /// user's printed documents until they clear it.
+  static const List<String> workingDirs = [
+    'opened',
+    'page_ops',
+    'extracted',
+    'annotations',
+    // Device sync: PDFs received from another phone, before they are saved.
+    'received',
+  ];
+
+  /// Files older than this in [workingDirs] are left over from an earlier
+  /// session and are safe to remove at startup.
+  static const Duration staleAfter = Duration(hours: 24);
+
+  /// Deletes files older than [staleAfter] in the app's [workingDirs]
+  /// (engineering standard §9.3, §15.4). Call at startup, before any document
+  /// opens. [tempDir] and [now] are for tests.
+  Future<int> clearStaleWorkingFiles({
+    Directory? tempDir,
+    DateTime? now,
+  }) async {
+    var removed = 0;
+    try {
+      final root = tempDir ?? await getTemporaryDirectory();
+      final cutoff = (now ?? DateTime.now()).subtract(staleAfter);
+      for (final name in workingDirs) {
+        final dir = Directory(p.join(root.path, name));
+        if (!dir.existsSync()) continue;
+        for (final entity in dir.listSync(
+          recursive: true,
+          followLinks: false,
+        )) {
+          if (entity is! File) continue;
+          try {
+            if (entity.lastModifiedSync().isBefore(cutoff)) {
+              entity.deleteSync();
+              removed++;
+            }
+          } catch (e) {
+            AppLogger.warning('Could not remove a stale temp file', error: e);
+          }
+        }
+      }
+      if (removed > 0) AppLogger.info('Removed $removed stale temp files.');
+    } catch (e) {
+      AppLogger.warning('Stale temp file cleanup failed', error: e);
+    }
+    return removed;
+  }
+
   /// Clears specifically the printer cache directory.
   Future<void> clearPrinterCache() async {
     try {
@@ -84,18 +137,5 @@ class CacheService {
       }
     } catch (_) {}
     return total;
-  }
-
-  /// Formats byte count into human-readable string (e.g. "2.4 MB", "450 KB", "0 B").
-  static String formatBytes(int bytes) {
-    if (bytes <= 0) return '0 B';
-    if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) {
-      return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    }
-    if (bytes < 1024 * 1024 * 1024) {
-      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
-    }
-    return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB';
   }
 }

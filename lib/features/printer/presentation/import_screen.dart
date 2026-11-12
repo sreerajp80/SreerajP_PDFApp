@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/core/errors/app_exception.dart';
+import 'package:pdfapp/core/errors/user_error_message.dart';
+import 'package:pdfapp/core/format/display_format.dart';
 import 'package:pdfapp/core/platform/open_document_channel.dart';
 import 'package:pdfapp/features/extraction/data/share_service.dart';
 import 'package:pdfapp/features/printer/presentation/providers.dart';
@@ -83,7 +85,11 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       setState(() => _unsupportedText = true);
     } on AppException catch (e) {
       if (!mounted) return;
-      setState(() => _error = e.message);
+      final l10n = AppLocalizations.of(context);
+      setState(
+        () =>
+            _error = userErrorMessage(l10n, e, fallback: l10n.errorImportBuild),
+      );
     }
   }
 
@@ -100,13 +106,23 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       if (saved != null) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(l10n.importSaved(saved))));
+        ).showSnackBar(SnackBar(content: Text(l10n.labelImportSaved(saved))));
       }
     } on AppException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.message)));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              userErrorMessage(l10n, e, fallback: l10n.errorSaveFailed),
+            ),
+            action: SnackBarAction(
+              label: l10n.actionTryAgain,
+              onPressed: () {
+                if (mounted && !_saving) _save();
+              },
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -123,9 +139,8 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       ], mimeType: 'application/pdf');
     } on AppException catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.shareFailed)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.errorShareFailed)));
       }
     }
   }
@@ -143,7 +158,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.importTitle)),
+      appBar: AppBar(title: Text(l10n.titleImport)),
       body: SafeArea(child: Center(child: _body(l10n))),
     );
   }
@@ -152,14 +167,14 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     if (_unsupportedText) {
       return _message(
         icon: Icons.translate,
-        title: l10n.importUnsupportedTextTitle,
-        detail: l10n.importUnsupportedTextDetail,
+        title: l10n.titleImportUnsupportedText,
+        detail: l10n.descImportUnsupportedTextDetail,
       );
     }
     if (_error != null) {
       return _message(
         icon: Icons.error_outline,
-        title: l10n.importFailedTitle,
+        title: l10n.titleImportFailed,
         detail: _error!,
       );
     }
@@ -169,7 +184,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         children: [
           const CircularProgressIndicator(),
           const SizedBox(height: 16),
-          Text(l10n.importBuilding),
+          Text(l10n.labelImportBuilding),
         ],
       );
     }
@@ -190,7 +205,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             color: theme.colorScheme.primary,
           ),
           const SizedBox(height: 16),
-          Text(l10n.importReadyTitle, style: theme.textTheme.titleLarge),
+          Text(l10n.titleImportReady, style: theme.textTheme.titleLarge),
           const SizedBox(height: 8),
           Text(
             _summary(l10n),
@@ -200,15 +215,20 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           if (size != null) ...[
             const SizedBox(height: 4),
             Text(
-              l10n.importSize(_readableSize(size)),
+              l10n.labelImportSize(
+                DisplayFormat.bytes(
+                  size,
+                  Localizations.localeOf(context).toString(),
+                ),
+              ),
               style: theme.textTheme.bodySmall,
             ),
           ],
           if (widget.content is IncomingText) ...[
             const SizedBox(height: 12),
             SwitchListTile.adaptive(
-              title: Text(l10n.cleanWebContentTitle),
-              subtitle: Text(l10n.cleanWebContentSubtitle),
+              title: Text(l10n.titleCleanWebContent),
+              subtitle: Text(l10n.descCleanWebContentSubtitle),
               value: _cleanWebContent,
               onChanged: (val) {
                 setState(() => _cleanWebContent = val);
@@ -220,13 +240,13 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           FilledButton.icon(
             onPressed: _saving ? null : _save,
             icon: const Icon(Icons.save_alt),
-            label: Text(l10n.importSaveAction),
+            label: Text(l10n.actionImportSave),
           ),
           const SizedBox(height: 8),
           OutlinedButton.icon(
             onPressed: _saving ? null : _share,
             icon: const Icon(Icons.share),
-            label: Text(l10n.importShareAction),
+            label: Text(l10n.actionImportShare),
           ),
         ],
       ),
@@ -234,8 +254,8 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   }
 
   String _summary(AppLocalizations l10n) => switch (widget.content) {
-    IncomingImages(:final paths) => l10n.importImagesSummary(paths.length),
-    IncomingText() => l10n.importTextSummary,
+    IncomingImages(:final paths) => l10n.descImportImagesSummary(paths.length),
+    IncomingText() => l10n.descImportTextSummary,
     IncomingPdf() => '',
   };
 
@@ -262,11 +282,5 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         ],
       ),
     );
-  }
-
-  String _readableSize(int bytes) {
-    if (bytes < 1024) return '$bytes B';
-    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
   }
 }

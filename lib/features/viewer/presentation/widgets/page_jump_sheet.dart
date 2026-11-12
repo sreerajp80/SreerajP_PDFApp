@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
 /// Asks for a page number to jump to (1..[pageCount]).
@@ -52,7 +52,7 @@ class _PageJumpDialogState extends State<_PageJumpDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: Text(l10n.goToPage),
+      title: Text(l10n.labelGoToPage),
       content: TextField(
         controller: _controller,
         autofocus: true,
@@ -60,17 +60,17 @@ class _PageJumpDialogState extends State<_PageJumpDialog> {
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         onSubmitted: (_) => _submit(),
         decoration: InputDecoration(
-          labelText: l10n.pageNumberHint,
-          helperText: l10n.pageJumpRangeHint(1, widget.pageCount),
+          labelText: l10n.labelPageNumberHint,
+          helperText: l10n.labelPageJumpRangeHint(1, widget.pageCount),
           errorText: _error,
         ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.cancelAction),
+          child: Text(l10n.actionCancel),
         ),
-        FilledButton(onPressed: _submit, child: Text(l10n.goAction)),
+        FilledButton(onPressed: _submit, child: Text(l10n.actionGo)),
       ],
     );
   }

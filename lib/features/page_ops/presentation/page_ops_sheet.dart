@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pdfrx/pdfrx.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:pdfapp/core/errors/user_error_message.dart';
+import 'package:pdfapp/core/logging/app_logger.dart';
 import 'package:pdfapp/features/page_ops/data/page_ops_service.dart';
 import 'package:pdfapp/features/page_ops/presentation/widgets/batch_operations_dialog.dart';
 import 'package:pdfapp/features/page_ops/presentation/widgets/booklet_dialog.dart';
@@ -12,6 +13,7 @@ import 'package:pdfapp/features/page_ops/presentation/widgets/unlock_dialog.dart
 import 'package:pdfapp/features/page_ops/presentation/widgets/watermark_dialog.dart';
 import 'package:pdfapp/features/printer/presentation/widgets/n_up_dialog.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
+import 'package:pdfrx/pdfrx.dart';
 
 /// Opens the Phase 4 & Phase 11 "Page tools" bottom sheet for the open document.
 Future<void> showPageOpsSheet(
@@ -45,17 +47,17 @@ class _PageOpsSheet extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
+              padding: const EdgeInsetsDirectional.fromSTEB(20, 4, 20, 12),
               child: Text(
-                l10n.pageToolsTitle,
+                l10n.titlePageTools,
                 style: theme.textTheme.titleLarge,
               ),
             ),
             _tile(
               context,
               icon: Icons.branding_watermark,
-              title: l10n.watermarkAction,
-              subtitle: l10n.watermarkDescription,
+              title: l10n.actionWatermark,
+              subtitle: l10n.descWatermark,
               onTap: () {
                 Navigator.of(context).pop();
                 showDialog<void>(
@@ -70,8 +72,8 @@ class _PageOpsSheet extends ConsumerWidget {
             _tile(
               context,
               icon: Icons.grid_4x4,
-              title: l10n.nUpAction,
-              subtitle: l10n.nUpDescription,
+              title: l10n.actionNUp,
+              subtitle: l10n.descNUp,
               onTap: () {
                 Navigator.of(context).pop();
                 showDialog<void>(
@@ -87,8 +89,8 @@ class _PageOpsSheet extends ConsumerWidget {
             _tile(
               context,
               icon: Icons.dynamic_feed,
-              title: l10n.batchOperationsTitle,
-              subtitle: l10n.batchOperationsDescription,
+              title: l10n.titleBatchOperations,
+              subtitle: l10n.descBatchOperations,
               onTap: () {
                 Navigator.of(context).pop();
                 showDialog<void>(
@@ -101,8 +103,8 @@ class _PageOpsSheet extends ConsumerWidget {
             _tile(
               context,
               icon: Icons.crop,
-              title: l10n.trimMarginsAction,
-              subtitle: l10n.trimMarginsDescription,
+              title: l10n.actionTrimMargins,
+              subtitle: l10n.descTrimMargins,
               onTap: () {
                 Navigator.of(context).pop();
                 showDialog<void>(
@@ -114,8 +116,8 @@ class _PageOpsSheet extends ConsumerWidget {
             _tile(
               context,
               icon: Icons.menu_book,
-              title: l10n.bookletAction,
-              subtitle: l10n.bookletDescription,
+              title: l10n.actionBooklet,
+              subtitle: l10n.descBooklet,
               onTap: () {
                 Navigator.of(context).pop();
                 showDialog<void>(
@@ -130,22 +132,22 @@ class _PageOpsSheet extends ConsumerWidget {
             _tile(
               context,
               icon: Icons.merge_type,
-              title: l10n.mergeAction,
-              subtitle: l10n.mergeDescription,
+              title: l10n.actionMerge,
+              subtitle: l10n.descMerge,
               onTap: () => _merge(context, ref),
             ),
             _tile(
               context,
               icon: Icons.call_split,
-              title: l10n.splitAction,
-              subtitle: l10n.splitDescription,
+              title: l10n.actionSplit,
+              subtitle: l10n.descSplit,
               onTap: () => _split(context, ref),
             ),
             _tile(
               context,
               icon: Icons.reorder,
-              title: l10n.organizeAction,
-              subtitle: l10n.organizeDescription,
+              title: l10n.actionOrganize,
+              subtitle: l10n.descOrganize,
               onTap: () {
                 Navigator.of(context).pop();
                 Navigator.of(context).push(
@@ -159,15 +161,15 @@ class _PageOpsSheet extends ConsumerWidget {
             _tile(
               context,
               icon: Icons.compress,
-              title: l10n.compressAction,
-              subtitle: l10n.compressDescription,
+              title: l10n.actionCompress,
+              subtitle: l10n.descCompress,
               onTap: () => _compress(context, ref),
             ),
             _tile(
               context,
               icon: Icons.lock_outline,
-              title: l10n.protectAction,
-              subtitle: l10n.protectDescription,
+              title: l10n.actionProtect,
+              subtitle: l10n.descProtect,
               onTap: () {
                 Navigator.of(context).pop();
                 showDialog<void>(
@@ -179,8 +181,8 @@ class _PageOpsSheet extends ConsumerWidget {
             _tile(
               context,
               icon: Icons.lock_open,
-              title: l10n.removePasswordAction,
-              subtitle: l10n.unlockDescription,
+              title: l10n.actionRemovePassword,
+              subtitle: l10n.descUnlock,
               onTap: () {
                 Navigator.of(context).pop();
                 showDialog<void>(
@@ -224,7 +226,7 @@ class _PageOpsSheet extends ConsumerWidget {
     await _runWithProgress(
       context,
       ref,
-      title: l10n.mergeDoneTitle,
+      title: l10n.titleMergeDone,
       run: () async => [await service.merge(paths)],
     );
   }
@@ -236,7 +238,7 @@ class _PageOpsSheet extends ConsumerWidget {
     await _runWithProgress(
       context,
       ref,
-      title: l10n.splitDoneTitle,
+      title: l10n.titleSplitDone,
       run: () => service.split(path),
     );
   }
@@ -248,8 +250,8 @@ class _PageOpsSheet extends ConsumerWidget {
     await _runWithProgress(
       context,
       ref,
-      title: l10n.compressDoneTitle,
-      note: l10n.compressBestEffortNote,
+      title: l10n.titleCompressDone,
+      note: l10n.descCompressBestEffortNote,
       run: () async => [await service.compress(path)],
     );
   }
@@ -276,7 +278,7 @@ class _PageOpsSheet extends ConsumerWidget {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(height: 16),
-            Text(l10n.workingProgress),
+            Text(l10n.labelWorkingProgress),
           ],
         ),
       ),
@@ -287,9 +289,8 @@ class _PageOpsSheet extends ConsumerWidget {
       if (!context.mounted) return;
       Navigator.of(context).pop(); // close progress
       if (outputs.isEmpty) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.opFailed)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.errorOpFailed)));
         return;
       }
       await showDialog<void>(
@@ -297,12 +298,34 @@ class _PageOpsSheet extends ConsumerWidget {
         builder: (_) =>
             PageOpsResultDialog(title: title, outputPaths: outputs, note: note),
       );
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error(
+        'page_ops_sheet: operation failed',
+        error: e,
+        stackTrace: st,
+      );
       if (!context.mounted) return;
       Navigator.of(context).pop(); // close progress
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('${l10n.opFailed}: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            userErrorMessage(l10n, e, fallback: l10n.errorOpFailed),
+          ),
+          action: SnackBarAction(
+            label: l10n.actionTryAgain,
+            onPressed: () {
+              if (!context.mounted) return;
+              _runWithProgress(
+                context,
+                ref,
+                title: title,
+                note: note,
+                run: run,
+              );
+            },
+          ),
+        ),
+      );
     }
   }
 }

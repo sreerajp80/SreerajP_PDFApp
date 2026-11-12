@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:pdfapp/core/errors/user_error_message.dart';
+import 'package:pdfapp/core/logging/app_logger.dart';
 import 'package:pdfapp/features/page_ops/data/page_ops_service.dart';
 import 'package:pdfapp/features/page_ops/presentation/widgets/page_ops_result_dialog.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
@@ -33,7 +35,7 @@ class _UnlockDialogState extends ConsumerState<UnlockDialog> {
     final l10n = AppLocalizations.of(context);
     final password = _controller.text;
     if (password.isEmpty) {
-      setState(() => _error = l10n.passwordRequiredError);
+      setState(() => _error = l10n.errorPasswordRequired);
       return;
     }
     setState(() {
@@ -49,16 +51,21 @@ class _UnlockDialogState extends ConsumerState<UnlockDialog> {
         showDialog<void>(
           context: context,
           builder: (context) => PageOpsResultDialog(
-            title: l10n.unlockDoneTitle,
+            title: l10n.titleUnlockDone,
             outputPaths: [out],
           ),
         );
       }
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error(
+        'unlock_dialog: operation failed',
+        error: e,
+        stackTrace: st,
+      );
       if (mounted) {
         setState(() {
           _loading = false;
-          _error = '${l10n.opFailed}: $e';
+          _error = userErrorMessage(l10n, e, fallback: l10n.errorOpFailed);
         });
       }
     }
@@ -76,14 +83,14 @@ class _UnlockDialogState extends ConsumerState<UnlockDialog> {
           children: [
             const CircularProgressIndicator(),
             const SizedBox(height: 16),
-            Text(l10n.workingProgress),
+            Text(l10n.labelWorkingProgress),
           ],
         ),
       );
     }
 
     return AlertDialog(
-      title: Text(l10n.unlockTitle),
+      title: Text(l10n.titleUnlock),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -100,7 +107,7 @@ class _UnlockDialogState extends ConsumerState<UnlockDialog> {
             obscureText: _obscure,
             autofocus: true,
             decoration: InputDecoration(
-              labelText: l10n.currentPasswordLabel,
+              labelText: l10n.labelCurrentPassword,
               border: const OutlineInputBorder(),
               suffixIcon: IconButton(
                 tooltip: _obscure
@@ -116,9 +123,9 @@ class _UnlockDialogState extends ConsumerState<UnlockDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.cancelAction),
+          child: Text(l10n.actionCancel),
         ),
-        FilledButton(onPressed: _run, child: Text(l10n.removePasswordAction)),
+        FilledButton(onPressed: _run, child: Text(l10n.actionRemovePassword)),
       ],
     );
   }

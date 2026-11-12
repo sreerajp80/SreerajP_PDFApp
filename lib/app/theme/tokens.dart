@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Design tokens — single source of truth for colors, spacing, radius, and motion
 /// (engineering standard §6.1). Widgets reference these, never raw literals.
@@ -12,6 +12,21 @@ class AppTokens {
   static const Color sepiaBackground = Color(0xFFF4ECD8);
   static const Color sepiaSurface = Color(0xFFEFE6CE);
   static const Color sepiaOnSurface = Color(0xFF5B4636);
+
+  // The About badge heart — always this red (guideline.md §1.7).
+  static const Color heartRed = Color(0xFFE53935);
+
+  // Release-build error fallback (SafeErrorFallback). Fixed, theme-free colors
+  // because it may render outside the app theme.
+  static const Color errorFallbackBackground = Color(0xFF1C1B1F);
+  static const Color errorFallbackForeground = Color(0xFFE6E1E5);
+
+  // Bundled script fonts used as the fallback chain for every theme
+  // (pubspec.yaml `fonts:`). Devanagari covers Sanskrit; Malayalam covers ml.
+  static const List<String> scriptFontFallback = [
+    'Noto Sans Malayalam',
+    'Noto Sans Devanagari',
+  ];
 
   // Spacing scale (dp).
   static const double spaceXs = 4;

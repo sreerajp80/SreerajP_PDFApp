@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/core/platform/open_document_channel.dart';
 import 'package:pdfapp/features/page_ops/data/page_ops_service.dart';
 import 'package:pdfapp/features/page_ops/presentation/widgets/page_ops_result_dialog.dart';
@@ -56,16 +56,14 @@ class _BatchOperationsDialogState extends ConsumerState<BatchOperationsDialog> {
   Future<void> _runBatch() async {
     final l10n = AppLocalizations.of(context);
     if (_documents.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.batchNoFilesSelected)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.descBatchNoFilesSelected)));
       return;
     }
     if (_opType == BatchOpType.encrypt &&
         _passwordController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.passwordRequiredError)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.errorPasswordRequired)));
       return;
     }
 
@@ -99,13 +97,12 @@ class _BatchOperationsDialogState extends ConsumerState<BatchOperationsDialog> {
 
     final outputs = result.outputPaths;
     if (outputs.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.batchFailedAll)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.descBatchFailedAll)));
       return;
     }
 
-    final note = l10n.batchDoneSummary(
+    final note = l10n.descBatchDoneSummary(
       result.successCount,
       result.totalProcessed,
     );
@@ -113,7 +110,7 @@ class _BatchOperationsDialogState extends ConsumerState<BatchOperationsDialog> {
     await showDialog<void>(
       context: context,
       builder: (_) => PageOpsResultDialog(
-        title: l10n.batchOperationsTitle,
+        title: l10n.titleBatchOperations,
         outputPaths: outputs,
         note: note,
       ),
@@ -126,7 +123,7 @@ class _BatchOperationsDialogState extends ConsumerState<BatchOperationsDialog> {
     final theme = Theme.of(context);
 
     return AlertDialog(
-      title: Text(l10n.batchOperationsTitle),
+      title: Text(l10n.titleBatchOperations),
       content: SizedBox(
         width: 440,
         child: SingleChildScrollView(
@@ -138,30 +135,30 @@ class _BatchOperationsDialogState extends ConsumerState<BatchOperationsDialog> {
               DropdownButtonFormField<BatchOpType>(
                 initialValue: _opType,
                 decoration: InputDecoration(
-                  labelText: l10n.batchOperationLabel,
+                  labelText: l10n.labelBatchOperation,
                   border: const OutlineInputBorder(),
                   isDense: true,
                 ),
                 items: [
                   DropdownMenuItem(
                     value: BatchOpType.encrypt,
-                    child: Text(l10n.batchOpEncrypt),
+                    child: Text(l10n.descBatchOpEncrypt),
                   ),
                   DropdownMenuItem(
                     value: BatchOpType.merge,
-                    child: Text(l10n.batchOpMerge),
+                    child: Text(l10n.labelBatchOpMerge),
                   ),
                   DropdownMenuItem(
                     value: BatchOpType.extractText,
-                    child: Text(l10n.batchOpExtractText),
+                    child: Text(l10n.descBatchOpExtractText),
                   ),
                   DropdownMenuItem(
                     value: BatchOpType.trimMargins,
-                    child: Text(l10n.batchOpTrimMargins),
+                    child: Text(l10n.labelBatchOpTrimMargins),
                   ),
                   DropdownMenuItem(
                     value: BatchOpType.compress,
-                    child: Text(l10n.batchOpCompress),
+                    child: Text(l10n.labelBatchOpCompress),
                   ),
                 ],
                 onChanged: _processing
@@ -176,7 +173,7 @@ class _BatchOperationsDialogState extends ConsumerState<BatchOperationsDialog> {
                   obscureText: true,
                   enabled: !_processing,
                   decoration: InputDecoration(
-                    labelText: l10n.userPasswordLabel,
+                    labelText: l10n.labelUserPassword,
                     border: const OutlineInputBorder(),
                     isDense: true,
                   ),
@@ -188,13 +185,13 @@ class _BatchOperationsDialogState extends ConsumerState<BatchOperationsDialog> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    l10n.batchSelectedFilesCount(_documents.length),
+                    l10n.descBatchSelectedFilesCount(_documents.length),
                     style: theme.textTheme.titleSmall,
                   ),
                   TextButton.icon(
                     onPressed: _processing ? null : _pickMore,
                     icon: const Icon(Icons.add, size: 18),
-                    label: Text(l10n.batchAddFilesAction),
+                    label: Text(l10n.actionBatchAddFiles),
                   ),
                 ],
               ),
@@ -209,7 +206,7 @@ class _BatchOperationsDialogState extends ConsumerState<BatchOperationsDialog> {
                 child: _documents.isEmpty
                     ? Center(
                         child: Text(
-                          l10n.batchNoFilesSelected,
+                          l10n.descBatchNoFilesSelected,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.hintColor,
                           ),
@@ -231,7 +228,7 @@ class _BatchOperationsDialogState extends ConsumerState<BatchOperationsDialog> {
                                 ? null
                                 : IconButton(
                                     icon: const Icon(Icons.close, size: 16),
-                                    tooltip: l10n.removeAction,
+                                    tooltip: l10n.actionRemove,
                                     onPressed: () => setState(
                                       () => _documents.removeAt(index),
                                     ),
@@ -247,7 +244,7 @@ class _BatchOperationsDialogState extends ConsumerState<BatchOperationsDialog> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  l10n.batchProgressLabel(
+                  l10n.descBatchProgress(
                     _currentStep,
                     _totalSteps,
                     _currentFileName,
@@ -263,7 +260,7 @@ class _BatchOperationsDialogState extends ConsumerState<BatchOperationsDialog> {
       actions: [
         TextButton(
           onPressed: _processing ? null : () => Navigator.of(context).pop(),
-          child: Text(l10n.cancelAction),
+          child: Text(l10n.actionCancel),
         ),
         FilledButton(
           onPressed: _processing || _documents.isEmpty ? null : _runBatch,
@@ -273,7 +270,7 @@ class _BatchOperationsDialogState extends ConsumerState<BatchOperationsDialog> {
                   height: 16,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : Text(l10n.batchStartAction),
+              : Text(l10n.actionBatchStart),
         ),
       ],
     );

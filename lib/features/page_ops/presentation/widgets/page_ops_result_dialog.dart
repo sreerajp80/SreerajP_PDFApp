@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:pdfapp/core/errors/user_error_message.dart';
+import 'package:pdfapp/core/logging/app_logger.dart';
 import 'package:pdfapp/features/extraction/data/share_service.dart';
 import 'package:pdfapp/features/page_ops/data/page_ops_service.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
@@ -33,16 +35,30 @@ class PageOpsResultDialog extends ConsumerWidget {
       if (context.mounted) {
         Navigator.of(context).pop();
         if (saved != null) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(l10n.savedFileMessage(saved))));
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(l10n.bodySavedFile(saved))));
         }
       }
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error(
+        'page_ops_result_dialog: operation failed',
+        error: e,
+        stackTrace: st,
+      );
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('${l10n.saveFailed}: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              userErrorMessage(l10n, e, fallback: l10n.errorSaveFailed),
+            ),
+            action: SnackBarAction(
+              label: l10n.actionTryAgain,
+              onPressed: () {
+                if (context.mounted) _save(context, ref);
+              },
+            ),
+          ),
+        );
       }
     }
   }
@@ -73,8 +89,8 @@ class PageOpsResultDialog extends ConsumerWidget {
         children: [
           Text(
             single
-                ? l10n.resultOneFile(outputPaths.first.split('/').last)
-                : l10n.resultManyFiles(outputPaths.length),
+                ? l10n.labelResultOneFile(outputPaths.first.split('/').last)
+                : l10n.descResultManyFiles(outputPaths.length),
           ),
           if (note != null) ...[
             const SizedBox(height: 12),
@@ -90,17 +106,17 @@ class PageOpsResultDialog extends ConsumerWidget {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.dismissAction),
+          child: Text(l10n.actionDismiss),
         ),
         TextButton.icon(
           icon: const Icon(Icons.share),
-          label: Text(l10n.shareAction),
+          label: Text(l10n.actionShare),
           onPressed: () => _share(context, ref),
         ),
         if (single)
           FilledButton.icon(
             icon: const Icon(Icons.save_alt),
-            label: Text(l10n.saveAction),
+            label: Text(l10n.actionSave),
             onPressed: () => _save(context, ref),
           ),
       ],

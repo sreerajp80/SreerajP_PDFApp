@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart'
+    show GlobalWidgetsLocalizations;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/core/platform/signature_channel.dart';
 import 'package:pdfapp/features/signature/data/eutl_trust_list.dart';
 import 'package:pdfapp/features/signature/data/signature_repository.dart';
@@ -13,8 +15,10 @@ import 'package:pdfapp/features/signature/presentation/providers.dart';
 import 'package:pdfapp/features/signature/presentation/signatures_screen.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:flutter/services.dart';
+
 import 'dart:async';
+
+import '../../../helpers/tooltip_checks.dart';
 
 class _FakeDatabaseExecutor implements DatabaseExecutor {
   @override
@@ -46,6 +50,7 @@ class _FakeSignatureRepository extends SignatureRepository {
 
 class _FakeSignatureVerdictsNotifier extends SignatureVerdictsNotifier {
   _FakeSignatureVerdictsNotifier(
+    super.path,
     this._verdicts, {
     this.error,
     this.loading = false,
@@ -56,7 +61,7 @@ class _FakeSignatureVerdictsNotifier extends SignatureVerdictsNotifier {
   final bool loading;
 
   @override
-  Future<List<SignatureVerdict>> build(String arg) async {
+  Future<List<SignatureVerdict>> build() async {
     if (loading) {
       return Completer<List<SignatureVerdict>>().future;
     }
@@ -112,16 +117,18 @@ void main() {
         overrides: [
           signatureRepositoryProvider.overrideWithValue(repository),
           if (loading)
-            signatureVerdictsProvider.overrideWith(
-              () => _FakeSignatureVerdictsNotifier(const [], loading: true),
+            signatureVerdictsProvider.overrideWith2(
+              (path) =>
+                  _FakeSignatureVerdictsNotifier(path, const [], loading: true),
             )
           else if (error != null)
-            signatureVerdictsProvider.overrideWith(
-              () => _FakeSignatureVerdictsNotifier(const [], error: error),
+            signatureVerdictsProvider.overrideWith2(
+              (path) =>
+                  _FakeSignatureVerdictsNotifier(path, const [], error: error),
             )
           else if (verdicts != null)
-            signatureVerdictsProvider.overrideWith(
-              () => _FakeSignatureVerdictsNotifier(verdicts),
+            signatureVerdictsProvider.overrideWith2(
+              (path) => _FakeSignatureVerdictsNotifier(path, verdicts),
             ),
         ],
         child: const MaterialApp(
@@ -139,6 +146,7 @@ void main() {
       await tester.pump();
     } else {
       await tester.pumpAndSettle();
+      expectAllIconButtonsHaveTooltips(tester);
     }
   }
 
@@ -180,10 +188,10 @@ void main() {
 
     expect(find.text('Jane'), findsOneWidget);
     expect(find.text('Signed, but signer unknown'), findsOneWidget);
-    expect(find.text('Trust this certificate'), findsOneWidget);
+    expect(find.text('Trust certificate'), findsOneWidget);
 
     // Tap the button
-    await tester.tap(find.text('Trust this certificate'));
+    await tester.tap(find.text('Trust certificate'));
     await tester.pumpAndSettle();
 
     // Verify trust confirmation dialog is shown

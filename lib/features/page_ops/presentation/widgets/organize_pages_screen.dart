@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pdfrx/pdfrx.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:pdfapp/core/errors/user_error_message.dart';
+import 'package:pdfapp/core/logging/app_logger.dart';
 import 'package:pdfapp/features/page_ops/data/page_ops_service.dart';
 import 'package:pdfapp/features/page_ops/presentation/widgets/page_ops_result_dialog.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
+import 'package:pdfrx/pdfrx.dart';
 
 /// One page in the organizer: which source page it is and how much extra
 /// rotation the user has applied.
@@ -62,9 +64,9 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text(l10n.pageDeletedMessage(removed.originalPage)),
+          content: Text(l10n.bodyPageDeleted(removed.originalPage)),
           action: SnackBarAction(
-            label: l10n.undoAction,
+            label: l10n.actionUndo,
             onPressed: () => setState(
               () => _entries.insert(index.clamp(0, _entries.length), removed),
             ),
@@ -144,15 +146,16 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
 
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.pagesDeletedCount(count))));
+      ..showSnackBar(
+        SnackBar(content: Text(l10n.descPagesDeletedCount(count))),
+      );
   }
 
   Future<void> _save() async {
     final l10n = AppLocalizations.of(context);
     if (_entries.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.noPagesLeftError)));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.errorNoPagesLeft)));
       return;
     }
     setState(() => _saving = true);
@@ -168,17 +171,32 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
         showDialog<void>(
           context: context,
           builder: (context) => PageOpsResultDialog(
-            title: l10n.organizeDoneTitle,
+            title: l10n.titleOrganizeDone,
             outputPaths: [out],
           ),
         );
       }
-    } catch (e) {
+    } catch (e, st) {
+      AppLogger.error(
+        'organize_pages_screen: operation failed',
+        error: e,
+        stackTrace: st,
+      );
       if (mounted) {
         setState(() => _saving = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('${l10n.opFailed}: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              userErrorMessage(l10n, e, fallback: l10n.errorOpFailed),
+            ),
+            action: SnackBarAction(
+              label: l10n.actionTryAgain,
+              onPressed: () {
+                if (mounted && !_saving) _save();
+              },
+            ),
+          ),
+        );
       }
     }
   }
@@ -193,15 +211,15 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
       appBar: AppBar(
         title: Text(
           hasSelection
-              ? l10n.organizeSelectedCount(_selectedIndices.length)
-              : l10n.organizeTitle,
+              ? l10n.descOrganizeSelectedCount(_selectedIndices.length)
+              : l10n.titleOrganize,
         ),
         actions: [
           IconButton(
             icon: Icon(_isGridView ? Icons.view_list : Icons.grid_view),
             tooltip: _isGridView
-                ? l10n.viewModeContinuous
-                : l10n.thumbnailsTitle,
+                ? l10n.labelViewModeContinuous
+                : l10n.titleThumbnails,
             onPressed: () => setState(() => _isGridView = !_isGridView),
           ),
           if (_saving)
@@ -219,7 +237,7 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
             TextButton.icon(
               onPressed: _entries.isEmpty ? null : _save,
               icon: const Icon(Icons.save_alt),
-              label: Text(l10n.saveAction),
+              label: Text(l10n.actionSave),
             ),
         ],
       ),
@@ -234,7 +252,7 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    l10n.organizeHint,
+                    l10n.helpOrganize,
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.hintColor,
                     ),
@@ -244,7 +262,7 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
                   TextButton.icon(
                     onPressed: _entries.isEmpty ? null : _selectAll,
                     icon: const Icon(Icons.select_all, size: 18),
-                    label: Text(l10n.selectAllAction),
+                    label: Text(l10n.actionSelectAll),
                   ),
               ],
             ),
@@ -252,7 +270,7 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
           const Divider(height: 1),
           Expanded(
             child: _entries.isEmpty
-                ? Center(child: Text(l10n.noPagesLeftError))
+                ? Center(child: Text(l10n.errorNoPagesLeft))
                 : _isGridView
                 ? _buildGridView(l10n, theme)
                 : _buildListView(l10n, theme),
@@ -272,21 +290,21 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
           TextButton.icon(
             onPressed: _deselectAll,
             icon: const Icon(Icons.close),
-            label: Text(l10n.deselectAllAction),
+            label: Text(l10n.actionDeselectAll),
           ),
           TextButton.icon(
             onPressed: _invertSelection,
             icon: const Icon(Icons.swap_horiz),
-            label: Text(l10n.invertSelectionAction),
+            label: Text(l10n.actionInvertSelection),
           ),
           IconButton(
             icon: const Icon(Icons.rotate_right),
-            tooltip: l10n.rotateAction,
+            tooltip: l10n.actionRotate,
             onPressed: _rotateSelected,
           ),
           IconButton(
             icon: const Icon(Icons.delete_outline, color: Colors.red),
-            tooltip: l10n.deletePageAction,
+            tooltip: l10n.actionDeletePage,
             onPressed: _deleteSelected,
           ),
         ],
@@ -359,6 +377,16 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
     );
   }
 
+  /// The page picture, turned by the rotation the user added, so the grid and
+  /// the list show the page the way it will be saved.
+  Widget _thumbnail(_PageEntry entry) => RotatedBox(
+    quarterTurns: entry.rotation ~/ 90,
+    child: PdfPageView(
+      document: widget.document,
+      pageNumber: entry.originalPage,
+    ),
+  );
+
   Widget _buildThumbnailCard(
     _PageEntry entry,
     bool isSelected,
@@ -379,16 +407,14 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Rendered page thumbnail
-          PdfPageView(
-            document: widget.document,
-            pageNumber: entry.originalPage,
-          ),
+          // Rendered page thumbnail, turned the way it will be saved.
+          _thumbnail(entry),
           // Gradient bottom bar for readability
-          Positioned(
+          Positioned.directional(
+            textDirection: Directionality.of(context),
             bottom: 0,
-            left: 0,
-            right: 0,
+            start: 0,
+            end: 0,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
               color: Colors.black54,
@@ -417,9 +443,9 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
             ),
           ),
           // Checkbox indicator
-          Positioned(
+          PositionedDirectional(
             top: 4,
-            left: 4,
+            start: 4,
             child: Container(
               width: 20,
               height: 20,
@@ -433,13 +459,13 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
             ),
           ),
           // Individual rotate button
-          Positioned(
+          PositionedDirectional(
             top: 0,
-            right: 0,
+            end: 0,
             child: IconButton(
               icon: const Icon(Icons.rotate_right, size: 18),
               color: Colors.black87,
-              tooltip: l10n.rotateAction,
+              tooltip: l10n.actionRotate,
               onPressed: () => _rotateSingle(entry),
             ),
           ),
@@ -496,10 +522,7 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
                     border: Border.all(color: theme.dividerColor),
                     color: Colors.white,
                   ),
-                  child: PdfPageView(
-                    document: widget.document,
-                    pageNumber: entry.originalPage,
-                  ),
+                  child: _thumbnail(entry),
                 ),
               ),
               const SizedBox(width: 12),
@@ -508,12 +531,12 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      l10n.pageLabel(entry.originalPage),
+                      l10n.labelPage(entry.originalPage),
                       style: theme.textTheme.titleMedium,
                     ),
                     if (entry.rotation != 0)
                       Text(
-                        l10n.rotatedBy(entry.rotation),
+                        l10n.labelRotatedBy(entry.rotation),
                         style: theme.textTheme.labelSmall?.copyWith(
                           color: theme.colorScheme.primary,
                         ),
@@ -523,12 +546,12 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
               ),
               IconButton(
                 icon: const Icon(Icons.rotate_right),
-                tooltip: l10n.rotateAction,
+                tooltip: l10n.actionRotate,
                 onPressed: () => _rotateSingle(entry),
               ),
               IconButton(
                 icon: const Icon(Icons.delete_outline),
-                tooltip: l10n.deletePageAction,
+                tooltip: l10n.actionDeletePage,
                 onPressed: () => _deleteSingle(index),
               ),
               ReorderableDragStartListener(

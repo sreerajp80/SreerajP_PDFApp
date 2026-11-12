@@ -1,9 +1,11 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/core/search/search_normalizer.dart';
 import 'package:pdfapp/features/reading/domain/search_hit.dart';
 import 'package:pdfapp/features/reading/presentation/widgets/reader_search_bar.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
+
+import '../../../helpers/tooltip_checks.dart';
 
 SearchHit hit(int page) =>
     SearchHit(pageNumber: page, sourceStart: 0, sourceEnd: 1, rects: const []);
@@ -18,6 +20,7 @@ void main() {
     VoidCallback? onPrevious,
     VoidCallback? onClose,
     ValueChanged<SearchOptions>? onOptionsChanged,
+    bool unreliableText = false,
   }) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -33,12 +36,14 @@ void main() {
               onPrevious: onPrevious ?? () {},
               onClose: onClose ?? () {},
               onOptionsChanged: onOptionsChanged ?? (_) {},
+              unreliableText: unreliableText,
             ),
           ),
         ),
       ),
     );
     await tester.pumpAndSettle();
+    expectAllIconButtonsHaveTooltips(tester);
   }
 
   group('match counter', () {
@@ -117,6 +122,50 @@ void main() {
 
       expect(nexts, 1);
       expect(previouses, 1);
+    });
+
+    testWidgets('stepping through matches puts the keyboard away', (
+      tester,
+    ) async {
+      await pumpBar(
+        tester,
+        SearchState(query: 'cat', hits: [hit(1), hit(2)], currentIndex: 0),
+      );
+      final field = find.byType(TextField);
+      bool fieldHasFocus() =>
+          tester.widget<TextField>(field).focusNode!.hasFocus;
+      expect(fieldHasFocus(), isTrue);
+
+      await tester.tap(find.byIcon(Icons.keyboard_arrow_down));
+      await tester.pump();
+      expect(fieldHasFocus(), isFalse);
+
+      // Tapping the field brings it back for more typing.
+      await tester.tap(field);
+      await tester.pump();
+      expect(fieldHasFocus(), isTrue);
+
+      await tester.tap(find.byIcon(Icons.keyboard_arrow_up));
+      await tester.pump();
+      expect(fieldHasFocus(), isFalse);
+    });
+  });
+
+  group('unreliable text warning', () {
+    testWidgets('shows a warning when the text may not be proper Unicode', (
+      tester,
+    ) async {
+      await pumpBar(
+        tester,
+        const SearchState(query: 'cat'),
+        unreliableText: true,
+      );
+      expect(find.byIcon(Icons.warning_amber_outlined), findsOneWidget);
+    });
+
+    testWidgets('shows no warning for good text', (tester) async {
+      await pumpBar(tester, const SearchState(query: 'cat'));
+      expect(find.byIcon(Icons.warning_amber_outlined), findsNothing);
     });
   });
 

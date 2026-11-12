@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/app/theme/app_theme.dart';
 
 /// One tappable settings card: an icon tile, a title, a short subtitle and a

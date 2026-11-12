@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:pdfapp/features/signature/domain/signature_status.dart';
 import 'package:pdfapp/l10n/app_localizations.dart';
 
@@ -71,20 +71,21 @@ class SignatureBadge extends StatelessWidget {
 
   static String _labelFor(SignatureStatus status, AppLocalizations l10n) =>
       switch (status) {
-        SignatureStatus.trusted => l10n.signatureStatusTrusted,
-        SignatureStatus.validNotTrusted => l10n.signatureStatusValidNotTrusted,
-        SignatureStatus.invalid => l10n.signatureStatusInvalid,
-        SignatureStatus.unknown => l10n.signatureStatusUnknown,
+        SignatureStatus.trusted => l10n.labelSignatureStatusTrusted,
+        SignatureStatus.validNotTrusted =>
+          l10n.descSignatureStatusValidNotTrusted,
+        SignatureStatus.invalid => l10n.descSignatureStatusInvalid,
+        SignatureStatus.unknown => l10n.descSignatureStatusUnknown,
       };
 
   /// The detail line under the badge — the state in plain words.
   static String detailFor(SignatureStatus status, AppLocalizations l10n) =>
       switch (status) {
-        SignatureStatus.trusted => l10n.signatureStatusTrustedDetail,
+        SignatureStatus.trusted => l10n.descSignatureStatusTrustedDetail,
         SignatureStatus.validNotTrusted =>
-          l10n.signatureStatusValidNotTrustedDetail,
-        SignatureStatus.invalid => l10n.signatureStatusInvalidDetail,
-        SignatureStatus.unknown => l10n.signatureStatusUnknownDetail,
+          l10n.descSignatureStatusValidNotTrustedDetail,
+        SignatureStatus.invalid => l10n.descSignatureStatusInvalidDetail,
+        SignatureStatus.unknown => l10n.descSignatureStatusUnknownDetail,
       };
 
   static _BadgeStyle _styleFor(SignatureStatus status, ColorScheme scheme) =>

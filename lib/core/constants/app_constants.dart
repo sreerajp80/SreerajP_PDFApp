@@ -55,6 +55,9 @@ class AppConstants {
       'settings.remember_recent_files';
   static const String prefAutoVerifySignatures =
       'settings.auto_verify_signatures';
+  // Device sync: the folder received PDFs are saved into (a SAF tree URI).
+  // Belongs to this phone only, so it is NOT in the Device sync allow-list.
+  static const String prefReceiveFolderUri = 'device.receive_folder_uri';
 
   // Size thresholds (bytes). Above this a PDF is treated as "large" (Phase 1).
   static const int largePdfThresholdBytes = 50 * 1024 * 1024; // 50 MB
@@ -68,6 +71,12 @@ class AppConstants {
   // Enough to see past a picture-only cover page, small enough to stay quick.
   static const int textQualitySamplePages = 5;
 
+  // How long to wait for a page that the viewer has not loaded yet before its
+  // text is read. pdfrx loads pages one by one in the background; reading a
+  // page before it loads gives no text. If it still has not loaded, the page
+  // counts as empty for now and is tried again on the next request.
+  static const Duration pageTextLoadTimeout = Duration(seconds: 10);
+
   // Below this many characters there is too little evidence to call a PDF
   // garbled, so we assume it is fine (never accuse a good PDF).
   static const int minCharsForTextQualityCheck = 20;
@@ -75,6 +84,35 @@ class AppConstants {
   // Share of undecodable characters above which extracted text is "garbled"
   // (a font with no ToUnicode map). A few odd glyphs are normal; a fifth is not.
   static const double garbledTextRatioThreshold = 0.2;
+
+  // Share of Indic combining marks (vowel signs, virama, anusvara…) found in a
+  // place real Unicode never puts them — at the start of a word, after a space,
+  // after an independent vowel. Above it, the PDF most likely stores letters in
+  // the order they are drawn, not the order they are read. A first guess.
+  static const double misplacedIndicMarkRatioThreshold = 0.05;
+
+  // Fewer Indic marks than this is too little evidence to judge their order.
+  static const int minIndicMarksForOrderCheck = 20;
+
+  // Share of rare Latin-1 symbols (¼ ½ ¡ ¢ ¥ ¸ ¿ …) in text with almost no real
+  // Indic letters. Old Indic fonts (Kruti Dev, ML-TT style) map their glyphs
+  // onto these, so the page shows Indic letters while the text is Latin
+  // nonsense. A first guess.
+  static const double legacyFontSymbolRatioThreshold = 0.03;
+
+  // Fewer rare symbols than this is not treated as a legacy font.
+  static const int minLegacyFontSymbols = 5;
+
+  // Text layout repair (see TextLayoutRepair). pdfium drops a real space glyph
+  // when the virama (്, ्) before it overlaps it. Inside a word the next letter
+  // always touches the virama (gap <= 0); at a word end the gap was >= 0.15 of
+  // the letter height in a 7,892-word test book. A gap above this share of the
+  // virama box height means a word ended there.
+  static const double textRepairViramaGapRatio = 0.1;
+
+  // How far (in PDF points) a misplaced space's centre may sit outside a gap
+  // between two letters and still be put back into that gap.
+  static const double textRepairGapTolerance = 1.0;
 
   // Stop after this many search matches. Guards the UI and memory against a
   // one-letter query on a huge document.
