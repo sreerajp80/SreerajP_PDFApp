@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pdfapp/core/logging/app_logger.dart';
 
@@ -79,7 +80,14 @@ class FlutterTtsEngine implements TtsEngine {
       _tts.setLanguage(languageCode);
 
   @override
-  Future<void> setSpeechRate(double rate) => _tts.setSpeechRate(rate);
+  Future<void> setSpeechRate(double rate) =>
+      _tts.setSpeechRate(pluginRateFor(rate));
+
+  /// The plugin doubles the rate on Android ("Android 1.0 is mapped to
+  /// flutter 0.5"). Halving it here keeps our 1.0 at normal speed; without it
+  /// the default read at 2x.
+  @visibleForTesting
+  static double pluginRateFor(double rate) => rate / 2;
 
   @override
   Future<void> setPitch(double pitch) => _tts.setPitch(pitch);

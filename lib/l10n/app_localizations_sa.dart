@@ -63,9 +63,6 @@ class AppLocalizationsSa extends AppLocalizations {
   String get labelRemoveFromRecents => 'निष्कास्यताम्';
 
   @override
-  String get descFileUnavailable => 'न लभ्यते';
-
-  @override
   String get errorOpenFailed => 'सञ्चिकोद्घाटनं न शक्तम्।';
 
   @override
@@ -77,7 +74,7 @@ class AppLocalizationsSa extends AppLocalizations {
 
   @override
   String get helpReopenFailed =>
-      'अन्यस्मात् अनुप्रयोगात् \"Open with\" द्वारा उद्घाटिताः सञ्चिकाः अयम् अनुप्रयोगः यावत् न पिधीयते तावदेव पुनः उद्घाटयितुं शक्यन्ते। सूच्यां स्थापयितुं सञ्चिकां पुनरेकवारं चिनुत।';
+      'अन्येन अनुप्रयोगेण उद्घाटिताः सञ्चिकाः (\"Open with\" द्वारा, सञ्चिकाचायके अन्यम् अनुप्रयोगं चित्वा वा) अयम् अनुप्रयोगः यावत् न पिधीयते तावदेव पुनः उद्घाटयितुं शक्यन्ते। सूच्यां स्थापयितुं सञ्चिकाचायकस्य स्वकीयेभ्यः संपुटेभ्यः सञ्चिकां पुनरेकवारं चिनुत।';
 
   @override
   String get labelFindFileAgain => 'सञ्चिकां अन्विष्यताम्';
@@ -371,6 +368,14 @@ class AppLocalizationsSa extends AppLocalizations {
   String get labelTtsStop => 'स्थग्यताम्';
 
   @override
+  String get tooltipTtsSpeed => 'पठनवेगः';
+
+  @override
+  String labelTtsSpeedValue(String rate) {
+    return '$rate×';
+  }
+
+  @override
   String get descTtsUnavailableNoText =>
       'उच्चैःपठनाय चयनयोग्यः पाठ्यांशोऽपेक्षितः, यश्चास्मिन् न विद्यते।';
 
@@ -384,6 +389,21 @@ class AppLocalizationsSa extends AppLocalizations {
 
   @override
   String get descTtsNothingToRead => 'अस्मिन् पृष्ठे पठनाय न किमपि विद्यते।';
+
+  @override
+  String get descTtsMalayalamVoiceOff =>
+      'इदं पृष्ठं मलयाळभाषायाम् अस्ति। विन्यासः › उच्चैःपठनम् इत्यत्र मलयाळवाणी सक्रिया क्रियताम्।';
+
+  @override
+  String get descTtsMalayalamVoiceMissing =>
+      'इदं पृष्ठं मलयाळभाषायाम् अस्ति, किन्तु मलयाळवाणी न संस्थापिता।';
+
+  @override
+  String get descTtsNoSanskritVoice =>
+      'इदं पृष्ठं संस्कृतभाषायाम् अस्ति। संस्कृतवाणी नास्ति, अतः एतद् उच्चैः पठितुं न शक्यते।';
+
+  @override
+  String get actionTtsOpenSettings => 'विन्यासः';
 
   @override
   String get labelSettingsReadAloud => 'उच्चैःपठनम्';
@@ -1980,6 +2000,15 @@ class AppLocalizationsSa extends AppLocalizations {
   String descTtsReadyToRead(int page) {
     return '$page पृष्ठं पठितुं सज्जम्';
   }
+
+  @override
+  String get tooltipTtsReadWholeDocument => 'सकलः लेखः पठ्यताम्';
+
+  @override
+  String get tooltipTtsReadThisPage => 'इदं पृष्ठमेव पठ्यताम्';
+
+  @override
+  String get descTtsDocumentFinished => 'सकलः लेखः पठितः।';
 
   @override
   String get actionWatermark => 'इच्छानुगुणजलचिह्नम्';

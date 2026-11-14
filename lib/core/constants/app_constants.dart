@@ -37,6 +37,8 @@ class AppConstants {
   static const String prefTtsPitch = 'settings.tts_pitch';
   static const String prefTtsSentencePause = 'settings.tts_sentence_pause';
   static const String prefTtsAutoScroll = 'settings.tts_auto_scroll';
+  static const String prefTtsReadWholeDocument =
+      'settings.tts_read_whole_document';
   static const String prefRememberReadingPosition =
       'settings.remember_reading_position';
   static const String prefShowReadingEstimates =

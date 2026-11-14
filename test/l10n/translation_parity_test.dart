@@ -24,6 +24,7 @@ void main() {
     'labelPageJumpRangeHint',
     'labelBookletPaperLetter',
     'titlePermBindPrintService',
+    'labelTtsSpeedValue',
   };
 
   group('ARB parity tests', () {

@@ -6,6 +6,16 @@ All notable changes to the Folio app project will be documented in this file.
 
 ## [Unreleased]
 
+*   **Changed** the recent files list no longer marks files as "Not available". The mark was often wrong: it showed files that still exist as missing, and files that would stop opening after a restart as fine. Tap a file to open it; if it can't be opened, a dialog lets you find it again or remove it. The dialog now also explains that files picked through another app in the file picker can be reopened only until the app closes.
+*   **Added** read aloud can read the whole document. A new button in the read-aloud bar switches between "this page only" and "whole document". In whole-document mode it goes on to the next page by itself, skips blank pages, and turns the screen to the page being read when **Scroll with speech** is on (this setting did nothing before). It stops at the end of the document, or on a page whose language has no voice, and says why.
+*   **Fixed** pressing play after Pause started the page again from the top. It now carries on, starting again from the sentence that was cut off.
+*   **Changed** Malayalam is read in shorter pieces (100 characters instead of 200), so a new speed is heard within a few seconds.
+*   **Fixed** the speed button did nothing for Malayalam (and other text without full stops). A whole page was sent to the voice as one piece. Text is now read in short pieces, so speed, Pause and Stop work within a few seconds.
+*   **Changed** read aloud no longer reads Malayalam or Sanskrit pages with the English voice. It shows why instead: the Malayalam voice is off or not installed (with a Settings button), or there is no Sanskrit voice.
+*   **Fixed** read aloud kept talking after you closed the PDF. It now stops when the reader closes, and when you turn the read-aloud bar off with the speaker icon.
+*   **Fixed** read aloud was twice as fast as it should be. 1× is now normal speed, and the Settings slider really goes from 0.5× to 2×. If you had set a speed before, it will now sound half as fast.
+*   **Added** a speed button in the read-aloud bar. Each tap changes the speed (0.75×, 1×, 1.25×, 1.5×, 2×), starting from the next sentence.
+*   **Fixed** Pause could read one more sentence before stopping when the sentence pause was set to 0.
 *   **Fixed** search now scrolls to the first match even when it is on a later page. Before, the view stayed where it was until you tapped Next.
 *   **Fixed** search could miss whole pages of a PDF (and read-aloud could skip them) when a page had not finished loading yet. The page is now waited for, and an unloaded page is tried again instead of being treated as empty.
 *   **Fixed** Organize pages: a rotated page now shows its thumbnail turned, not only a "90°" label.

@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 // Hide pdfrx's PdfDocumentRef — this app has its own domain type of that name.
 import 'package:pdfrx/pdfrx.dart' hide PdfDocumentRef;
 import 'package:pdfapp/app/config/providers.dart';
+import 'package:pdfapp/core/format/display_format.dart';
 import 'package:pdfapp/app/routing/app_router.dart';
 import 'package:pdfapp/features/annotation/presentation/annotation_controller.dart';
 import 'package:pdfapp/features/annotation/presentation/annotation_painter.dart';
@@ -25,6 +26,8 @@ import 'package:pdfapp/features/reading/data/reading_velocity_service.dart';
 import 'package:pdfapp/features/reading/data/tts_service.dart';
 import 'package:pdfapp/features/reading/domain/search_hit.dart';
 import 'package:pdfapp/features/reading/domain/text_quality.dart';
+import 'package:pdfapp/features/reading/domain/tts_state.dart';
+import 'package:pdfapp/features/reading/domain/tts_speed.dart';
 import 'package:pdfapp/features/nearby_transfer/domain/send_item.dart';
 import 'package:pdfapp/features/reading/presentation/pdf_search_controller.dart';
 import 'package:pdfapp/features/reading/presentation/providers.dart';
@@ -86,6 +89,10 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   // Captured once so dispose() can save without touching a disposed ref.
   late final PdfRepository _repo = ref.read(pdfRepositoryProvider);
 
+  // Set in initState: Riverpod 3 throws if dispose() touches ref, and then
+  // read aloud would never stop when the reader leaves.
+  late final TtsService _tts;
+
   late PdfViewMode _viewMode;
   ScreenOrientationMode _screenOrientation = ScreenOrientationMode.auto;
   bool _invert = false;
@@ -119,6 +126,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   bool _searching = false;
   bool _ttsActive = false;
 
+  /// The page read aloud last, so the screen turns only when it changes.
+  int? _lastSpokenPage;
+
   /// The match the view last moved to, so streaming results do not keep
   /// pulling the view back to the same match.
   SearchHit? _jumpedHit;
@@ -147,6 +157,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
   @override
   void initState() {
     super.initState();
+    _tts = ref.read(ttsServiceProvider);
     // A zero-byte file has nothing to render.
     if (widget.docRef.sizeBytes == 0) {
       _viewMode = PdfViewMode.continuous;
@@ -186,7 +197,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       ..dispose();
     _controller.removeListener(_onMatrixChanged);
     // Stop speaking when leaving the viewer screen.
-    ref.read(ttsServiceProvider).stop();
+    unawaited(_tts.stop());
     super.dispose();
   }
 
@@ -981,6 +992,15 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(l10n.descTtsVoiceLostNotice)));
       }
+      if (next.takeDocumentFinished() &&
+          ref.read(ttsReadWholeDocumentProvider)) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.descTtsDocumentFinished)));
+      }
+      final problem = next.takeStopProblem();
+      if (problem != TtsVoiceProblem.none) _explainVoiceProblem(problem);
+      _followSpokenPage(next.status);
     });
 
     return Scaffold(
@@ -1209,6 +1229,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                 if (!_textUsable) {
                   _explainNoTts();
                 } else {
+                  // Hiding the bar must not leave the voice running with no
+                  // control on screen.
+                  if (_ttsActive) unawaited(_tts.stop());
                   setState(() => _ttsActive = !_ttsActive);
                 }
               },
@@ -1641,8 +1664,13 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
 
     final tts = ref.read(ttsServiceProvider);
 
-    if (tts.status.isSpeaking && tts.status.speakingPage == _currentPage) {
+    if (tts.status.isSpeaking) {
       await tts.pause();
+      return;
+    }
+    // Carry on from where it was paused, not from the top of the page.
+    if (tts.status.isPaused) {
+      unawaited(tts.resume());
       return;
     }
 
@@ -1663,13 +1691,112 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     final pitch = ref.read(ttsPitchProvider);
     final sentencePause = ref.read(ttsSentencePauseProvider);
 
-    await tts.speak(
+    final problem = await tts.speak(
       text,
       page: _currentPage,
       documentTitle: widget.docRef.displayName,
       speechRate: speechRate,
       pitch: pitch,
       sentencePauseSeconds: sentencePause,
+      nextPage: _nextPageToRead,
+    );
+    if (problem != TtsVoiceProblem.none && mounted) {
+      _explainVoiceProblem(problem);
+    }
+  }
+
+  /// The next page with text after [finishedPage], for whole-document
+  /// reading. Blank and image-only pages are skipped. Null when the switch is
+  /// off or the document has ended. The switch is read here, so turning it on
+  /// or off while reading takes effect at the end of the page.
+  Future<TtsPageText?> _nextPageToRead(int finishedPage) async {
+    final source = _textSource;
+    if (source == null || !mounted) return null;
+    if (!ref.read(ttsReadWholeDocumentProvider)) return null;
+    for (var page = finishedPage + 1; page <= source.pageCount; page++) {
+      final data = await source.page(page);
+      if (!mounted || !identical(_textSource, source)) return null;
+      if (data.text.trim().isNotEmpty) {
+        return TtsPageText(page: page, text: data.text);
+      }
+    }
+    return null;
+  }
+
+  /// Turns to the page being read aloud, when "Scroll with speech" is on.
+  void _followSpokenPage(TtsStatus status) {
+    final page = status.speakingPage;
+    if (page == null || status.isIdle) {
+      _lastSpokenPage = null;
+      return;
+    }
+    if (page == _lastSpokenPage) return;
+    _lastSpokenPage = page;
+    if (!ref.read(ttsAutoScrollProvider) || page == _currentPage) return;
+    unawaited(_controller.goToPage(pageNumber: page));
+  }
+
+  /// Switches between reading this page only and the whole document.
+  Widget _buildWholeDocumentButton(AppLocalizations l10n) {
+    final wholeDocument = ref.watch(ttsReadWholeDocumentProvider);
+    return IconButton(
+      icon: Icon(wholeDocument ? Icons.auto_stories : Icons.description),
+      isSelected: wholeDocument,
+      tooltip: wholeDocument
+          ? l10n.tooltipTtsReadThisPage
+          : l10n.tooltipTtsReadWholeDocument,
+      onPressed: () =>
+          ref.read(ttsReadWholeDocumentProvider.notifier).set(!wholeDocument),
+    );
+  }
+
+  /// Says why this page cannot be read, instead of reading it with the wrong
+  /// language's voice. Malayalam problems offer the Read aloud settings, where
+  /// the switch and the voice installer are.
+  void _explainVoiceProblem(TtsVoiceProblem problem) {
+    final l10n = AppLocalizations.of(context);
+    final message = switch (problem) {
+      TtsVoiceProblem.malayalamOff => l10n.descTtsMalayalamVoiceOff,
+      TtsVoiceProblem.malayalamNotInstalled =>
+        l10n.descTtsMalayalamVoiceMissing,
+      TtsVoiceProblem.noSanskritVoice => l10n.descTtsNoSanskritVoice,
+      TtsVoiceProblem.noVoice ||
+      TtsVoiceProblem.none => l10n.descTtsUnavailableNoVoice,
+    };
+    final offerSettings =
+        problem == TtsVoiceProblem.malayalamOff ||
+        problem == TtsVoiceProblem.malayalamNotInstalled;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        action: offerSettings
+            ? SnackBarAction(
+                label: l10n.actionTtsOpenSettings,
+                onPressed: () => context.pushNamed(AppRoute.ttsSettings.name),
+              )
+            : null,
+      ),
+    );
+  }
+
+  /// Tap to step through the speeds. Saved, and used from the next sentence.
+  Widget _buildSpeedButton(AppLocalizations l10n) {
+    final rate = ref.watch(ttsSpeechRateProvider);
+    final value = DisplayFormat.decimal(
+      rate,
+      l10n.localeName,
+      fractionDigits: speechRateFractionDigits(rate),
+    );
+    return Tooltip(
+      message: l10n.tooltipTtsSpeed,
+      child: TextButton(
+        onPressed: () async {
+          final next = nextSpeechRate(rate);
+          await ref.read(ttsSpeechRateProvider.notifier).set(next);
+          await _tts.setSpeechRate(next);
+        },
+        child: Text(l10n.labelTtsSpeedValue(value)),
+      ),
     );
   }
 
@@ -1705,6 +1832,8 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
               overflow: TextOverflow.ellipsis,
             ),
           ),
+          _buildWholeDocumentButton(l10n),
+          _buildSpeedButton(l10n),
           IconButton(
             icon: Icon(isSpeaking ? Icons.pause : Icons.play_arrow),
             tooltip: isSpeaking ? l10n.labelTtsPause : l10n.labelTtsReadAloud,

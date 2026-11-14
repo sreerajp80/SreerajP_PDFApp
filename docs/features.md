@@ -64,7 +64,7 @@ a feature, so you know what already exists.
 - **Password-Protected PDF Support**: On-demand password dialog for opening encrypted documents with full password validation and retry handling.
 - **Document Content Fingerprinting**: Unique SHA-256 content fingerprinting (`size:sha256`) ensuring document identity, annotations, bookmarks, and reading positions persist across file renaming or path relocation.
 - **Reading Position Persistence**: Automatically saves and restores last-read page number and viewing mode per document in a local SQLite database (`reading_positions` table).
-- **Recent Files Dashboard**: Home screen recents gallery detailing display name, page count, thumbnail/icon, and last-opened date. Features one-tap reopening, single-item deletion, bulk history clearing in Storage Settings, stale URI removal, and a "Find file" recovery dialog for files that can no longer be reopened. Files that were deleted, moved, or can no longer be read are marked "Not available" (warning icon, dimmed name) so they can be removed without trying to open them; the check reads file details only, never the file itself, and re-runs when the list changes or the app comes back to the front. Tapping a marked file still tries to open it and shows the recovery dialog if that fails. Keeps the 30 most recently opened files.
+- **Recent Files Dashboard**: Home screen recents gallery detailing display name, page count, thumbnail/icon, and last-opened date. Features one-tap reopening, single-item deletion, bulk history clearing in Storage Settings, stale URI removal, and a "Find file" recovery dialog for files that can no longer be reopened. Rows are not pre-checked or marked: whether a file can still be opened is found out on tap, and a file that cannot be opened (deleted, replaced, or reached through a short-term link from another app) shows the recovery dialog with "Find file" and "Remove". Keeps the 30 most recently opened files.
 
 ### 2.2 Search, Indic Phonetic & Sandhi Engine, and Text-to-Speech (TTS)
 
@@ -88,6 +88,13 @@ a feature, so you know what already exists.
 - **Text-to-Speech (TTS) & Playback Controls**:
   - Reads PDF text aloud in English (`en-US`) and Malayalam (`ml-IN`) via `flutter_tts` and native Android TTS.
   - Fine-grained playback controls in TTS Settings: Speech Rate slider (0.5x to 2.0x), Pitch slider (0.5x to 2.0x), Sentence Pause slider (0.0s to 2.0s), and Auto-Scroll toggle.
+  - Speed button in the reader's read-aloud bar: each tap steps 0.75x → 1x → 1.25x → 1.5x → 2x. The speed is saved and applies from the next sentence. 1.0x is normal speed (the Android plugin doubles the rate, so the engine halves it before sending).
+  - Read aloud stops when the reader is closed, or when the read-aloud bar is turned off from the speaker icon.
+  - Whole-document button in the read-aloud bar (saved setting, off by default): when on, reading goes on to the next page with text after each page ends, skipping blank or image-only pages. It stops at the end of the document ("Finished reading the document.") or on a page whose language has no voice (with the same message as for the first page). Switching it while reading takes effect at the end of the current page.
+  - With **Scroll with speech** on, the reader turns to the page being read aloud.
+  - Play after Pause resumes, repeating the sentence that was cut off, instead of starting the page again.
+  - Page text is read in short pieces (cut at `.` `!` `?` `।` `॥` `|`, and any piece over about 200 characters — 100 for Malayalam — is cut at a space), so speed, Pause and Stop respond within a few seconds even for verse text with no punctuation.
+  - No fallback to another language's voice: a Malayalam page needs the Malayalam voice switched on and installed, and a Sanskrit (Devanagari) page has no voice. In those cases a message says why (with a Settings action for Malayalam) instead of reading with the English voice.
   - Persistent Android media playback notification with play/pause and stop controls for background listening.
 - **TTS Voice Installer Helper**: Automatically detects missing voice data (`LANG_MISSING_DATA` or `LANG_NOT_SUPPORTED`) and offers native Android intent options to install voices (engine voice installer, system TTS settings, or Google TTS store link).
 

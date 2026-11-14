@@ -467,6 +467,26 @@ class TtsAutoScrollNotifier extends Notifier<bool> {
   }
 }
 
+/// TTS: Keep reading into the next pages instead of stopping at the end of one.
+final ttsReadWholeDocumentProvider =
+    NotifierProvider<TtsReadWholeDocumentNotifier, bool>(
+      TtsReadWholeDocumentNotifier.new,
+    );
+
+class TtsReadWholeDocumentNotifier extends Notifier<bool> {
+  @override
+  bool build() {
+    final prefs = ref.watch(sharedPreferencesProvider);
+    return prefs.getBool(AppConstants.prefTtsReadWholeDocument) ?? false;
+  }
+
+  Future<void> set(bool value) async {
+    state = value;
+    final prefs = ref.read(sharedPreferencesProvider);
+    await prefs.setBool(AppConstants.prefTtsReadWholeDocument, value);
+  }
+}
+
 /// Storage: Remember recent files toggle.
 final rememberRecentFilesProvider =
     NotifierProvider<RememberRecentFilesNotifier, bool>(

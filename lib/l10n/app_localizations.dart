@@ -202,12 +202,6 @@ abstract class AppLocalizations {
   /// **'Remove'**
   String get labelRemoveFromRecents;
 
-  /// Shown under a recent file that was deleted, moved, or can no longer be read by the app
-  ///
-  /// In en, this message translates to:
-  /// **'Not available'**
-  String get descFileUnavailable;
-
   /// Generic open failure message
   ///
   /// In en, this message translates to:
@@ -229,7 +223,7 @@ abstract class AppLocalizations {
   /// Explains why a recent file cannot be reopened and how to fix it
   ///
   /// In en, this message translates to:
-  /// **'Files opened from another app with \"Open with\" can only be reopened until this app closes. Pick the file once more to keep it in the list.'**
+  /// **'Files opened through another app (with \"Open with\", or by choosing another app in the file picker) can only be reopened until this app closes. Pick the file once more from the file picker\'s own folders to keep it in the list.'**
   String get helpReopenFailed;
 
   /// Button that opens the system picker to find a recent file again
@@ -760,6 +754,18 @@ abstract class AppLocalizations {
   /// **'Stop'**
   String get labelTtsStop;
 
+  /// Tooltip for the read-aloud speed button; each tap changes the speed
+  ///
+  /// In en, this message translates to:
+  /// **'Reading speed'**
+  String get tooltipTtsSpeed;
+
+  /// The read-aloud speed shown on the speed button, e.g. 1.25×. rate is an already formatted number.
+  ///
+  /// In en, this message translates to:
+  /// **'{rate}×'**
+  String labelTtsSpeedValue(String rate);
+
   /// Why read-aloud is off for a scanned PDF
   ///
   /// In en, this message translates to:
@@ -783,6 +789,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'There is nothing to read on this page.'**
   String get descTtsNothingToRead;
+
+  /// Read aloud did not start: Malayalam page, Malayalam voice switched off
+  ///
+  /// In en, this message translates to:
+  /// **'This page is in Malayalam. Turn on the Malayalam voice in Settings › Read aloud.'**
+  String get descTtsMalayalamVoiceOff;
+
+  /// Read aloud did not start: Malayalam page, Malayalam voice not installed
+  ///
+  /// In en, this message translates to:
+  /// **'This page is in Malayalam, but the Malayalam voice is not installed.'**
+  String get descTtsMalayalamVoiceMissing;
+
+  /// Read aloud did not start: Devanagari (Sanskrit) page, no voice for it
+  ///
+  /// In en, this message translates to:
+  /// **'This page is in Sanskrit. There is no Sanskrit voice, so it cannot be read aloud.'**
+  String get descTtsNoSanskritVoice;
+
+  /// Snackbar action that opens Settings › Read aloud
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get actionTtsOpenSettings;
 
   /// Header for the read-aloud settings
   ///
@@ -3531,6 +3561,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ready to read page {page}'**
   String descTtsReadyToRead(int page);
+
+  /// Read-aloud bar button: keep reading into the next pages, turning them, until the document ends
+  ///
+  /// In en, this message translates to:
+  /// **'Read whole document'**
+  String get tooltipTtsReadWholeDocument;
+
+  /// Read-aloud bar button, shown while whole-document reading is on: go back to reading only one page
+  ///
+  /// In en, this message translates to:
+  /// **'Read this page only'**
+  String get tooltipTtsReadThisPage;
+
+  /// Shown when whole-document read aloud reaches the last page
+  ///
+  /// In en, this message translates to:
+  /// **'Finished reading the document.'**
+  String get descTtsDocumentFinished;
 
   /// Menu title for applying watermark
   ///

@@ -83,14 +83,6 @@ class MainActivity : FlutterActivity() {
                             result.success(hasLastingAccess(Uri.parse(uri)))
                         }
                     }
-                    "checkAvailable" -> {
-                        val uris = call.argument<List<String>>("uris")
-                        if (uris == null) {
-                            result.error("bad_args", "Missing uris.", null)
-                        } else {
-                            checkAvailable(uris, result)
-                        }
-                    }
                     "releaseAllAccess" -> result.success(releaseAllAccess())
                     // Device sync: the folder received PDFs are saved into.
                     "pickFolder" -> startPickFolder(result)
@@ -601,47 +593,6 @@ class MainActivity : FlutterActivity() {
             )
         } catch (_: Exception) {
             // Not allowed by the sender; short access still lets us open it now.
-        }
-    }
-
-    /**
-     * Tells, for each stored recent-file URI, whether it can still be reached. Replies with a
-     * map of URI -> true/false. Runs off the main thread: up to 30 provider look-ups.
-     */
-    private fun checkAvailable(uris: List<String>, result: MethodChannel.Result) {
-        Thread {
-            val answer = HashMap<String, Boolean>()
-            for (uri in uris) {
-                answer[uri] = isReachable(Uri.parse(uri))
-            }
-            runOnUiThread { result.success(answer) }
-        }.start()
-    }
-
-    /**
-     * A cheap check: asks the provider for the file's details only. It never opens or copies
-     * the file, so a cloud file is not downloaded just to check it. A missing row, a missing
-     * file, or lost permission all mean "not reachable".
-     */
-    private fun isReachable(uri: Uri): Boolean {
-        if (uri.scheme == "file") {
-            val path = uri.path ?: return false
-            return File(path).canRead()
-        }
-        var cursor: Cursor? = null
-        return try {
-            cursor = contentResolver.query(
-                uri,
-                arrayOf(OpenableColumns.DISPLAY_NAME),
-                null,
-                null,
-                null,
-            )
-            cursor != null && cursor.moveToFirst()
-        } catch (_: Exception) {
-            false
-        } finally {
-            cursor?.close()
         }
     }
 

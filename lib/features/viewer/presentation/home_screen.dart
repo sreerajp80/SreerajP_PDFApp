@@ -31,12 +31,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   StreamSubscription<IncomingContent>? _incomingSub;
   bool _busy = false;
 
-  /// Re-checks which recent files are reachable when the app comes back: a
-  /// file may have been deleted in another app meanwhile.
-  late final AppLifecycleListener _lifecycle = AppLifecycleListener(
-    onResume: () => ref.invalidate(recentFileAvailabilityProvider),
-  );
-
   /// Recent files picked for sending (by fingerprint). Not empty means Home is
   /// in selection mode: a long-press starts it, taps add or remove files.
   final Set<String> _selected = {};
@@ -64,7 +58,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _lifecycle; // Start listening (the field is lazy).
     // After the first frame so navigation/context is ready.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _handleLaunchIntent();
@@ -75,7 +68,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void dispose() {
     _incomingSub?.cancel();
-    _lifecycle.dispose();
     super.dispose();
   }
 
@@ -187,10 +179,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final recents = ref.watch(recentFilesProvider);
-    // Keeps the last answer while a new check runs, so rows do not flicker.
-    final availability =
-        ref.watch(recentFileAvailabilityProvider).value ??
-        const <String, bool>{};
     final selecting = _selected.isNotEmpty;
 
     return PopScope(
@@ -245,7 +233,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ? _EmptyRecents(message: l10n.emptyRecentFiles)
                     : _RecentsList(
                         files: files,
-                        availability: availability,
                         selected: _selected,
                         onOpen: (f) =>
                             selecting ? _toggleSelected(f) : _openRecent(f),
@@ -334,17 +321,17 @@ class _EmptyRecents extends StatelessWidget {
 class _RecentsList extends StatelessWidget {
   const _RecentsList({
     required this.files,
-    required this.availability,
     required this.selected,
     required this.onOpen,
     required this.onLongPress,
     required this.onRemove,
   });
 
+  /// Every row looks the same: whether a file can still be opened is found
+  /// out only when it is tapped (the reopen dialog then offers a way out).
+  /// A start-up check was tried and removed — it could not tell a deleted
+  /// file from lost permission, and showed short-term links as fine.
   final List<RecentFile> files;
-
-  /// Fingerprint -> reachable. Only `false` marks a row; unknown looks normal.
-  final Map<String, bool> availability;
 
   /// Fingerprints of the selected files. Not empty means selection mode.
   final Set<String> selected;
@@ -372,8 +359,6 @@ class _RecentsList extends StatelessWidget {
               final file = files[index];
               final pages = file.pageCount;
               final isSelected = selected.contains(file.fingerprint);
-              final unavailable = availability[file.fingerprint] == false;
-              final colors = Theme.of(context).colorScheme;
               return ListTile(
                 selected: isSelected,
                 leading: selected.isNotEmpty
@@ -382,22 +367,9 @@ class _RecentsList extends StatelessWidget {
                             ? Icons.check_circle
                             : Icons.radio_button_unchecked,
                       )
-                    : unavailable
-                    ? Icon(Icons.report_outlined, color: colors.error)
                     : const Icon(Icons.picture_as_pdf_outlined),
-                title: Text(
-                  file.displayName,
-                  overflow: TextOverflow.ellipsis,
-                  style: unavailable
-                      ? TextStyle(color: colors.onSurfaceVariant)
-                      : null,
-                ),
-                subtitle: unavailable
-                    ? Text(
-                        l10n.descFileUnavailable,
-                        style: TextStyle(color: colors.error),
-                      )
-                    : pages == null
+                title: Text(file.displayName, overflow: TextOverflow.ellipsis),
+                subtitle: pages == null
                     ? null
                     : Text(l10n.descPageCount(pages)),
                 trailing: selected.isEmpty

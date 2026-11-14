@@ -22,15 +22,6 @@ class _FakeOpenDocumentChannel extends OpenDocumentChannel {
   String? lastPickInitialUri;
   int pickCount = 0;
 
-  /// What [checkAvailable] answers, by URI. Empty means "unknown" for all.
-  Map<String, bool> reachable = {};
-
-  @override
-  Future<Map<String, bool>> checkAvailable(List<String> uris) async => {
-    for (final u in uris)
-      if (reachable.containsKey(u)) u: reachable[u]!,
-  };
-
   @override
   Future<OpenedDocument?> pickPdf({String? initialUri}) async {
     pickCount++;
@@ -97,12 +88,8 @@ void main() {
 
   late _FakeOpenDocumentChannel channel;
 
-  Future<void> pumpHome(
-    WidgetTester tester,
-    List<RecentFile> files, {
-    Map<String, bool> reachable = const {},
-  }) async {
-    channel = _FakeOpenDocumentChannel()..reachable = reachable;
+  Future<void> pumpHome(WidgetTester tester, List<RecentFile> files) async {
+    channel = _FakeOpenDocumentChannel();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -253,41 +240,12 @@ void main() {
     expect(find.text('Open PDF'), findsOneWidget);
   });
 
-  testWidgets('an unavailable recent file is marked and can be removed', (
+  testWidgets('a recent row shows no warning mark, only its details', (
     tester,
   ) async {
-    await pumpHome(
-      tester,
-      [recent(pageCount: 12)],
-      reachable: {'content://fp1': false},
-    );
-
-    expect(find.text('Not available'), findsOneWidget);
-    expect(find.text('12 pages'), findsNothing);
-    expect(find.byIcon(Icons.report_outlined), findsOneWidget);
-
-    await tester.tap(find.byTooltip('Remove'));
-    await tester.pumpAndSettle();
-    expect(find.text('report.pdf'), findsNothing);
-  });
-
-  testWidgets('tapping an unavailable file still shows the recovery dialog', (
-    tester,
-  ) async {
-    await pumpHome(tester, [recent()], reachable: {'content://fp1': false});
-    await tester.tap(find.text('report.pdf'));
-    await tester.pumpAndSettle();
-    expect(find.text("Can't reopen file"), findsOneWidget);
-  });
-
-  testWidgets('a reachable or unknown file looks normal', (tester) async {
-    await pumpHome(
-      tester,
-      [recent(pageCount: 12)],
-      reachable: {'content://fp1': true},
-    );
-    expect(find.text('Not available'), findsNothing);
+    await pumpHome(tester, [recent(pageCount: 12)]);
     expect(find.text('12 pages'), findsOneWidget);
     expect(find.byIcon(Icons.picture_as_pdf_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.report_outlined), findsNothing);
   });
 }

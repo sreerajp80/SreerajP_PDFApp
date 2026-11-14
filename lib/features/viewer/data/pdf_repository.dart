@@ -95,18 +95,6 @@ class PdfRepository {
 
   Future<List<RecentFile>> recents() => recentFilesDao.list();
 
-  /// Which recent files can still be reached, by fingerprint. Checks details
-  /// only, never opens the files. A fingerprint missing from the map is
-  /// "unknown" and should look normal.
-  Future<Map<String, bool>> availabilityOf(List<RecentFile> files) async {
-    if (files.isEmpty) return const {};
-    final byUri = await channel.checkAvailable([for (final f in files) f.uri]);
-    return {
-      for (final f in files)
-        if (byUri[f.uri] != null) f.fingerprint: byUri[f.uri]!,
-    };
-  }
-
   Future<void> removeRecent(String fingerprint) =>
       recentFilesDao.remove(fingerprint);
 

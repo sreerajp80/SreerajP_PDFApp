@@ -63,9 +63,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelRemoveFromRecents => 'Remove';
 
   @override
-  String get descFileUnavailable => 'Not available';
-
-  @override
   String get errorOpenFailed => 'Could not open the file.';
 
   @override
@@ -77,7 +74,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpReopenFailed =>
-      'Files opened from another app with \"Open with\" can only be reopened until this app closes. Pick the file once more to keep it in the list.';
+      'Files opened through another app (with \"Open with\", or by choosing another app in the file picker) can only be reopened until this app closes. Pick the file once more from the file picker\'s own folders to keep it in the list.';
 
   @override
   String get labelFindFileAgain => 'Find file';
@@ -372,6 +369,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelTtsStop => 'Stop';
 
   @override
+  String get tooltipTtsSpeed => 'Reading speed';
+
+  @override
+  String labelTtsSpeedValue(String rate) {
+    return '$rate×';
+  }
+
+  @override
   String get descTtsUnavailableNoText =>
       'Read aloud needs selectable text, and this PDF has none.';
 
@@ -385,6 +390,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get descTtsNothingToRead => 'There is nothing to read on this page.';
+
+  @override
+  String get descTtsMalayalamVoiceOff =>
+      'This page is in Malayalam. Turn on the Malayalam voice in Settings › Read aloud.';
+
+  @override
+  String get descTtsMalayalamVoiceMissing =>
+      'This page is in Malayalam, but the Malayalam voice is not installed.';
+
+  @override
+  String get descTtsNoSanskritVoice =>
+      'This page is in Sanskrit. There is no Sanskrit voice, so it cannot be read aloud.';
+
+  @override
+  String get actionTtsOpenSettings => 'Settings';
 
   @override
   String get labelSettingsReadAloud => 'Read aloud';
@@ -1975,6 +1995,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String descTtsReadyToRead(int page) {
     return 'Ready to read page $page';
   }
+
+  @override
+  String get tooltipTtsReadWholeDocument => 'Read whole document';
+
+  @override
+  String get tooltipTtsReadThisPage => 'Read this page only';
+
+  @override
+  String get descTtsDocumentFinished => 'Finished reading the document.';
 
   @override
   String get actionWatermark => 'Custom watermark';

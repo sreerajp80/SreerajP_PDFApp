@@ -6,6 +6,7 @@ import 'package:pdfapp/core/platform/tts_channel.dart';
 import 'package:pdfapp/core/search/script_detector.dart';
 import 'package:pdfapp/features/reading/data/tts_engine.dart';
 import 'package:pdfapp/features/reading/domain/tts_state.dart';
+import 'package:pdfapp/features/reading/domain/tts_text_splitter.dart';
 
 /// Reads text aloud, and always knows whether it can.
 ///
@@ -47,6 +48,35 @@ class TtsService extends ChangeNotifier {
   Timer? _pauseTimer;
   Completer<void>? _currentSentenceCompleter;
   String _activeDocTitle = '';
+
+  /// True while a piece has been handed to the engine and has not finished.
+  bool _pieceInProgress = false;
+
+  /// Goes up on every start, pause and stop, so an old reading loop that wakes
+  /// up late can see it is out of date and quit instead of reading twice.
+  int _run = 0;
+
+  // Whole-document reading
+  TtsNextPage? _nextPage;
+  TtsLanguage? _activeLanguage;
+  bool _documentFinished = false;
+  TtsVoiceProblem _stopProblem = TtsVoiceProblem.none;
+
+  /// True once, after reading reached the end of the document. Reading it
+  /// clears it.
+  bool takeDocumentFinished() {
+    final finished = _documentFinished;
+    _documentFinished = false;
+    return finished;
+  }
+
+  /// Why whole-document reading stopped on a later page (for example a
+  /// Malayalam page with the voice off), once. Reading it clears it.
+  TtsVoiceProblem takeStopProblem() {
+    final problem = _stopProblem;
+    _stopProblem = TtsVoiceProblem.none;
+    return problem;
+  }
 
   void _handleNotificationAction(String action) {
     switch (action.toLowerCase()) {
@@ -113,31 +143,66 @@ class TtsService extends ChangeNotifier {
     return state;
   }
 
-  /// Reads [text] aloud sentence by sentence, inserting [sentencePauseSeconds]
-  /// pause between sentences for natural prosody.
-  Future<void> speak(
+  /// Whether [text] can be read aloud, judged by its main script.
+  ///
+  /// Never suggests another language's voice as a stand-in.
+  TtsVoiceProblem voiceProblemFor(String text) {
+    switch (ScriptDetector.dominantScript(text)) {
+      case PdfScript.devanagari:
+        return TtsVoiceProblem.noSanskritVoice;
+      case PdfScript.malayalam:
+        if (_status.malayalam != TtsVoiceState.ready) {
+          return TtsVoiceProblem.malayalamNotInstalled;
+        }
+        return _status.malayalamEnabled
+            ? TtsVoiceProblem.none
+            : TtsVoiceProblem.malayalamOff;
+      case PdfScript.other:
+        return _status.english == TtsVoiceState.ready
+            ? TtsVoiceProblem.none
+            : TtsVoiceProblem.noVoice;
+    }
+  }
+
+  /// Reads [text] aloud piece by piece, inserting [sentencePauseSeconds]
+  /// pause between pieces for natural prosody.
+  ///
+  /// With [nextPage], reading does not stop at the end of [page]: it asks for
+  /// the next page and carries on, until the document ends or a page has no
+  /// voice. Without it, only [text] is read.
+  ///
+  /// Returns why it did not start, or [TtsVoiceProblem.none] when it did (or
+  /// there was nothing to read).
+  Future<TtsVoiceProblem> speak(
     String text, {
     int? page,
     String? documentTitle,
     double? speechRate,
     double? pitch,
     double? sentencePauseSeconds,
+    TtsNextPage? nextPage,
   }) async {
     final raw = text.trim();
-    if (raw.isEmpty) return;
+    if (raw.isEmpty) return TtsVoiceProblem.none;
 
-    final language = _languageFor(raw);
-    if (_stateOf(language) != TtsVoiceState.ready) return;
+    final problem = voiceProblemFor(raw);
+    if (problem != TtsVoiceProblem.none) return problem;
+    final language = ScriptDetector.dominantScript(raw) == PdfScript.malayalam
+        ? TtsLanguage.malayalam
+        : TtsLanguage.english;
 
     await stop();
 
     _activeDocTitle = documentTitle ?? 'PDF Document';
     _sentencePauseSeconds = sentencePauseSeconds ?? 0.4;
-    _sentenceQueue = _splitIntoSentences(raw);
-    _currentSentenceIndex = 0;
+    _nextPage = page == null ? null : nextPage;
+    _documentFinished = false;
+    _stopProblem = TtsVoiceProblem.none;
+    _loadQueue(raw, language);
 
     try {
       await engine.setLanguage(language.code);
+      _activeLanguage = language;
       if (speechRate != null) await engine.setSpeechRate(speechRate);
       if (pitch != null) await engine.setPitch(pitch);
 
@@ -149,23 +214,37 @@ class TtsService extends ChangeNotifier {
       );
 
       _updateNotification(isPlaying: true);
-      unawaited(_playNextSentence());
+      unawaited(_playNextSentence(++_run));
     } catch (e) {
       AppLogger.warning('Read aloud failed.', error: e);
       await stop();
     }
+    return TtsVoiceProblem.none;
   }
 
-  List<String> _splitIntoSentences(String text) {
-    final matches = text.split(RegExp(r'(?<=[.!?।|\n])\s+'));
-    return matches.map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+  void _loadQueue(String text, TtsLanguage language) {
+    _sentenceQueue = splitForSpeech(
+      text,
+      maxLength: language == TtsLanguage.malayalam
+          ? maxMalayalamSpeechPieceLength
+          : maxSpeechPieceLength,
+    );
+    _currentSentenceIndex = 0;
   }
 
-  Future<void> _playNextSentence() async {
-    if (_status.playback != TtsPlaybackState.speaking) return;
+  bool _isCurrent(int run) =>
+      run == _run && _status.playback == TtsPlaybackState.speaking;
+
+  Future<void> _playNextSentence(int run) async {
+    if (!_isCurrent(run)) return;
 
     if (_currentSentenceIndex >= _sentenceQueue.length) {
-      await stop();
+      final page = _status.speakingPage;
+      if (_nextPage != null && page != null) {
+        await _continueAfter(page, run);
+      } else {
+        await stop();
+      }
       return;
     }
 
@@ -173,10 +252,12 @@ class TtsService extends ChangeNotifier {
     _currentSentenceIndex++;
 
     _currentSentenceCompleter = Completer<void>();
+    _pieceInProgress = true;
     await engine.speak(sentence);
     await _currentSentenceCompleter?.future;
+    _pieceInProgress = false;
 
-    if (_status.playback != TtsPlaybackState.speaking) return;
+    if (!_isCurrent(run)) return;
 
     if (_currentSentenceIndex < _sentenceQueue.length &&
         _sentencePauseSeconds > 0) {
@@ -186,9 +267,59 @@ class TtsService extends ChangeNotifier {
       );
     }
 
-    if (_status.playback == TtsPlaybackState.speaking) {
-      await _playNextSentence();
+    await _playNextSentence(run);
+  }
+
+  /// Moves on to the page after [finishedPage], or stops at the end of the
+  /// document or on a page with no voice.
+  Future<void> _continueAfter(int finishedPage, int run) async {
+    final nextPage = _nextPage;
+    if (nextPage == null) return;
+
+    TtsPageText? next;
+    try {
+      next = await nextPage(finishedPage);
+    } catch (e) {
+      AppLogger.warning('Could not get the next page to read.', error: e);
+      await stop();
+      return;
     }
+    // The reader may have paused or stopped while the page was loading.
+    if (!_isCurrent(run)) return;
+
+    final text = next?.text.trim() ?? '';
+    if (next == null || text.isEmpty) {
+      _documentFinished = true;
+      await stop();
+      return;
+    }
+
+    final problem = voiceProblemFor(text);
+    if (problem != TtsVoiceProblem.none) {
+      _stopProblem = problem;
+      await stop();
+      return;
+    }
+
+    final language = ScriptDetector.dominantScript(text) == PdfScript.malayalam
+        ? TtsLanguage.malayalam
+        : TtsLanguage.english;
+    try {
+      if (language != _activeLanguage) {
+        await engine.setLanguage(language.code);
+        _activeLanguage = language;
+      }
+    } catch (e) {
+      AppLogger.warning('Read aloud failed.', error: e);
+      await stop();
+      return;
+    }
+    if (!_isCurrent(run)) return;
+
+    _loadQueue(text, language);
+    _set(_status.copyWith(speakingPage: next.page));
+    _updateNotification(isPlaying: true);
+    await _playNextSentence(run);
   }
 
   void _onSentenceComplete() {
@@ -198,30 +329,35 @@ class TtsService extends ChangeNotifier {
     }
   }
 
-  TtsLanguage _languageFor(String text) {
-    final malayalam =
-        ScriptDetector.dominantScript(text) == PdfScript.malayalam;
-    return malayalam && _status.malayalamUsable
-        ? TtsLanguage.malayalam
-        : TtsLanguage.english;
-  }
-
-  TtsVoiceState _stateOf(TtsLanguage language) => switch (language) {
-    TtsLanguage.english => _status.english,
-    TtsLanguage.malayalam => _status.malayalam,
-  };
-
   /// Pauses mid-playback.
   Future<void> pause() async {
     if (!_status.isSpeaking) return;
     _pauseTimer?.cancel();
+    _run++;
+    // A piece cut off half-way is read again from its start on resume, so no
+    // words are lost.
+    if (_pieceInProgress && _currentSentenceIndex > 0) {
+      _currentSentenceIndex--;
+    }
+    _pieceInProgress = false;
+    // Mark paused before releasing the sentence wait, so the reading loop sees
+    // it and does not start the next sentence.
+    _set(_status.copyWith(playback: TtsPlaybackState.paused));
     if (_currentSentenceCompleter != null &&
         !_currentSentenceCompleter!.isCompleted) {
       _currentSentenceCompleter!.complete();
     }
     await engine.pause();
-    _set(_status.copyWith(playback: TtsPlaybackState.paused));
     _updateNotification(isPlaying: false);
+  }
+
+  /// Changes the speed. While reading, it takes effect from the next sentence.
+  Future<void> setSpeechRate(double rate) async {
+    try {
+      await engine.setSpeechRate(rate);
+    } catch (e) {
+      AppLogger.warning('Could not change the speech rate.', error: e);
+    }
   }
 
   /// Resumes playback from pause.
@@ -229,12 +365,15 @@ class TtsService extends ChangeNotifier {
     if (!_status.isPaused) return;
     _set(_status.copyWith(playback: TtsPlaybackState.speaking));
     _updateNotification(isPlaying: true);
-    await _playNextSentence();
+    await _playNextSentence(++_run);
   }
 
   Future<void> stop() async {
     _pauseTimer?.cancel();
-    _sentenceQueue.clear();
+    _run++;
+    _nextPage = null;
+    _pieceInProgress = false;
+    _sentenceQueue = [];
     _currentSentenceIndex = 0;
     if (_currentSentenceCompleter != null &&
         !_currentSentenceCompleter!.isCompleted) {

@@ -17,19 +17,6 @@ class _FakeChannel extends OpenDocumentChannel {
   OpenedDocument? nextPick;
   String? lastPickInitialUri;
 
-  /// What [checkAvailable] answers, by URI. A URI not here is "unknown".
-  final Map<String, bool> reachable = {};
-  List<String>? lastCheckedUris;
-
-  @override
-  Future<Map<String, bool>> checkAvailable(List<String> uris) async {
-    lastCheckedUris = uris;
-    return {
-      for (final u in uris)
-        if (reachable.containsKey(u)) u: reachable[u]!,
-    };
-  }
-
   @override
   Future<bool> hasLastingAccess(String uri) async => lastingUris.contains(uri);
 
@@ -152,37 +139,5 @@ void main() {
     expect(await repo.relocateRecent(recent), isNull);
     final got = await recentDao.byFingerprint(fingerprint);
     expect(got!.uri, 'content://old');
-  });
-
-  RecentFile recentAt(String fp, String uri) => RecentFile(
-    fingerprint: fp,
-    uri: uri,
-    displayName: '$fp.pdf',
-    sizeBytes: 1,
-    lastOpenedAt: DateTime.fromMillisecondsSinceEpoch(1000),
-  );
-
-  test('availabilityOf maps reachable state to each fingerprint', () async {
-    channel.reachable['content://a'] = true;
-    channel.reachable['content://b'] = false;
-
-    final got = await repo.availabilityOf([
-      recentAt('fa', 'content://a'),
-      recentAt('fb', 'content://b'),
-      recentAt('fc', 'content://c'),
-    ]);
-
-    // c has no answer, so it stays "unknown" (left out of the map).
-    expect(got, {'fa': true, 'fb': false});
-    expect(channel.lastCheckedUris, [
-      'content://a',
-      'content://b',
-      'content://c',
-    ]);
-  });
-
-  test('availabilityOf does not call the platform for an empty list', () async {
-    expect(await repo.availabilityOf(const []), isEmpty);
-    expect(channel.lastCheckedUris, isNull);
   });
 }

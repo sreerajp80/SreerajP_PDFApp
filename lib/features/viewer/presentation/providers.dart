@@ -28,16 +28,6 @@ final pdfRepositoryProvider = Provider<PdfRepository>(
   ),
 );
 
-/// Which recent files can still be reached (fingerprint -> reachable). Re-runs
-/// when the recent list changes; Home also invalidates it when the app comes
-/// back to the foreground. A missing fingerprint means "unknown".
-final recentFileAvailabilityProvider = FutureProvider<Map<String, bool>>((
-  ref,
-) async {
-  final files = await ref.watch(recentFilesProvider.future);
-  return ref.read(pdfRepositoryProvider).availabilityOf(files);
-});
-
 /// The recent-files list shown on Home. Refreshes after opening or removing.
 final recentFilesProvider =
     AsyncNotifierProvider<RecentFilesNotifier, List<RecentFile>>(

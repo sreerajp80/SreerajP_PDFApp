@@ -208,27 +208,6 @@ class OpenDocumentChannel {
     }
   }
 
-  /// Checks, without opening them, whether the stored [uris] can still be
-  /// reached. Returns URI -> reachable. A URI missing from the map is
-  /// "unknown"; on any platform failure the map is empty (never a crash and
-  /// never a wrong "unavailable" mark).
-  Future<Map<String, bool>> checkAvailable(List<String> uris) async {
-    if (uris.isEmpty) return const {};
-    try {
-      final result = await _method.invokeMapMethod<String, bool>(
-        'checkAvailable',
-        {'uris': uris},
-      );
-      return result ?? const {};
-    } on PlatformException catch (e) {
-      AppLogger.warning('Could not check recent files.', error: e);
-      return const {};
-    } on MissingPluginException catch (e) {
-      AppLogger.warning('Recent file check not available.', error: e);
-      return const {};
-    }
-  }
-
   /// Gives back every lasting file permission the app holds, so no file stays
   /// reachable after "Delete all data". A failure is logged, not thrown: the
   /// rest of the purge must still run.

@@ -20,6 +20,7 @@ writing code. If a value here is missing, ask the project owner — never guess.
 |---|---|
 | App display name | `Folio` (English), `ഗ്രന്ഥം` (Malayalam), `ग्रन्थः` (Sanskrit) for prod; the same name + ` Dev` for the dev flavor |
 | Google Play store title | `en-IN`: `Folio: Offline PDF Reader`; `ml-IN`: `ഗ്രന്ഥം: ഓഫ്‌ലൈൻ PDF റീഡർ` (typed into Play Console; Play has no Sanskrit listing) |
+| Google Play short description (max 80 characters) | `en-IN`: `Read & listen to PDFs offline. Annotate, merge, split, compress, lock. No ads.`; `ml-IN`: `PDF വായിക്കാം, കേൾക്കാം, കുറിപ്പെഴുതാം, ലയിപ്പിക്കാം, വിഭജിക്കാം. പരസ്യമില്ല.` (typed into Play Console) |
 | Short description (one line) | `An offline Android app for everything PDF — read, search, listen, annotate, extract, reorganize, print, and verify signatures.` |
 | Organization / publisher | `Sreeraj P` |
 | Reverse-DNS app id | `in.sreerajp.pdfapp` — permanent once published (dev flavor adds `.dev`) |

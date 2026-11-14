@@ -63,9 +63,6 @@ class AppLocalizationsMl extends AppLocalizations {
   String get labelRemoveFromRecents => 'നീക്കം ചെയ്യുക';
 
   @override
-  String get descFileUnavailable => 'ലഭ്യമല്ല';
-
-  @override
   String get errorOpenFailed => 'ഫയൽ തുറക്കാൻ കഴിഞ്ഞില്ല.';
 
   @override
@@ -77,7 +74,7 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get helpReopenFailed =>
-      'മറ്റൊരു ആപ്പിൽ നിന്ന് \"Open with\" വഴി തുറന്ന ഫയലുകൾ ഈ ആപ്പ് അടയ്ക്കുന്നതുവരെ മാത്രമേ വീണ്ടും തുറക്കാനാകൂ. ഫയൽ ലിസ്റ്റിൽ നിലനിർത്താൻ ഒരിക്കൽ കൂടി തിരഞ്ഞെടുക്കുക.';
+      'മറ്റൊരു ആപ്പ് വഴി തുറന്ന ഫയലുകൾ (\"Open with\" വഴിയോ, ഫയൽ പിക്കറിൽ മറ്റൊരു ആപ്പ് തിരഞ്ഞെടുത്തോ) ഈ ആപ്പ് അടയ്ക്കുന്നതുവരെ മാത്രമേ വീണ്ടും തുറക്കാനാകൂ. ലിസ്റ്റിൽ നിലനിർത്താൻ, ഫയൽ പിക്കറിന്റെ സ്വന്തം ഫോൾഡറുകളിൽ നിന്ന് ഫയൽ ഒരിക്കൽ കൂടി തിരഞ്ഞെടുക്കുക.';
 
   @override
   String get labelFindFileAgain => 'ഫയൽ കണ്ടെത്തുക';
@@ -372,6 +369,14 @@ class AppLocalizationsMl extends AppLocalizations {
   String get labelTtsStop => 'നിർത്തുക';
 
   @override
+  String get tooltipTtsSpeed => 'വായനാ വേഗം';
+
+  @override
+  String labelTtsSpeedValue(String rate) {
+    return '$rate×';
+  }
+
+  @override
   String get descTtsUnavailableNoText =>
       'ഉറക്കെ വായിക്കാൻ തിരഞ്ഞെടുക്കാവുന്ന എഴുത്ത് വേണം, ഈ പി.ഡി.എഫ്. ഇൽ അതില്ല.';
 
@@ -385,6 +390,21 @@ class AppLocalizationsMl extends AppLocalizations {
 
   @override
   String get descTtsNothingToRead => 'ഈ പേജിൽ വായിക്കാൻ ഒന്നുമില്ല.';
+
+  @override
+  String get descTtsMalayalamVoiceOff =>
+      'ഈ പേജ് മലയാളത്തിലാണ്. ക്രമീകരണങ്ങൾ › ഉറക്കെ വായിക്കുക എന്നതിൽ മലയാളം ശബ്ദം ഓണാക്കുക.';
+
+  @override
+  String get descTtsMalayalamVoiceMissing =>
+      'ഈ പേജ് മലയാളത്തിലാണ്, പക്ഷേ മലയാളം ശബ്ദം ഇൻസ്റ്റാൾ ചെയ്തിട്ടില്ല.';
+
+  @override
+  String get descTtsNoSanskritVoice =>
+      'ഈ പേജ് സംസ്കൃതത്തിലാണ്. സംസ്കൃത ശബ്ദം ഇല്ലാത്തതിനാൽ ഇത് ഉറക്കെ വായിക്കാൻ കഴിയില്ല.';
+
+  @override
+  String get actionTtsOpenSettings => 'ക്രമീകരണങ്ങൾ';
 
   @override
   String get labelSettingsReadAloud => 'ഉറക്കെ വായിക്കൽ';
@@ -1980,6 +2000,15 @@ class AppLocalizationsMl extends AppLocalizations {
   String descTtsReadyToRead(int page) {
     return 'താൾ $page വായിക്കാൻ തയ്യാറാണ്';
   }
+
+  @override
+  String get tooltipTtsReadWholeDocument => 'മുഴുവൻ രേഖ വായിക്കുക';
+
+  @override
+  String get tooltipTtsReadThisPage => 'ഈ താൾ മാത്രം വായിക്കുക';
+
+  @override
+  String get descTtsDocumentFinished => 'രേഖ മുഴുവൻ വായിച്ചുകഴിഞ്ഞു.';
 
   @override
   String get actionWatermark => 'കസ്റ്റം വാട്ടർമാർക്ക്';
