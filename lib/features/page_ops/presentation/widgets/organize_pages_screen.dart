@@ -24,10 +24,14 @@ class OrganizePagesScreen extends ConsumerStatefulWidget {
     super.key,
     required this.document,
     required this.path,
+    required this.displayName,
   });
 
   final PdfDocument document;
   final String path;
+
+  /// The original document's name, used to name the new file.
+  final String displayName;
 
   @override
   ConsumerState<OrganizePagesScreen> createState() =>
@@ -165,7 +169,11 @@ class _OrganizePagesScreenState extends ConsumerState<OrganizePagesScreen> {
       final pages = _entries
           .map((e) => {'page': e.originalPage, 'rotation': e.rotation})
           .toList();
-      final out = await service.organize(widget.path, pages);
+      final out = await service.organize(
+        widget.path,
+        pages,
+        displayName: widget.displayName,
+      );
       if (mounted) {
         Navigator.of(context).pop(); // leave the organizer
         showDialog<void>(

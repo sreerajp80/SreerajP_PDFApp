@@ -67,6 +67,13 @@ void main() {
       'der': 'x',
       'added_at': 1,
     });
+    await db.insert('saved_signatures', {
+      'file_name': 'sig_1.png',
+      'width_px': 10,
+      'height_px': 5,
+      'source': 'drawn',
+      'created_at': 1,
+    });
   }
 
   test('deletes every user table, settings and file access', () async {
@@ -91,5 +98,23 @@ void main() {
   test('a database failure is reported as a StorageException', () async {
     await appDb.close();
     expect(service().deleteAll(), throwsA(isA<StorageException>()));
+  });
+
+  test('runs every private-file clean-up, even after one fails', () async {
+    var ran = 0;
+    final purge = AppDataPurgeService(
+      database: appDb,
+      prefs: prefs,
+      releaseFileAccess: () async => releaseCalls++,
+      deletePrivateFiles: [
+        () async => throw Exception('locked'),
+        () async => ran++,
+      ],
+    );
+    await seed();
+    await purge.deleteAll();
+    expect(ran, 1);
+    expect(await appDb.database.query('saved_signatures'), isEmpty);
+    expect(releaseCalls, 1);
   });
 }

@@ -111,21 +111,23 @@ void main() {
     test('applyWatermark delegates to pdfbox channel', () async {
       final result = await service.applyWatermark(
         'input.pdf',
+        displayName: 'Invoice.pdf',
         text: 'TEST WATERMARK',
         opacity: 0.5,
         rotation: 30,
         isTiled: true,
       );
-      expect(result, contains('watermarked_'));
+      expect(result, contains('Invoice_watermarked_'));
     });
 
     test('generateNUp delegates to pdfbox channel', () async {
       final result = await service.generateNUp(
         'input.pdf',
+        displayName: 'Invoice.pdf',
         gridCount: 9,
         sheetSize: 'letter',
       );
-      expect(result, contains('nup_'));
+      expect(result, contains('Invoice_9up_'));
     });
 
     test('runBatchOperation processes batch merge', () async {
@@ -151,7 +153,7 @@ void main() {
 
       expect(result.type, equals(BatchOpType.merge));
       expect(result.successCount, equals(1));
-      expect(result.items.first.outputPath, contains('merged_'));
+      expect(result.items.first.outputPath, contains('doc1_merged_'));
     });
 
     test('runBatchOperation processes batch trim', () async {
@@ -171,7 +173,7 @@ void main() {
 
       expect(result.type, equals(BatchOpType.trimMargins));
       expect(result.successCount, equals(1));
-      expect(result.items.first.outputPath, contains('trimmed_'));
+      expect(result.items.first.outputPath, contains('doc1_trimmed_'));
     });
 
     test('runBatchOperation processes batch text extraction', () async {
@@ -191,7 +193,8 @@ void main() {
 
       expect(result.type, equals(BatchOpType.extractText));
       expect(result.successCount, equals(1));
-      expect(result.items.first.outputPath, contains('extracted_'));
+      expect(result.items.first.outputPath, contains('doc1_text_'));
+      expect(result.items.first.outputPath, endsWith('.txt'));
     });
   });
 }

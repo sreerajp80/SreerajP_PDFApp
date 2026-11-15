@@ -31,6 +31,7 @@ class _FakePageOpsService extends PageOpsService {
   @override
   Future<String> generateBooklet(
     String path, {
+    required String displayName,
     String? password,
     String binding = 'ltr',
     String sheetSize = 'auto',
@@ -65,6 +66,7 @@ void main() {
                   context: context,
                   builder: (_) => BookletDialog(
                     path: '/test/booklet_src.pdf',
+                    displayName: 'booklet_src.pdf',
                     pageCount: pageCount,
                   ),
                 ),

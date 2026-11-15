@@ -215,6 +215,7 @@ lib/
 |   |-- annotation/  {data,domain,presentation}   # overlay layer + optional export
 |   |-- printer/     {data,presentation}          # print-to-PDF target + print-out
 |   |-- signature/   {data,domain,presentation}   # verify + trust store
+|   |-- sign_document/ {data,domain,presentation} # draw/import a signature picture and stamp it (copy-on-write)
 |   |-- settings/    {presentation}               # settings screens
 |   |-- help/        {presentation}               # built-in help pages
 |   `-- about/       {presentation}               # About screen (reads ConfigService)
@@ -252,7 +253,7 @@ crashing silently.
 | 3 | Global error boundaries | `FlutterError.onError`, `PlatformDispatcher.instance.onError` (both log through `AppLogger`), release `ErrorWidget.builder` → `SafeErrorFallback` (localized message) |
 | 4 | FFI / platform binding init | N/A — Android only, no FFI |
 | 5 | Secure storage / key bootstrap | N/A — the app stores no secrets |
-| 6 | `AppDatabase().open()` | Opens and migrates to schema v4 |
+| 6 | `AppDatabase().open()` | Opens and migrates to schema v5 |
 | 7 | `SharedPreferences.getInstance()` + `ConfigService().loadAndVerify()` | Preferences (incl. saved language) + About config |
 | 8 | `pdfrxFlutterInitialize()` | PDF engine; failure is logged and the viewer shows its own error |
 | 9 | `AppLifecycleService(database: …).init()` + `cleanUpPreviousSession()` | Lifecycle observer; removes stale working files (older than 24 h) left by an earlier session, before any document opens |
@@ -378,7 +379,7 @@ Full rules are in [security.md](security.md). In summary:
 
 ### Current Schema Version
 
-SQLite schema version: **4**. Migrations are append-only, run inside a transaction via
+SQLite schema version: **5**. Migrations are append-only, run inside a transaction via
 `AppDatabase`, and live in `lib/core/storage/migrations.dart`.
 
 | Version | Change Summary |
@@ -387,6 +388,7 @@ SQLite schema version: **4**. Migrations are append-only, run inside a transacti
 | 2 | `recent_files`, `reading_positions` — recents + last-read page, keyed to fingerprint (Phase 1) |
 | 3 | `annotations` — overlay layer: fingerprint + page + position + type + JSON payload (Phase 5) |
 | 4 | `trust_store` — user-added signing certificates (Phase 7) |
+| 5 | `saved_signatures` — the user's saved signature pictures (file name + size; PNG in private files `my_signatures/`) |
 
 **File identity = content fingerprint** (file size + SHA-256), with the persisted URI as a fast
 path, so reading positions, bookmarks, and overlay annotations survive move / rename / re-pick.
@@ -406,6 +408,7 @@ A modified file is treated as a **new document** — old positions and annotatio
 | `Annotation`, `AnnotationType` | Overlay mark + its normalized geometry | No | `annotation/domain/` |
 | `PdfSignature`, `SignatureStatus` | One signature and its verdict | No | `signature/domain/` |
 | `TrustedCertificate` | Trust store entry | No | `signature/domain/` |
+| `SavedSignature`, `SignaturePlacement` | Saved signature picture record; one placed box (normalized) | No | `sign_document/domain/` |
 | `AppConfig` | About-screen values from JSON | No | `core/config/` |
 
 ### Serialization Strategy

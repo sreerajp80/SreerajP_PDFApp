@@ -117,3 +117,9 @@ final class TransferException extends AppException {
 
   final TransferFailure reason;
 }
+
+/// A picture (for example a signature image) could not be read: it is not a
+/// picture, it is damaged, empty, or far too large.
+final class ImageReadException extends AppException {
+  const ImageReadException(super.message, {super.cause});
+}

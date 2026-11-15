@@ -11,9 +11,16 @@ import 'package:pdfapp/l10n/app_localizations.dart';
 /// The password stays in memory for the single operation only — never logged,
 /// never stored (§11).
 class UnlockDialog extends ConsumerStatefulWidget {
-  const UnlockDialog({super.key, required this.path});
+  const UnlockDialog({
+    super.key,
+    required this.path,
+    required this.displayName,
+  });
 
   final String path;
+
+  /// The original document's name, used to name the new file.
+  final String displayName;
 
   @override
   ConsumerState<UnlockDialog> createState() => _UnlockDialogState();
@@ -45,7 +52,11 @@ class _UnlockDialogState extends ConsumerState<UnlockDialog> {
     try {
       final service = ref.read(pageOpsServiceProvider);
       await service.clearOutputCache();
-      final out = await service.unlock(widget.path, password: password);
+      final out = await service.unlock(
+        widget.path,
+        displayName: widget.displayName,
+        password: password,
+      );
       if (mounted) {
         Navigator.of(context).pop();
         showDialog<void>(

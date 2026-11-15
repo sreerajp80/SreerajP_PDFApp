@@ -67,6 +67,8 @@ class CacheService {
     'page_ops',
     'extracted',
     'annotations',
+    // Signed copies made by "Sign", before the user saves or shares them.
+    'signed',
     // Device sync: PDFs received from another phone, before they are saved.
     'received',
   ];

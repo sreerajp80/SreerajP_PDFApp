@@ -3436,4 +3436,128 @@ class AppLocalizationsSa extends AppLocalizations {
   @override
   String get descShowCodeScanPrompt =>
       'अपरस्मिन् दूरभाषे ग्रन्थः (Folio) › विन्यासः › यन्त्रसमन्वयः › स्वीकारः उद्घाट्य अयं सङ्केतः पठ्यताम्।';
+
+  @override
+  String get actionSign => 'हस्ताक्षरं क्रियताम्';
+
+  @override
+  String get titleMySignatures => 'मम हस्ताक्षराणि';
+
+  @override
+  String get descSignNotDigital =>
+      'एतत् भवतः हस्ताक्षरस्य चित्रं PDF-मध्ये योजयति। एतत् प्रमाणपत्राश्रितम् अङ्कीयहस्ताक्षरं नास्ति।';
+
+  @override
+  String get actionDrawSignature => 'नूतनं लिख्यताम्';
+
+  @override
+  String get actionImportSignature => 'चित्रम् आनीयताम्';
+
+  @override
+  String get emptyMySignatures =>
+      'अद्यापि रक्षितानि हस्ताक्षराणि न सन्ति। एकं लिख्यतां चित्रं वा आनीयताम्।';
+
+  @override
+  String get tooltipDeleteSignature => 'हस्ताक्षरं लुप्यताम्';
+
+  @override
+  String get titleDeleteSignature => 'हस्ताक्षरं लुप्यताम् वा?';
+
+  @override
+  String get bodyDeleteSignature =>
+      'इदं रक्षितं हस्ताक्षरम् अस्मात् दूरवाणीतः अपनेष्यते। पूर्वं हस्ताक्षरितानि PDF-पत्राणि न परिवर्तन्ते।';
+
+  @override
+  String get descSavedSignature =>
+      'रक्षितं हस्ताक्षरम्। उपयोक्तुं स्पृश्यताम्।';
+
+  @override
+  String get titleDrawSignature => 'हस्ताक्षरं लिख्यताम्';
+
+  @override
+  String get descSignHere => 'अत्र हस्ताक्षरं क्रियताम्';
+
+  @override
+  String get labelColorBlack => 'कृष्णः';
+
+  @override
+  String get labelPenThin => 'सूक्ष्मम्';
+
+  @override
+  String get labelPenMedium => 'मध्यमम्';
+
+  @override
+  String get labelPenThick => 'स्थूलम्';
+
+  @override
+  String get errorSignatureSave =>
+      'हस्ताक्षरं रक्षितुं न शक्तम्। पुनः प्रयत्यताम्।';
+
+  @override
+  String get titleImportSignature => 'हस्ताक्षरस्य आनयनम्';
+
+  @override
+  String get labelRemoveBackground => 'पृष्ठभूमिः अपनीयताम्';
+
+  @override
+  String get descRemoveBackground =>
+      'लघुवर्णं पत्रं पारदर्शकं करोति, केवलं मसी अवशिष्यते।';
+
+  @override
+  String get errorSignatureEmpty =>
+      'अस्मिन् चित्रे हस्ताक्षरं न लब्धम्। \'पृष्ठभूमिः अपनीयताम्\' इति निष्क्रियं कृत्वा पश्यतु।';
+
+  @override
+  String get descSignaturePreview => 'हस्ताक्षरस्य पूर्वदर्शनम्';
+
+  @override
+  String get errorSignatureImage =>
+      'इदं चित्रम् उपयोक्तुं न शक्तम्। अक्षताम् अनतिबृहतीं च PNG, JPEG, WebP वा सञ्चिकां चिनोतु।';
+
+  @override
+  String get titlePlaceSignature => 'हस्ताक्षरं स्थाप्यताम्';
+
+  @override
+  String get actionDone => 'समाप्तम्';
+
+  @override
+  String get descPlaceSignatureHelp =>
+      'चालयितुं कर्षतु। परिमाणं परिवर्तयितुं कोणं कर्षतु। मूलसञ्चिका न परिवर्तते।';
+
+  @override
+  String get tooltipRemovePlacement => 'इदम् अपनीयताम्';
+
+  @override
+  String get tooltipResizeSignature => 'परिमाणं परिवर्त्यताम्';
+
+  @override
+  String get descPlacedSignature => 'स्थापितं हस्ताक्षरम्। चालयितुं कर्षतु।';
+
+  @override
+  String get tooltipPreviousPage => 'पूर्वं पृष्ठम्';
+
+  @override
+  String get tooltipNextPage => 'अग्रिमं पृष्ठम्';
+
+  @override
+  String get actionAddHere => 'अत्र योज्यताम्';
+
+  @override
+  String get titleExistingSignatures => 'अङ्कीयहस्ताक्षराणि सन्ति';
+
+  @override
+  String get bodyExistingSignatures =>
+      'अस्मिन् PDF-पत्रे अङ्कीयहस्ताक्षराणि सन्ति। भवतः हस्ताक्षरयोजनेन सञ्चिका परिवर्तते, अतः नूतनप्रतिलिप्यां तानि भग्नानीव दृश्यन्ते। मूलसञ्चिका यथापूर्वं तिष्ठति।';
+
+  @override
+  String get actionSignAnyway => 'तथापि हस्ताक्षरं क्रियताम्';
+
+  @override
+  String get errorSignFailed => 'हस्ताक्षरितप्रतिलिपिः निर्मातुं न शक्ता।';
+
+  @override
+  String get titleSignedDone => 'हस्ताक्षरितप्रतिलिपिः सिद्धा';
+
+  @override
+  String get descSigning => 'हस्ताक्षरं क्रियते…';
 }

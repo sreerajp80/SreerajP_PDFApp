@@ -8,7 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 ///
 /// Removes everything the app keeps about the user: database rows (recent
 /// files, reading positions, annotations and bookmarks, trusted certificates
-/// the user added), saved settings, cached files (including the printer
+/// the user added, saved signatures), private files such as saved signature
+/// pictures, saved settings, cached files (including the printer
 /// spool), and lasting file permissions. The user's own PDF files are never
 /// touched. The schema and its `meta` table stay, so the app starts clean.
 class AppDataPurgeService {
@@ -17,6 +18,7 @@ class AppDataPurgeService {
     required this._prefs,
     required this._releaseFileAccess,
     this._cache = const CacheService(),
+    this._deletePrivateFiles = const [],
   });
 
   final AppDatabase _database;
@@ -24,12 +26,17 @@ class AppDataPurgeService {
   final Future<void> Function() _releaseFileAccess;
   final CacheService _cache;
 
+  /// Clean-ups for files kept outside the cache (for example the saved
+  /// signature pictures). Each is best-effort.
+  final List<Future<void> Function()> _deletePrivateFiles;
+
   /// Tables that hold user data. `meta` is app bookkeeping and is kept.
   static const List<String> userTables = [
     'recent_files',
     'reading_positions',
     'annotations',
     'trust_store',
+    'saved_signatures',
   ];
 
   /// Deletes all user data. Throws [StorageException] if the database part
@@ -43,6 +50,13 @@ class AppDataPurgeService {
       });
     } catch (e) {
       throw StorageException('Could not delete the app data.', cause: e);
+    }
+    for (final cleanUp in _deletePrivateFiles) {
+      try {
+        await cleanUp();
+      } catch (e) {
+        AppLogger.warning('A private-file clean-up failed.', error: e);
+      }
     }
     await _releaseFileAccess();
     await _prefs.clear();

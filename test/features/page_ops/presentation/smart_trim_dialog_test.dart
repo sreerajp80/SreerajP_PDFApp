@@ -29,6 +29,7 @@ class _FakePageOpsService extends PageOpsService {
   @override
   Future<String> trimMargins(
     String path, {
+    required String displayName,
     String? password,
     double padding = 12.0,
     bool symmetric = true,
@@ -57,8 +58,10 @@ void main() {
               child: ElevatedButton(
                 onPressed: () => showDialog<void>(
                   context: context,
-                  builder: (_) =>
-                      const SmartTrimDialog(path: '/test/document.pdf'),
+                  builder: (_) => const SmartTrimDialog(
+                    path: '/test/document.pdf',
+                    displayName: 'document.pdf',
+                  ),
                 ),
                 child: const Text('Open Dialog'),
               ),

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 import 'package:pdfapp/core/constants/app_constants.dart';
+import 'package:pdfapp/core/files/output_file_name.dart';
 import 'package:pdfapp/core/platform/open_document_channel.dart';
 import 'package:pdfapp/core/platform/pdfbox_channel.dart';
 
@@ -38,16 +39,11 @@ class PdfBuilderService {
     }
   }
 
-  Future<String> outputPath(String prefix) async {
+  /// A new output path named after [name] (for example the first shared
+  /// picture's name), keeping non-English letters (see [OutputFileName]).
+  Future<String> outputPath(String name) async {
     final dir = await _outputDir();
-    final ts = DateTime.now().millisecondsSinceEpoch;
-    return '${dir.path}/${_safeName(prefix)}_$ts.pdf';
-  }
-
-  /// Strips anything that would be awkward in a file name.
-  String _safeName(String name) {
-    final cleaned = name.replaceAll(RegExp(r'[^A-Za-z0-9._-]'), '_');
-    return cleaned.isEmpty ? 'document' : cleaned;
+    return OutputFileName.uniquePath(dir, name, DateTime.now());
   }
 
   /// Builds a PDF with one page per picture. Returns the new file path.

@@ -52,8 +52,11 @@ void main() {
         return call.arguments['outputPath'] as String;
       });
 
-      final out = await sut.merge(['/a.pdf', '/b.pdf']);
-      expect(out, contains('merged_'));
+      final out = await sut.merge([
+        '/a.pdf',
+        '/b.pdf',
+      ], displayName: 'Invoice.pdf');
+      expect(out, contains('Invoice_merged_'));
       expect(out, endsWith('.pdf'));
     });
 
@@ -61,10 +64,14 @@ void main() {
       mockPdfBox((call) async {
         expect(call.method, 'splitPdf');
         expect(call.arguments['path'], '/doc.pdf');
-        return ['/tmp/page_ops/doc_page_1.pdf', '/tmp/page_ops/doc_page_2.pdf'];
+        expect(call.arguments['baseName'], 'Invoice');
+        final dir = call.arguments['outputDir'] as String;
+        expect(dir, contains('split_'));
+        expect(Directory(dir).existsSync(), isTrue);
+        return ['$dir/Invoice_page_1.pdf', '$dir/Invoice_page_2.pdf'];
       });
 
-      final out = await sut.split('/doc.pdf');
+      final out = await sut.split('/doc.pdf', displayName: 'Invoice.pdf');
       expect(out, hasLength(2));
     });
 
@@ -81,8 +88,8 @@ void main() {
       final out = await sut.organize('/doc.pdf', [
         {'page': 2, 'rotation': 90},
         {'page': 1, 'rotation': 0},
-      ]);
-      expect(out, contains('organized_'));
+      ], displayName: 'Invoice.pdf');
+      expect(out, contains('Invoice_organized_'));
     });
 
     test('compress delegates to the channel', () async {
@@ -91,8 +98,8 @@ void main() {
         return call.arguments['outputPath'] as String;
       });
 
-      final out = await sut.compress('/doc.pdf');
-      expect(out, contains('compressed_'));
+      final out = await sut.compress('/doc.pdf', displayName: 'Invoice.pdf');
+      expect(out, contains('Invoice_compressed_'));
     });
 
     test('protect forwards the user and owner passwords', () async {
@@ -105,10 +112,11 @@ void main() {
 
       final out = await sut.protect(
         '/doc.pdf',
+        displayName: 'Invoice.pdf',
         userPassword: 'secret',
         ownerPassword: 'owner',
       );
-      expect(out, contains('protected_'));
+      expect(out, contains('Invoice_protected_'));
     });
 
     test('unlock forwards the current password', () async {
@@ -118,8 +126,12 @@ void main() {
         return call.arguments['outputPath'] as String;
       });
 
-      final out = await sut.unlock('/doc.pdf', password: 'secret');
-      expect(out, contains('unlocked_'));
+      final out = await sut.unlock(
+        '/doc.pdf',
+        displayName: 'Invoice.pdf',
+        password: 'secret',
+      );
+      expect(out, contains('Invoice_unlocked_'));
     });
 
     test('trimMargins forwards padding and symmetric flags', () async {
@@ -133,10 +145,11 @@ void main() {
 
       final out = await sut.trimMargins(
         '/doc.pdf',
+        displayName: 'Invoice.pdf',
         padding: 16.0,
         symmetric: false,
       );
-      expect(out, contains('trimmed_'));
+      expect(out, contains('Invoice_trimmed_'));
     });
 
     test('generateBooklet forwards booklet parameters', () async {
@@ -152,11 +165,12 @@ void main() {
 
       final out = await sut.generateBooklet(
         '/doc.pdf',
+        displayName: 'Invoice.pdf',
         binding: 'rtl',
         sheetSize: 'a4',
         gutter: 5.0,
       );
-      expect(out, contains('booklet_'));
+      expect(out, contains('Invoice_booklet_'));
     });
 
     test('a locked source maps to PdfPasswordRequiredException', () async {
@@ -165,7 +179,7 @@ void main() {
       });
 
       await expectLater(
-        sut.compress('/doc.pdf'),
+        sut.compress('/doc.pdf', displayName: 'Invoice.pdf'),
         throwsA(isA<PdfPasswordRequiredException>()),
       );
     });

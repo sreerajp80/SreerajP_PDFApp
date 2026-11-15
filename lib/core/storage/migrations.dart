@@ -4,7 +4,8 @@ import 'package:sqflite/sqflite.dart';
 ///
 /// Never modify a migration that has already shipped. Each entry is atomic
 /// (the runner wraps the whole upgrade in a transaction). Feature tables are
-/// added in later phases (v2 recents/positions, v3 annotations, v4 trust store).
+/// added in later phases (v2 recents/positions, v3 annotations, v4 trust store,
+/// v5 saved signatures).
 typedef Migration = Future<void> Function(DatabaseExecutor db);
 
 /// Map of schema version -> migration that brings the DB *to* that version.
@@ -13,6 +14,7 @@ const Map<int, Migration> migrations = {
   2: _v2ViewerTables,
   3: _v3AnnotationsTable,
   4: _v4TrustStoreTable,
+  5: _v5SavedSignaturesTable,
 };
 
 /// v1 — schema baseline. A tiny `meta` table so the DB is never empty and the
@@ -124,4 +126,22 @@ Future<void> _v4TrustStoreTable(DatabaseExecutor db) async {
   await db.execute(
     'CREATE INDEX idx_trust_store_added ON trust_store (added_at DESC);',
   );
+}
+
+/// v5 — the user's saved signature pictures ("Sign a document").
+///
+/// Each row points to one PNG file in the app's private files folder
+/// (`my_signatures/`). The picture itself is not stored in the database, so the
+/// table stays small. `source` is `drawn` or `imported`.
+Future<void> _v5SavedSignaturesTable(DatabaseExecutor db) async {
+  await db.execute('''
+    CREATE TABLE saved_signatures (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      file_name  TEXT    NOT NULL UNIQUE,
+      width_px   INTEGER NOT NULL,
+      height_px  INTEGER NOT NULL,
+      source     TEXT    NOT NULL,
+      created_at INTEGER NOT NULL
+    );
+  ''');
 }

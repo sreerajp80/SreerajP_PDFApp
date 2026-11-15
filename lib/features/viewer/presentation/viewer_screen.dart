@@ -35,6 +35,7 @@ import 'package:pdfapp/features/reading/presentation/widgets/metadata_sheet.dart
 import 'package:pdfapp/features/reading/presentation/widgets/reader_search_bar.dart';
 import 'package:pdfapp/features/reading/presentation/widgets/search_highlight_painter.dart';
 import 'package:pdfapp/features/reading/presentation/widgets/text_quality_notice.dart';
+import 'package:pdfapp/features/sign_document/presentation/sign_flow.dart';
 import 'package:pdfapp/features/signature/domain/pdf_signature.dart';
 import 'package:pdfapp/features/signature/domain/signature_status.dart';
 import 'package:pdfapp/features/signature/presentation/providers.dart';
@@ -387,7 +388,25 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       showPageOpsSheet(
         context,
         path: widget.docRef.cachePath,
+        displayName: widget.docRef.displayName,
         document: document,
+      ),
+    );
+  }
+
+  /// "Sign": put a drawn or imported signature picture on the PDF. Writes a
+  /// new signed copy; the open file is never changed.
+  void _startSign() {
+    final document = _document;
+    if (document == null) return;
+    unawaited(
+      startSignFlow(
+        context,
+        ref,
+        path: widget.docRef.cachePath,
+        displayName: widget.docRef.displayName,
+        document: document,
+        currentPage: _currentPage,
       ),
     );
   }
@@ -602,10 +621,14 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
       SnackBar(content: Text(l10n.descAnnotationExporting)),
     );
     try {
-      final outPath = await annotate.exportCopy();
-      final name =
-          'annotated_${widget.docRef.displayName.replaceAll(RegExp(r'\.pdf$'), '')}.pdf';
-      final saved = await annotate.saveToDevice(outPath, name);
+      final outPath = await annotate.exportCopy(
+        displayName: widget.docRef.displayName,
+      );
+      // The new file is already named after the original (see OutputFileName).
+      final saved = await annotate.saveToDevice(
+        outPath,
+        outPath.split('/').last,
+      );
       if (!mounted) return;
       if (saved != null) {
         messenger.showSnackBar(
@@ -1257,6 +1280,7 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
           _ViewerMenu.pageOps => _showPageOps(),
           _ViewerMenu.print => _showPrint(),
           _ViewerMenu.sendNearby => _sendNearby(),
+          _ViewerMenu.sign => _startSign(),
           _ViewerMenu.signatures => _showSignatures(),
           _ViewerMenu.settings => context.pushNamed(AppRoute.settings.name),
         },
@@ -1363,6 +1387,16 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
                 const Icon(Icons.auto_stories_outlined, size: 18),
                 const SizedBox(width: 12),
                 Text(l10n.titlePageTools),
+              ],
+            ),
+          ),
+          PopupMenuItem(
+            value: _ViewerMenu.sign,
+            child: Row(
+              children: [
+                const Icon(Icons.draw_outlined, size: 18),
+                const SizedBox(width: 12),
+                Text(l10n.actionSign),
               ],
             ),
           ),
@@ -1863,6 +1897,7 @@ enum _ViewerMenu {
   pageOps,
   print,
   sendNearby,
+  sign,
   signatures,
   settings,
 }

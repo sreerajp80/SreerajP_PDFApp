@@ -96,6 +96,8 @@ cryptographic validation.
 | Reading positions | Page and zoom per document | sqflite `reading_positions` | Private app database; removed with its recent-file row |
 | Annotations | Highlights, notes, ink, bookmarks | sqflite `annotations` | Private app database; user can delete per mark or per file |
 | Trust store certificates | User-trusted signing certificates (DER) | sqflite `trust_store` | Added only after explicit user confirmation; user can remove |
+| Saved signature pictures | The user's drawn or imported handwritten signature (PNG) | App-private files `my_signatures/` + sqflite `saved_signatures` | Personal data: private sandbox only, never logged (content or path), not backed up (`allowBackup="false"`), never sent by Device sync, removed per item or by "Delete all data" |
+| Signed copies | A PDF with the signature picture stamped on it, before the user saves it | App cache (`signed/`) | Private app sandbox; stale copies cleared with the other working folders |
 | Document fingerprints | SHA-256 + size of opened files | sqflite | Identifier only; no document content |
 
 ---
@@ -118,6 +120,9 @@ cryptographic validation.
 - The app takes **persistable URI permissions** to remember recent documents. It copies document
   content to a private cache directory for rendering.
 - Saving a result uses `ACTION_CREATE_DOCUMENT`, so the user picks the destination.
+- A signature picture is imported with `ACTION_OPEN_DOCUMENT` (images only) and read-only,
+  one-time access: no persistable permission is taken. The bytes are copied once to the cache,
+  decoded as untrusted input (size and pixel limits), and the cache copy is deleted.
 
 ### In Memory
 

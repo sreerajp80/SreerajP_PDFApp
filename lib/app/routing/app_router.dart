@@ -28,6 +28,10 @@ import 'package:pdfapp/features/settings/presentation/storage_settings_screen.da
 import 'package:pdfapp/features/settings/presentation/theme_screen.dart';
 import 'package:pdfapp/features/settings/presentation/tts_settings_screen.dart';
 import 'package:pdfapp/features/settings/presentation/typography_screen.dart';
+import 'package:pdfapp/features/sign_document/domain/signature_image_tools.dart';
+import 'package:pdfapp/features/sign_document/presentation/import_signature_screen.dart';
+import 'package:pdfapp/features/sign_document/presentation/sign_placement_screen.dart';
+import 'package:pdfapp/features/sign_document/presentation/signature_pad_screen.dart';
 import 'package:pdfapp/features/signature/presentation/signatures_screen.dart';
 import 'package:pdfapp/features/signature/presentation/trust_store_screen.dart';
 import 'package:pdfapp/features/viewer/domain/pdf_document_ref.dart';
@@ -67,6 +71,9 @@ enum AppRoute {
   scanCode,
   receive,
   sendFiles,
+  signaturePad,
+  importSignature,
+  signPlacement,
 }
 
 extension AppRoutePath on AppRoute {
@@ -101,6 +108,9 @@ extension AppRoutePath on AppRoute {
     AppRoute.scanCode => '/settings/device-sync/scan',
     AppRoute.receive => '/settings/device-sync/receive',
     AppRoute.sendFiles => '/send-files',
+    AppRoute.signaturePad => '/sign/draw',
+    AppRoute.importSignature => '/sign/import',
+    AppRoute.signPlacement => '/sign/place',
   };
 }
 
@@ -232,6 +242,23 @@ final GoRouter appRouter = GoRouter(
       path: AppRoute.signatures.path,
       builder: (context, state) =>
           SignaturesScreen(path: state.extra! as String),
+    ),
+    GoRoute(
+      name: AppRoute.signaturePad.name,
+      path: AppRoute.signaturePad.path,
+      builder: (context, state) => const SignaturePadScreen(),
+    ),
+    GoRoute(
+      name: AppRoute.importSignature.name,
+      path: AppRoute.importSignature.path,
+      builder: (context, state) =>
+          ImportSignatureScreen(original: state.extra! as RgbaImage),
+    ),
+    GoRoute(
+      name: AppRoute.signPlacement.name,
+      path: AppRoute.signPlacement.path,
+      builder: (context, state) =>
+          SignPlacementScreen(request: state.extra! as SignRequest),
     ),
     GoRoute(
       name: AppRoute.trustStore.name,

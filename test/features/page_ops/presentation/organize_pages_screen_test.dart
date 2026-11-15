@@ -60,7 +60,11 @@ void main() {
     child: MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: OrganizePagesScreen(document: _FakeDocument(2), path: 'x.pdf'),
+      home: OrganizePagesScreen(
+        document: _FakeDocument(2),
+        path: 'x.pdf',
+        displayName: 'x.pdf',
+      ),
     ),
   );
 

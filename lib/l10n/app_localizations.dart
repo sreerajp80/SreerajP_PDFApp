@@ -6051,6 +6051,234 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'On the other phone, open Folio › Settings › Device sync › Receive, and scan this code.'**
   String get descShowCodeScanPrompt;
+
+  /// Viewer menu: put your own signature picture on this PDF
+  ///
+  /// In en, this message translates to:
+  /// **'Sign'**
+  String get actionSign;
+
+  /// Title of the sheet that lists saved signature pictures
+  ///
+  /// In en, this message translates to:
+  /// **'My signatures'**
+  String get titleMySignatures;
+
+  /// Note in My signatures: a drawn/imported signature is only a picture, not a cryptographic signature
+  ///
+  /// In en, this message translates to:
+  /// **'This adds a picture of your signature. It is not a digital (certificate) signature.'**
+  String get descSignNotDigital;
+
+  /// Button: draw a new signature on the screen
+  ///
+  /// In en, this message translates to:
+  /// **'Draw new'**
+  String get actionDrawSignature;
+
+  /// Button: import a picture of a signature through the system picker
+  ///
+  /// In en, this message translates to:
+  /// **'Import image'**
+  String get actionImportSignature;
+
+  /// Shown when there are no saved signatures
+  ///
+  /// In en, this message translates to:
+  /// **'No saved signatures yet. Draw one or import a picture.'**
+  String get emptyMySignatures;
+
+  /// Tooltip: delete a saved signature
+  ///
+  /// In en, this message translates to:
+  /// **'Delete signature'**
+  String get tooltipDeleteSignature;
+
+  /// Title of the confirm dialog before deleting a saved signature
+  ///
+  /// In en, this message translates to:
+  /// **'Delete signature?'**
+  String get titleDeleteSignature;
+
+  /// Body of the confirm dialog before deleting a saved signature
+  ///
+  /// In en, this message translates to:
+  /// **'This removes the saved signature from this phone. PDFs you already signed do not change.'**
+  String get bodyDeleteSignature;
+
+  /// Screen-reader label of a saved signature thumbnail
+  ///
+  /// In en, this message translates to:
+  /// **'Saved signature. Tap to use it.'**
+  String get descSavedSignature;
+
+  /// Title of the signature drawing pad
+  ///
+  /// In en, this message translates to:
+  /// **'Draw signature'**
+  String get titleDrawSignature;
+
+  /// Hint on the empty drawing pad; also its screen-reader label
+  ///
+  /// In en, this message translates to:
+  /// **'Sign here'**
+  String get descSignHere;
+
+  /// Ink colour: black
+  ///
+  /// In en, this message translates to:
+  /// **'Black'**
+  String get labelColorBlack;
+
+  /// Pen size: thin
+  ///
+  /// In en, this message translates to:
+  /// **'Thin'**
+  String get labelPenThin;
+
+  /// Pen size: medium
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get labelPenMedium;
+
+  /// Pen size: thick
+  ///
+  /// In en, this message translates to:
+  /// **'Thick'**
+  String get labelPenThick;
+
+  /// A drawn or imported signature could not be saved
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the signature. Please try again.'**
+  String get errorSignatureSave;
+
+  /// Title of the screen that previews an imported signature picture
+  ///
+  /// In en, this message translates to:
+  /// **'Import signature'**
+  String get titleImportSignature;
+
+  /// Switch: make the light paper behind the signature see-through
+  ///
+  /// In en, this message translates to:
+  /// **'Remove background'**
+  String get labelRemoveBackground;
+
+  /// Help under the Remove background switch
+  ///
+  /// In en, this message translates to:
+  /// **'Makes light paper see-through, so only the ink stays.'**
+  String get descRemoveBackground;
+
+  /// The picture is empty after processing
+  ///
+  /// In en, this message translates to:
+  /// **'No signature was found in this picture. Try turning off Remove background.'**
+  String get errorSignatureEmpty;
+
+  /// Screen-reader label of the imported signature preview
+  ///
+  /// In en, this message translates to:
+  /// **'Preview of the signature'**
+  String get descSignaturePreview;
+
+  /// The picked file is not a usable picture
+  ///
+  /// In en, this message translates to:
+  /// **'This picture could not be used. Pick a PNG, JPEG or WebP file that is not damaged or very large.'**
+  String get errorSignatureImage;
+
+  /// Title of the screen where the signature is placed on pages
+  ///
+  /// In en, this message translates to:
+  /// **'Place signature'**
+  String get titlePlaceSignature;
+
+  /// Button: finish placing and make the signed copy
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get actionDone;
+
+  /// Help line on the placement screen
+  ///
+  /// In en, this message translates to:
+  /// **'Drag to move it. Drag the corner to resize it. Your original file is not changed.'**
+  String get descPlaceSignatureHelp;
+
+  /// Tooltip: remove this placed signature box
+  ///
+  /// In en, this message translates to:
+  /// **'Remove this one'**
+  String get tooltipRemovePlacement;
+
+  /// Tooltip: drag to change the size of the signature box
+  ///
+  /// In en, this message translates to:
+  /// **'Resize'**
+  String get tooltipResizeSignature;
+
+  /// Screen-reader label of a placed signature box
+  ///
+  /// In en, this message translates to:
+  /// **'Placed signature. Drag to move.'**
+  String get descPlacedSignature;
+
+  /// Tooltip: go to the previous page
+  ///
+  /// In en, this message translates to:
+  /// **'Previous page'**
+  String get tooltipPreviousPage;
+
+  /// Tooltip: go to the next page
+  ///
+  /// In en, this message translates to:
+  /// **'Next page'**
+  String get tooltipNextPage;
+
+  /// Button: add another copy of the signature on this page
+  ///
+  /// In en, this message translates to:
+  /// **'Add here'**
+  String get actionAddHere;
+
+  /// Title of the warning shown before signing a PDF that already has digital signatures
+  ///
+  /// In en, this message translates to:
+  /// **'Digital signatures'**
+  String get titleExistingSignatures;
+
+  /// Warning: stamping a picture breaks existing digital signatures in the new copy
+  ///
+  /// In en, this message translates to:
+  /// **'This PDF has digital signatures. Adding your signature changes the file, so the new copy will show them as broken. Your original file stays as it is.'**
+  String get bodyExistingSignatures;
+
+  /// Button: continue signing despite the warning
+  ///
+  /// In en, this message translates to:
+  /// **'Sign anyway'**
+  String get actionSignAnyway;
+
+  /// The signed PDF could not be written
+  ///
+  /// In en, this message translates to:
+  /// **'Could not make the signed copy.'**
+  String get errorSignFailed;
+
+  /// Title of the result dialog after signing
+  ///
+  /// In en, this message translates to:
+  /// **'Signed copy ready'**
+  String get titleSignedDone;
+
+  /// Progress text while the signed copy is being written
+  ///
+  /// In en, this message translates to:
+  /// **'Signing…'**
+  String get descSigning;
 }
 
 class _AppLocalizationsDelegate

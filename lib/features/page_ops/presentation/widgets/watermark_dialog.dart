@@ -15,10 +15,14 @@ class WatermarkDialog extends ConsumerStatefulWidget {
   const WatermarkDialog({
     super.key,
     required this.path,
+    required this.displayName,
     required this.pageCount,
   });
 
   final String path;
+
+  /// The original document's name, used to name the new file.
+  final String displayName;
   final int pageCount;
 
   @override
@@ -73,6 +77,7 @@ class _WatermarkDialogState extends ConsumerState<WatermarkDialog> {
       final service = ref.read(pageOpsServiceProvider);
       final out = await service.applyWatermark(
         widget.path,
+        displayName: widget.displayName,
         text: _type == WatermarkType.text ? text : null,
         opacity: _opacity,
         rotation: _rotation,

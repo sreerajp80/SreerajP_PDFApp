@@ -19,20 +19,29 @@ import 'package:pdfrx/pdfrx.dart';
 Future<void> showPageOpsSheet(
   BuildContext context, {
   required String path,
+  required String displayName,
   required PdfDocument document,
 }) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     showDragHandle: true,
-    builder: (context) => _PageOpsSheet(path: path, document: document),
+    builder: (context) =>
+        _PageOpsSheet(path: path, displayName: displayName, document: document),
   );
 }
 
 class _PageOpsSheet extends ConsumerWidget {
-  const _PageOpsSheet({required this.path, required this.document});
+  const _PageOpsSheet({
+    required this.path,
+    required this.displayName,
+    required this.document,
+  });
 
   final String path;
+
+  /// The original document's name, used to name every new file.
+  final String displayName;
   final PdfDocument document;
 
   @override
@@ -64,6 +73,7 @@ class _PageOpsSheet extends ConsumerWidget {
                   context: context,
                   builder: (_) => WatermarkDialog(
                     path: path,
+                    displayName: displayName,
                     pageCount: document.pages.length,
                   ),
                 );
@@ -80,7 +90,7 @@ class _PageOpsSheet extends ConsumerWidget {
                   context: context,
                   builder: (_) => NUpDialog(
                     path: path,
-                    jobName: 'document_nup',
+                    jobName: displayName,
                     pageCount: document.pages.length,
                   ),
                 );
@@ -109,7 +119,8 @@ class _PageOpsSheet extends ConsumerWidget {
                 Navigator.of(context).pop();
                 showDialog<void>(
                   context: context,
-                  builder: (_) => SmartTrimDialog(path: path),
+                  builder: (_) =>
+                      SmartTrimDialog(path: path, displayName: displayName),
                 );
               },
             ),
@@ -124,6 +135,7 @@ class _PageOpsSheet extends ConsumerWidget {
                   context: context,
                   builder: (_) => BookletDialog(
                     path: path,
+                    displayName: displayName,
                     pageCount: document.pages.length,
                   ),
                 );
@@ -152,8 +164,11 @@ class _PageOpsSheet extends ConsumerWidget {
                 Navigator.of(context).pop();
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (_) =>
-                        OrganizePagesScreen(document: document, path: path),
+                    builder: (_) => OrganizePagesScreen(
+                      document: document,
+                      path: path,
+                      displayName: displayName,
+                    ),
                   ),
                 );
               },
@@ -174,7 +189,8 @@ class _PageOpsSheet extends ConsumerWidget {
                 Navigator.of(context).pop();
                 showDialog<void>(
                   context: context,
-                  builder: (_) => ProtectDialog(path: path),
+                  builder: (_) =>
+                      ProtectDialog(path: path, displayName: displayName),
                 );
               },
             ),
@@ -187,7 +203,8 @@ class _PageOpsSheet extends ConsumerWidget {
                 Navigator.of(context).pop();
                 showDialog<void>(
                   context: context,
-                  builder: (_) => UnlockDialog(path: path),
+                  builder: (_) =>
+                      UnlockDialog(path: path, displayName: displayName),
                 );
               },
             ),
@@ -227,7 +244,7 @@ class _PageOpsSheet extends ConsumerWidget {
       context,
       ref,
       title: l10n.titleMergeDone,
-      run: () async => [await service.merge(paths)],
+      run: () async => [await service.merge(paths, displayName: displayName)],
     );
   }
 
@@ -239,7 +256,7 @@ class _PageOpsSheet extends ConsumerWidget {
       context,
       ref,
       title: l10n.titleSplitDone,
-      run: () => service.split(path),
+      run: () => service.split(path, displayName: displayName),
     );
   }
 
@@ -252,7 +269,7 @@ class _PageOpsSheet extends ConsumerWidget {
       ref,
       title: l10n.titleCompressDone,
       note: l10n.descCompressBestEffortNote,
-      run: () async => [await service.compress(path)],
+      run: () async => [await service.compress(path, displayName: displayName)],
     );
   }
 

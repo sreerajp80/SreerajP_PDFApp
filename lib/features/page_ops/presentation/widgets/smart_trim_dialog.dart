@@ -8,9 +8,17 @@ import 'package:pdfapp/l10n/app_localizations.dart';
 
 /// Dialog to configure and run Smart Margin Trimming on a PDF.
 class SmartTrimDialog extends ConsumerStatefulWidget {
-  const SmartTrimDialog({super.key, required this.path, this.password});
+  const SmartTrimDialog({
+    super.key,
+    required this.path,
+    required this.displayName,
+    this.password,
+  });
 
   final String path;
+
+  /// The original document's name, used to name the new file.
+  final String displayName;
   final String? password;
 
   @override
@@ -35,6 +43,7 @@ class _SmartTrimDialogState extends ConsumerState<SmartTrimDialog> {
       await service.clearOutputCache();
       final out = await service.trimMargins(
         widget.path,
+        displayName: widget.displayName,
         password: widget.password,
         padding: _padding,
         symmetric: _symmetric,

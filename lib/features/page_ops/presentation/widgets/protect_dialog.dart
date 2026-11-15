@@ -11,9 +11,16 @@ import 'package:pdfapp/l10n/app_localizations.dart';
 /// Passwords stay in memory for the single operation only — never logged,
 /// never stored (§11).
 class ProtectDialog extends ConsumerStatefulWidget {
-  const ProtectDialog({super.key, required this.path});
+  const ProtectDialog({
+    super.key,
+    required this.path,
+    required this.displayName,
+  });
 
   final String path;
+
+  /// The original document's name, used to name the new file.
+  final String displayName;
 
   @override
   ConsumerState<ProtectDialog> createState() => _ProtectDialogState();
@@ -50,6 +57,7 @@ class _ProtectDialogState extends ConsumerState<ProtectDialog> {
       final owner = _ownerController.text;
       final out = await service.protect(
         widget.path,
+        displayName: widget.displayName,
         userPassword: userPass,
         ownerPassword: owner.isEmpty ? null : owner,
       );

@@ -17,6 +17,9 @@ class NUpDialog extends ConsumerStatefulWidget {
   });
 
   final String path;
+
+  /// The original document's name: the print job's name, and the base of
+  /// the new file's name.
   final String jobName;
   final int pageCount;
 
@@ -41,6 +44,7 @@ class _NUpDialogState extends ConsumerState<NUpDialog> {
       await service.clearOutputCache();
       final out = await service.generateNUp(
         widget.path,
+        displayName: widget.jobName,
         gridCount: _gridCount,
         sheetSize: _sheetSize,
         orientation: _orientation,

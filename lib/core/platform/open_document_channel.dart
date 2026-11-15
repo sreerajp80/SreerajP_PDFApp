@@ -158,6 +158,17 @@ class OpenDocumentChannel {
     }
   }
 
+  /// Opens the system picker for a picture (PNG, JPEG or WebP) and returns the
+  /// path of a private cache copy, or null if the user cancelled. Used to import
+  /// a signature image. The caller deletes the copy when done.
+  Future<String?> pickImage() async {
+    try {
+      return await _method.invokeMethod<String>('pickImage');
+    } on PlatformException catch (e) {
+      throw StorageException('Could not open the file picker.', cause: e);
+    }
+  }
+
   /// Saves the cache file at [sourcePath] to a user-chosen location through the
   /// Android "create document" dialog. Returns the saved file name, or null if
   /// the user cancelled.

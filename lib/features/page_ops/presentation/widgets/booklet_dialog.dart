@@ -12,11 +12,15 @@ class BookletDialog extends ConsumerStatefulWidget {
   const BookletDialog({
     super.key,
     required this.path,
+    required this.displayName,
     required this.pageCount,
     this.password,
   });
 
   final String path;
+
+  /// The original document's name, used to name the new file.
+  final String displayName;
   final int pageCount;
   final String? password;
 
@@ -43,6 +47,7 @@ class _BookletDialogState extends ConsumerState<BookletDialog> {
       await service.clearOutputCache();
       final out = await service.generateBooklet(
         widget.path,
+        displayName: widget.displayName,
         password: widget.password,
         binding: _binding == BookletBinding.rtl ? 'rtl' : 'ltr',
         sheetSize: _sheetSize,

@@ -5,7 +5,7 @@ class AppConstants {
 
   // Database.
   static const String databaseName = 'pdfapp.db';
-  static const int databaseVersion = 4;
+  static const int databaseVersion = 5;
 
   // Table names (added per phase; keep the list here so it is easy to review).
   static const String tableMeta = 'meta';
@@ -14,6 +14,10 @@ class AppConstants {
       'reading_positions'; // v2 (Phase 1)
   static const String tableAnnotations = 'annotations'; // v3 (Phase 5)
   static const String tableTrustStore = 'trust_store'; // v4 (Phase 7)
+  static const String tableSavedSignatures = 'saved_signatures'; // v5
+
+  // Private folder (app files, not cache) that holds saved signature pictures.
+  static const String savedSignaturesFolder = 'my_signatures';
 
   // Method-channel ids (native modules built in later phases).
   static const String channelPdfBox = 'in.sreerajp.pdfapp/pdfbox';

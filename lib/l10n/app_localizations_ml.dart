@@ -3441,4 +3441,127 @@ class AppLocalizationsMl extends AppLocalizations {
   @override
   String get descShowCodeScanPrompt =>
       'മറ്റേ ഫോണിൽ ഗ്രന്ഥം (Folio) › ക്രമീകരണങ്ങൾ › ഉപകരണ സമന്വയം › സ്വീകരിക്കുക തുറന്ന് ഈ കോഡ് സ്കാൻ ചെയ്യുക.';
+
+  @override
+  String get actionSign => 'ഒപ്പിടുക';
+
+  @override
+  String get titleMySignatures => 'എന്റെ ഒപ്പുകൾ';
+
+  @override
+  String get descSignNotDigital =>
+      'ഇത് നിങ്ങളുടെ ഒപ്പിന്റെ ഒരു ചിത്രം PDF-ൽ ചേർക്കുന്നു. ഇത് സർട്ടിഫിക്കറ്റ് ഉപയോഗിക്കുന്ന ഡിജിറ്റൽ ഒപ്പ് അല്ല.';
+
+  @override
+  String get actionDrawSignature => 'പുതിയത് വരയ്ക്കുക';
+
+  @override
+  String get actionImportSignature => 'ചിത്രം ഇറക്കുമതി';
+
+  @override
+  String get emptyMySignatures =>
+      'സൂക്ഷിച്ച ഒപ്പുകൾ ഇതുവരെ ഇല്ല. ഒന്ന് വരയ്ക്കുക, അല്ലെങ്കിൽ ഒരു ചിത്രം ഇറക്കുമതി ചെയ്യുക.';
+
+  @override
+  String get tooltipDeleteSignature => 'ഒപ്പ് ഇല്ലാതാക്കുക';
+
+  @override
+  String get titleDeleteSignature => 'ഒപ്പ് ഇല്ലാതാക്കണോ?';
+
+  @override
+  String get bodyDeleteSignature =>
+      'സൂക്ഷിച്ച ഈ ഒപ്പ് ഈ ഫോണിൽ നിന്ന് നീക്കം ചെയ്യും. ഇതിനകം ഒപ്പിട്ട PDF-കൾക്ക് മാറ്റമില്ല.';
+
+  @override
+  String get descSavedSignature => 'സൂക്ഷിച്ച ഒപ്പ്. ഉപയോഗിക്കാൻ തൊടുക.';
+
+  @override
+  String get titleDrawSignature => 'ഒപ്പ് വരയ്ക്കുക';
+
+  @override
+  String get descSignHere => 'ഇവിടെ ഒപ്പിടുക';
+
+  @override
+  String get labelColorBlack => 'കറുപ്പ്';
+
+  @override
+  String get labelPenThin => 'നേർത്തത്';
+
+  @override
+  String get labelPenMedium => 'ഇടത്തരം';
+
+  @override
+  String get labelPenThick => 'കട്ടിയുള്ളത്';
+
+  @override
+  String get errorSignatureSave =>
+      'ഒപ്പ് സൂക്ഷിക്കാൻ കഴിഞ്ഞില്ല. വീണ്ടും ശ്രമിക്കുക.';
+
+  @override
+  String get titleImportSignature => 'ഒപ്പ് ഇറക്കുമതി';
+
+  @override
+  String get labelRemoveBackground => 'പശ്ചാത്തലം നീക്കുക';
+
+  @override
+  String get descRemoveBackground =>
+      'ഇളം നിറമുള്ള കടലാസ് സുതാര്യമാക്കുന്നു; മഷി മാത്രം ബാക്കിയാകും.';
+
+  @override
+  String get errorSignatureEmpty =>
+      'ഈ ചിത്രത്തിൽ ഒപ്പ് കണ്ടെത്തിയില്ല. \'പശ്ചാത്തലം നീക്കുക\' ഓഫാക്കി നോക്കുക.';
+
+  @override
+  String get descSignaturePreview => 'ഒപ്പിന്റെ പ്രിവ്യൂ';
+
+  @override
+  String get errorSignatureImage =>
+      'ഈ ചിത്രം ഉപയോഗിക്കാൻ കഴിഞ്ഞില്ല. കേടില്ലാത്ത, വളരെ വലുതല്ലാത്ത ഒരു PNG, JPEG അല്ലെങ്കിൽ WebP ഫയൽ തിരഞ്ഞെടുക്കുക.';
+
+  @override
+  String get titlePlaceSignature => 'ഒപ്പ് സ്ഥാപിക്കുക';
+
+  @override
+  String get actionDone => 'പൂർത്തിയായി';
+
+  @override
+  String get descPlaceSignatureHelp =>
+      'നീക്കാൻ വലിക്കുക. വലിപ്പം മാറ്റാൻ മൂല വലിക്കുക. യഥാർത്ഥ ഫയലിൽ മാറ്റം വരില്ല.';
+
+  @override
+  String get tooltipRemovePlacement => 'ഇത് നീക്കുക';
+
+  @override
+  String get tooltipResizeSignature => 'വലിപ്പം മാറ്റുക';
+
+  @override
+  String get descPlacedSignature => 'സ്ഥാപിച്ച ഒപ്പ്. നീക്കാൻ വലിക്കുക.';
+
+  @override
+  String get tooltipPreviousPage => 'മുമ്പത്തെ താൾ';
+
+  @override
+  String get tooltipNextPage => 'അടുത്ത താൾ';
+
+  @override
+  String get actionAddHere => 'ഇവിടെ ചേർക്കുക';
+
+  @override
+  String get titleExistingSignatures => 'ഡിജിറ്റൽ ഒപ്പുകളുണ്ട്';
+
+  @override
+  String get bodyExistingSignatures =>
+      'ഈ PDF-ൽ ഡിജിറ്റൽ ഒപ്പുകളുണ്ട്. നിങ്ങളുടെ ഒപ്പ് ചേർക്കുമ്പോൾ ഫയൽ മാറുന്നതിനാൽ, പുതിയ പകർപ്പിൽ അവ അസാധുവായി കാണിക്കും. യഥാർത്ഥ ഫയൽ അതേപടി തുടരും.';
+
+  @override
+  String get actionSignAnyway => 'എന്നാലും ഒപ്പിടുക';
+
+  @override
+  String get errorSignFailed => 'ഒപ്പിട്ട പകർപ്പ് ഉണ്ടാക്കാൻ കഴിഞ്ഞില്ല.';
+
+  @override
+  String get titleSignedDone => 'ഒപ്പിട്ട പകർപ്പ് തയ്യാർ';
+
+  @override
+  String get descSigning => 'ഒപ്പിടുന്നു…';
 }

@@ -34,6 +34,7 @@ class MainActivity : FlutterActivity() {
     private var pendingPick: MethodChannel.Result? = null
     private var pendingPickMulti: MethodChannel.Result? = null
     private var pendingPickCert: MethodChannel.Result? = null
+    private var pendingPickImage: MethodChannel.Result? = null
     private var pendingSave: MethodChannel.Result? = null
     private var pendingSaveSource: String? = null
     private var pendingPickFolder: MethodChannel.Result? = null
@@ -57,6 +58,7 @@ class MainActivity : FlutterActivity() {
                     "pickPdf" -> startPickPdf(call.argument<String>("initialUri"), result)
                     "pickPdfs" -> startPickPdfs(result)
                     "pickCertificate" -> startPickCertificate(result)
+                    "pickImage" -> startPickImage(result)
                     "saveToDevice" -> {
                         val sourcePath = call.argument<String>("sourcePath")
                         val suggestedName = call.argument<String>("suggestedName")
@@ -232,6 +234,7 @@ class MainActivity : FlutterActivity() {
             REQUEST_PICK_PDFS -> handlePickMultiResult(resultCode, data)
             REQUEST_SAVE_DOC -> handleSaveResult(resultCode, data)
             REQUEST_PICK_CERT -> handlePickCertResult(resultCode, data)
+            REQUEST_PICK_IMAGE -> handlePickImageResult(resultCode, data)
             REQUEST_PICK_FOLDER -> handlePickFolderResult(resultCode, data)
         }
     }
@@ -423,6 +426,50 @@ class MainActivity : FlutterActivity() {
         } catch (e: Exception) {
             pendingPickCert = null
             result.error("no_picker", "No file picker is available.", e.message)
+        }
+    }
+
+    // --- Signature picture picker (ACTION_OPEN_DOCUMENT, images only) ---
+
+    /**
+     * Lets the user pick a picture of their signature. Read-only, one-time access: the bytes
+     * are copied to the cache once, so no lasting permission is taken. The type filter is a
+     * convenience, not a check — the Dart side decodes the copy as untrusted input.
+     */
+    private fun startPickImage(result: MethodChannel.Result) {
+        if (pendingPickImage != null) {
+            result.error("busy", "A pick is already in progress.", null)
+            return
+        }
+        pendingPickImage = result
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "image/*"
+            putExtra(Intent.EXTRA_MIME_TYPES, IMAGE_MIME_TYPES)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        try {
+            startActivityForResult(intent, REQUEST_PICK_IMAGE)
+        } catch (e: Exception) {
+            pendingPickImage = null
+            result.error("no_picker", "No file picker is available.", e.message)
+        }
+    }
+
+    private fun handlePickImageResult(resultCode: Int, data: Intent?) {
+        val result = pendingPickImage ?: return
+        pendingPickImage = null
+
+        if (resultCode != Activity.RESULT_OK || data?.data == null) {
+            result.success(null) // user cancelled
+            return
+        }
+        try {
+            val uri = data.data!!
+            val name = queryDisplayName(uri) ?: "signature"
+            result.success(copyToCache(uri, name).absolutePath)
+        } catch (e: Exception) {
+            result.error("copy_failed", "Could not read the selected file.", e.message)
         }
     }
 
@@ -772,6 +819,10 @@ class MainActivity : FlutterActivity() {
         const val REQUEST_SAVE_DOC = 4203
         const val REQUEST_PICK_CERT = 4204
         const val REQUEST_PICK_FOLDER = 4205
+        const val REQUEST_PICK_IMAGE = 4206
+
+        /** Picture types offered when importing a signature image. */
+        val IMAGE_MIME_TYPES = arrayOf("image/png", "image/jpeg", "image/webp")
 
         /**
          * Types shown when picking a certificate (Phase 7). Certificates travel under a

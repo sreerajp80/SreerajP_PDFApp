@@ -30,6 +30,7 @@ import com.tom_roush.pdfbox.pdmodel.common.PDRectangle
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.destination.PDPageFitDestination
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDDocumentOutline
 import com.tom_roush.pdfbox.pdmodel.interactive.documentnavigation.outline.PDOutlineItem
+import com.tom_roush.pdfbox.util.Matrix
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
@@ -135,10 +136,11 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
                     val path = call.argument<String>("path")
                     val password = call.argument<String>("password")
                     val outputDir = call.argument<String>("outputDir")
+                    val baseName = call.argument<String>("baseName")
                     if (path.isNullOrEmpty() || outputDir.isNullOrEmpty()) {
                         result.error("bad_args", "Missing path or outputDir.", null)
                     } else {
-                        splitPdf(path, password, outputDir, result)
+                        splitPdf(path, password, outputDir, baseName, result)
                     }
                 }
                 "organizePages" -> {
@@ -193,6 +195,17 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
                         result.error("bad_args", "Missing path, outputPath, or annotations.", null)
                     } else {
                         exportAnnotations(path, password, outputPath, annotations, result)
+                    }
+                }
+                "stampImages" -> {
+                    val path = call.argument<String>("path")
+                    val password = call.argument<String>("password")
+                    val outputPath = call.argument<String>("outputPath")
+                    val placements = call.argument<List<Map<String, Any?>>>("placements")
+                    if (path.isNullOrEmpty() || outputPath.isNullOrEmpty() || placements.isNullOrEmpty()) {
+                        result.error("bad_args", "Missing path, outputPath, or placements.", null)
+                    } else {
+                        stampImages(path, password, outputPath, placements, result)
                     }
                 }
                 "imagesToPdf" -> {
@@ -518,6 +531,7 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
         path: String,
         password: String?,
         outputDir: String,
+        requestedBaseName: String?,
         result: MethodChannel.Result
     ) {
         io.execute {
@@ -525,15 +539,24 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
                 check(resourcesReady)
                 val file = File(path)
                 val outDir = File(outputDir).apply { mkdirs() }
-                val baseName = file.nameWithoutExtension.ifEmpty { "document" }
+                // Dart sends the original document's name, already cleaned. Clean it
+                // again here so a bad name can never point outside outDir.
+                val baseName = (requestedBaseName ?: file.nameWithoutExtension)
+                    .replace(Regex("[\\\\/:*?\"<>|\u0000-\u001F\u007F]"), "_")
+                    .trim(' ', '.')
+                    .ifEmpty { "document" }
                 val savedPaths = ArrayList<String>()
 
                 PDDocument.load(file, password ?: "").use { doc ->
                     val splitter = com.tom_roush.pdfbox.multipdf.Splitter()
                     val parts = splitter.split(doc)
+                    // Leading zeros (page_01 … page_12) keep the files in page order
+                    // when a file manager sorts them by name.
+                    val digits = parts.size.toString().length
                     for ((index, part) in parts.withIndex()) {
                         part.use { single ->
-                            val outFile = File(outDir, "${baseName}_page_${index + 1}.pdf")
+                            val number = (index + 1).toString().padStart(digits, '0')
+                            val outFile = File(outDir, "${baseName}_page_$number.pdf")
                             single.save(outFile)
                             savedPaths.add(outFile.absolutePath)
                         }
@@ -760,6 +783,118 @@ class PdfBoxHandler(context: Context, messenger: BinaryMessenger) {
             } catch (e: OutOfMemoryError) {
                 main.post { result.error("op_failed", "This PDF is too large to export.", null) }
             }
+        }
+    }
+
+    /**
+     * Draws signature pictures onto pages and saves a **new** PDF at [outputPath]
+     * (copy-on-write: [path] is never changed).
+     *
+     * Each placement has a 1-based `page`, a normalized box `x`, `y`, `w`, `h` (0–1, top-left
+     * origin) measured on the page **as it is shown** — that is, inside the crop box and after
+     * the page's `/Rotate` turn, which is how the app's renderer (pdfium) lays it out — and an
+     * `imagePath` to a PNG.
+     *
+     * The picture is painted into the page content (like ink in [exportAnnotations]) so it
+     * shows in every PDF viewer. Each picture file is decoded once, even if placed many times.
+     * A PNG with a see-through background stays lossless so the paper underneath shows.
+     */
+    private fun stampImages(
+        path: String,
+        password: String?,
+        outputPath: String,
+        placements: List<Map<String, Any?>>,
+        result: MethodChannel.Result
+    ) {
+        io.execute {
+            val bitmaps = mutableListOf<Bitmap>()
+            try {
+                check(resourcesReady)
+                PDDocument.load(File(path), password ?: "").use { doc ->
+                    val images = HashMap<String, PDImageXObject>()
+                    val pageCount = doc.numberOfPages
+                    val byPage = placements.groupBy { (it["page"] as? Number)?.toInt() ?: 0 }
+                    var drawn = 0
+                    for ((oneBased, list) in byPage) {
+                        if (oneBased < 1 || oneBased > pageCount) continue
+                        val page = doc.getPage(oneBased - 1)
+                        val box = page.cropBox
+                        val rotation = ((page.rotation % 360) + 360) % 360
+                        PDPageContentStream(
+                            doc, page, PDPageContentStream.AppendMode.APPEND, true, true
+                        ).use { cs ->
+                            for (p in list) {
+                                val imagePath = p["imagePath"] as? String ?: continue
+                                val image = images[imagePath] ?: run {
+                                    val bmp = BitmapFactory.decodeFile(imagePath)
+                                        ?: throw IllegalStateException("The signature picture could not be read.")
+                                    bitmaps.add(bmp)
+                                    LosslessFactory.createFromImage(doc, bmp).also { images[imagePath] = it }
+                                }
+                                val x = (p["x"] as? Number)?.toFloat() ?: continue
+                                val y = (p["y"] as? Number)?.toFloat() ?: continue
+                                val w = (p["w"] as? Number)?.toFloat() ?: continue
+                                val h = (p["h"] as? Number)?.toFloat() ?: continue
+                                if (w <= 0f || h <= 0f) continue
+                                cs.saveGraphicsState()
+                                cs.drawImage(image, shownBoxToPdf(x, y, w, h, box, rotation))
+                                cs.restoreGraphicsState()
+                                drawn++
+                            }
+                        }
+                    }
+                    if (drawn == 0) throw IllegalStateException("No signature could be placed.")
+                    doc.save(outputPath)
+                }
+                main.post { result.success(outputPath) }
+            } catch (e: InvalidPasswordException) {
+                main.post { result.error("password_required", "This PDF is locked.", null) }
+            } catch (e: Exception) {
+                main.post { result.error("op_failed", "Could not sign the PDF: ${e.message}", null) }
+            } catch (e: OutOfMemoryError) {
+                main.post { result.error("op_failed", "This PDF is too large to sign.", null) }
+            } finally {
+                bitmaps.forEach { it.recycle() }
+            }
+        }
+    }
+
+    /**
+     * The image matrix that puts a picture into the normalized box (u, v, w, h) of the page
+     * **as shown** (top-left origin, after [rotation]), upright for the reader.
+     *
+     * An image is drawn into the unit square; the matrix sends its bottom-left corner, its
+     * x-axis and its y-axis to where the box's bottom-left, bottom edge and left edge land in
+     * PDF user space. Mapping the three corners through [shownToPdf] handles every rotation
+     * with one formula, and turns the picture with the page so it reads upright.
+     */
+    private fun shownBoxToPdf(
+        u: Float, v: Float, w: Float, h: Float, box: PDRectangle, rotation: Int
+    ): Matrix {
+        val origin = shownToPdf(u, v + h, box, rotation)      // picture bottom-left
+        val right = shownToPdf(u + w, v + h, box, rotation)   // picture bottom-right
+        val top = shownToPdf(u, v, box, rotation)             // picture top-left
+        return Matrix(
+            right[0] - origin[0], right[1] - origin[1],
+            top[0] - origin[0], top[1] - origin[1],
+            origin[0], origin[1],
+        )
+    }
+
+    /**
+     * A normalized point (u right, v down; 0–1) on the page as shown, to a PDF user-space point.
+     * `/Rotate` turns the page clockwise for display, so each case starts from the unrotated
+     * corner that ends up at the shown top-left.
+     */
+    private fun shownToPdf(u: Float, v: Float, box: PDRectangle, rotation: Int): FloatArray {
+        val llx = box.lowerLeftX; val lly = box.lowerLeftY
+        val urx = box.upperRightX; val ury = box.upperRightY
+        val bw = box.width; val bh = box.height
+        return when (rotation) {
+            90 -> floatArrayOf(llx + v * bw, lly + u * bh)
+            180 -> floatArrayOf(urx - u * bw, lly + v * bh)
+            270 -> floatArrayOf(urx - v * bw, ury - u * bh)
+            else -> floatArrayOf(llx + u * bw, ury - v * bh)
         }
     }
 

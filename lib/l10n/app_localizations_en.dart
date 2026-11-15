@@ -3421,4 +3421,127 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get descShowCodeScanPrompt =>
       'On the other phone, open Folio › Settings › Device sync › Receive, and scan this code.';
+
+  @override
+  String get actionSign => 'Sign';
+
+  @override
+  String get titleMySignatures => 'My signatures';
+
+  @override
+  String get descSignNotDigital =>
+      'This adds a picture of your signature. It is not a digital (certificate) signature.';
+
+  @override
+  String get actionDrawSignature => 'Draw new';
+
+  @override
+  String get actionImportSignature => 'Import image';
+
+  @override
+  String get emptyMySignatures =>
+      'No saved signatures yet. Draw one or import a picture.';
+
+  @override
+  String get tooltipDeleteSignature => 'Delete signature';
+
+  @override
+  String get titleDeleteSignature => 'Delete signature?';
+
+  @override
+  String get bodyDeleteSignature =>
+      'This removes the saved signature from this phone. PDFs you already signed do not change.';
+
+  @override
+  String get descSavedSignature => 'Saved signature. Tap to use it.';
+
+  @override
+  String get titleDrawSignature => 'Draw signature';
+
+  @override
+  String get descSignHere => 'Sign here';
+
+  @override
+  String get labelColorBlack => 'Black';
+
+  @override
+  String get labelPenThin => 'Thin';
+
+  @override
+  String get labelPenMedium => 'Medium';
+
+  @override
+  String get labelPenThick => 'Thick';
+
+  @override
+  String get errorSignatureSave =>
+      'Could not save the signature. Please try again.';
+
+  @override
+  String get titleImportSignature => 'Import signature';
+
+  @override
+  String get labelRemoveBackground => 'Remove background';
+
+  @override
+  String get descRemoveBackground =>
+      'Makes light paper see-through, so only the ink stays.';
+
+  @override
+  String get errorSignatureEmpty =>
+      'No signature was found in this picture. Try turning off Remove background.';
+
+  @override
+  String get descSignaturePreview => 'Preview of the signature';
+
+  @override
+  String get errorSignatureImage =>
+      'This picture could not be used. Pick a PNG, JPEG or WebP file that is not damaged or very large.';
+
+  @override
+  String get titlePlaceSignature => 'Place signature';
+
+  @override
+  String get actionDone => 'Done';
+
+  @override
+  String get descPlaceSignatureHelp =>
+      'Drag to move it. Drag the corner to resize it. Your original file is not changed.';
+
+  @override
+  String get tooltipRemovePlacement => 'Remove this one';
+
+  @override
+  String get tooltipResizeSignature => 'Resize';
+
+  @override
+  String get descPlacedSignature => 'Placed signature. Drag to move.';
+
+  @override
+  String get tooltipPreviousPage => 'Previous page';
+
+  @override
+  String get tooltipNextPage => 'Next page';
+
+  @override
+  String get actionAddHere => 'Add here';
+
+  @override
+  String get titleExistingSignatures => 'Digital signatures';
+
+  @override
+  String get bodyExistingSignatures =>
+      'This PDF has digital signatures. Adding your signature changes the file, so the new copy will show them as broken. Your original file stays as it is.';
+
+  @override
+  String get actionSignAnyway => 'Sign anyway';
+
+  @override
+  String get errorSignFailed => 'Could not make the signed copy.';
+
+  @override
+  String get titleSignedDone => 'Signed copy ready';
+
+  @override
+  String get descSigning => 'Signing…';
 }

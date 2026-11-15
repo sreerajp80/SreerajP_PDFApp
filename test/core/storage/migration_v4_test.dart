@@ -41,7 +41,7 @@ void main() {
 
     expect(await tableNames(db), contains(AppConstants.tableTrustStore));
     expect(await indexNames(db), contains('idx_trust_store_added'));
-    expect(await db.getVersion(), 4);
+    expect(await db.getVersion(), AppConstants.databaseVersion);
 
     await appDb.close();
   });

@@ -243,6 +243,7 @@ class PdfBoxChannel {
   Future<List<String>> splitPdf(
     String cachePath,
     String outputDir, {
+    String? baseName,
     String? password,
   }) async {
     try {
@@ -250,6 +251,7 @@ class PdfBoxChannel {
         'path': cachePath,
         'password': password,
         'outputDir': outputDir,
+        'baseName': ?baseName,
       });
       return result ?? const [];
     } on PlatformException catch (e) {
@@ -385,6 +387,32 @@ class PdfBoxChannel {
         'Annotation export is not available here.',
         cause: e,
       );
+    }
+  }
+
+  /// Draws signature pictures onto pages and writes a **new** PDF at
+  /// [outputPath] (copy-on-write; [path] is never changed).
+  ///
+  /// Each placement map holds `page` (1-based), the normalized box `x`, `y`,
+  /// `w`, `h` (0–1 of the page as shown, top-left origin) and `imagePath` (a PNG).
+  Future<String> stampImages(
+    String path,
+    String outputPath,
+    List<Map<String, Object?>> placements, {
+    String? password,
+  }) async {
+    try {
+      final result = await _method.invokeMethod<String>('stampImages', {
+        'path': path,
+        'password': password,
+        'outputPath': outputPath,
+        'placements': placements,
+      });
+      return result ?? outputPath;
+    } on PlatformException catch (e) {
+      throw _mapException(e);
+    } on MissingPluginException catch (e) {
+      throw PdfOpenException('Signing is not available here.', cause: e);
     }
   }
 

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
+import 'package:pdfapp/core/files/output_file_name.dart';
 import 'package:pdfapp/core/platform/open_document_channel.dart';
 import 'package:pdfapp/core/platform/pdfbox_channel.dart';
 import 'package:pdfapp/features/annotation/data/annotation_dao.dart';
@@ -42,10 +43,11 @@ class AnnotationRepository {
   /// the path of the produced file in the app cache. Copy-on-write.
   Future<String> exportAnnotatedCopy({
     required String sourcePath,
+    required String displayName,
     required List<Annotation> annotations,
     String? password,
   }) async {
-    final out = await _outputPath('annotated');
+    final out = await _outputPath(displayName);
     final flattened = annotations.map(_toPlatformMap).toList();
     return pdfBox.exportAnnotations(
       sourcePath,
@@ -90,13 +92,18 @@ class AnnotationRepository {
     return base;
   }
 
-  Future<String> _outputPath(String prefix) async {
+  /// A new output path such as `Invoice_annotated_20261115_143205.pdf`.
+  Future<String> _outputPath(String displayName) async {
     final temp = await getTemporaryDirectory();
     final dir = Directory('${temp.path}/annotations');
     if (!await dir.exists()) {
       await dir.create(recursive: true);
     }
-    final ts = DateTime.now().millisecondsSinceEpoch;
-    return '${dir.path}/${prefix}_$ts.pdf';
+    return OutputFileName.uniquePath(
+      dir,
+      displayName,
+      DateTime.now(),
+      action: 'annotated',
+    );
   }
 }

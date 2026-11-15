@@ -107,7 +107,8 @@ void main() {
         ),
       );
 
-      expect(out, contains('my_photo_.._x_y_'));
+      expect(out, contains('my photo_.._x_y_'));
+      expect(out.split('/').last, isNot(contains('/')));
     });
   });
 

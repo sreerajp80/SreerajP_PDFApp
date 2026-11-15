@@ -35,7 +35,12 @@ class PrintService {
     final pages = [
       for (var page = from; page <= to; page++) {'page': page, 'rotation': 0},
     ];
-    final rangeCopy = await _pageOps.organize(path, pages, password: password);
+    final rangeCopy = await _pageOps.organize(
+      path,
+      pages,
+      displayName: jobName,
+      password: password,
+    );
     await _channel.printPdf(rangeCopy, jobName);
   }
 
@@ -61,6 +66,7 @@ class PrintService {
   }) async {
     final nupPath = await _pageOps.generateNUp(
       path,
+      displayName: jobName,
       password: password,
       gridCount: gridCount,
       sheetSize: sheetSize,

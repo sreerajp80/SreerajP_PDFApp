@@ -258,10 +258,12 @@ class AnnotationController extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Exports every mark into a new annotated copy, returning the produced path.
-  Future<String> exportCopy({String? password}) =>
+  /// Exports every mark into a new annotated copy named after [displayName]
+  /// (the original document's name), returning the produced path.
+  Future<String> exportCopy({required String displayName, String? password}) =>
       repository.exportAnnotatedCopy(
         sourcePath: sourcePath,
+        displayName: displayName,
         annotations: _annotations,
         password: password,
       );

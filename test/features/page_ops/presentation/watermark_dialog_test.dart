@@ -47,6 +47,7 @@ void main() {
                   context: context,
                   builder: (_) => const WatermarkDialog(
                     path: '/test/watermark_src.pdf',
+                    displayName: 'watermark_src.pdf',
                     pageCount: 3,
                   ),
                 ),

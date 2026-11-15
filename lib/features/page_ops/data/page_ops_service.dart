@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:pdfapp/core/files/output_file_name.dart';
 import 'package:pdfapp/core/platform/open_document_channel.dart';
 import 'package:pdfapp/core/platform/pdfbox_channel.dart';
 import 'package:pdfapp/features/reading/presentation/providers.dart';
@@ -40,51 +41,82 @@ class PageOpsService {
     }
   }
 
-  Future<String> _outputPath(String prefix) async {
+  /// A new output path named after the original document, for example
+  /// `Invoice_merged_20261115_143205.pdf` (see [OutputFileName]).
+  Future<String> _outputPath(String displayName, String action) async {
     final dir = await _outputDir();
-    final ts = DateTime.now().millisecondsSinceEpoch;
-    return '${dir.path}/${prefix}_$ts.pdf';
+    return OutputFileName.uniquePath(
+      dir,
+      displayName,
+      DateTime.now(),
+      action: action,
+    );
   }
 
   /// Lets the user pick extra PDFs to merge (empty list on cancel).
   Future<List<OpenedDocument>> pickPdfsToMerge() => _openChannel.pickPdfs();
 
-  /// Merges [paths] (in order) into one new PDF. Returns the new file path.
-  Future<String> merge(List<String> paths) async {
-    final out = await _outputPath('merged');
+  /// Merges [paths] (in order) into one new PDF named after [displayName]
+  /// (the first document). Returns the new file path.
+  Future<String> merge(
+    List<String> paths, {
+    required String displayName,
+  }) async {
+    final out = await _outputPath(displayName, 'merged');
     return _pdfBox.mergePdfs(paths, out);
   }
 
-  /// Splits [path] into one file per page. Returns the new file paths.
-  Future<List<String>> split(String path, {String? password}) async {
+  /// Splits [path] into one file per page, named
+  /// `<displayName>_page_<n>.pdf` in a new folder for this run (so two runs
+  /// never overwrite each other). Returns the new file paths.
+  Future<List<String>> split(
+    String path, {
+    required String displayName,
+    String? password,
+  }) async {
     final dir = await _outputDir();
-    return _pdfBox.splitPdf(path, dir.path, password: password);
+    final runDir = Directory(
+      '${dir.path}/split_${DateTime.now().microsecondsSinceEpoch}',
+    );
+    await runDir.create(recursive: true);
+    return _pdfBox.splitPdf(
+      path,
+      runDir.path,
+      baseName: OutputFileName.baseOf(displayName),
+      password: password,
+    );
   }
 
   /// Reorders/rotates/deletes pages into a new PDF. Returns the new file path.
   Future<String> organize(
     String path,
     List<Map<String, int>> pages, {
+    required String displayName,
     String? password,
   }) async {
-    final out = await _outputPath('organized');
+    final out = await _outputPath(displayName, 'organized');
     return _pdfBox.organizePages(path, out, pages, password: password);
   }
 
   /// Writes a best-effort compressed copy. Returns the new file path.
-  Future<String> compress(String path, {String? password}) async {
-    final out = await _outputPath('compressed');
+  Future<String> compress(
+    String path, {
+    required String displayName,
+    String? password,
+  }) async {
+    final out = await _outputPath(displayName, 'compressed');
     return _pdfBox.compressPdf(path, out, password: password);
   }
 
   /// Writes a password-protected copy. Returns the new file path.
   Future<String> protect(
     String path, {
+    required String displayName,
     String? password,
     required String userPassword,
     String? ownerPassword,
   }) async {
-    final out = await _outputPath('protected');
+    final out = await _outputPath(displayName, 'protected');
     return _pdfBox.encryptPdf(
       path,
       out,
@@ -95,19 +127,24 @@ class PageOpsService {
   }
 
   /// Writes an unprotected copy using [password]. Returns the new file path.
-  Future<String> unlock(String path, {required String password}) async {
-    final out = await _outputPath('unlocked');
+  Future<String> unlock(
+    String path, {
+    required String displayName,
+    required String password,
+  }) async {
+    final out = await _outputPath(displayName, 'unlocked');
     return _pdfBox.decryptPdf(path, out, password: password);
   }
 
   /// Writes a copy with blank margins cropped. Returns the new file path.
   Future<String> trimMargins(
     String path, {
+    required String displayName,
     String? password,
     double padding = 12.0,
     bool symmetric = true,
   }) async {
-    final out = await _outputPath('trimmed');
+    final out = await _outputPath(displayName, 'trimmed');
     return _pdfBox.trimPdfMargins(
       path,
       out,
@@ -120,13 +157,14 @@ class PageOpsService {
   /// Writes a 2-Up foldable booklet imposition PDF. Returns the new file path.
   Future<String> generateBooklet(
     String path, {
+    required String displayName,
     String? password,
     String binding = 'ltr',
     String sheetSize = 'auto',
     bool addFoldGuide = true,
     double gutter = 0.0,
   }) async {
-    final out = await _outputPath('booklet');
+    final out = await _outputPath(displayName, 'booklet');
     return _pdfBox.generateBooklet(
       path,
       out,
@@ -141,6 +179,7 @@ class PageOpsService {
   /// Applies a custom watermark onto a new copy of the PDF. Returns the new file path.
   Future<String> applyWatermark(
     String path, {
+    required String displayName,
     String? password,
     String? text,
     String? imagePath,
@@ -153,7 +192,7 @@ class PageOpsService {
     double tileSpacingY = 150.0,
     String? pageRange,
   }) async {
-    final out = await _outputPath('watermarked');
+    final out = await _outputPath(displayName, 'watermarked');
     return _pdfBox.applyWatermark(
       path,
       out,
@@ -174,6 +213,7 @@ class PageOpsService {
   /// Writes an N-Up multi-page grid PDF (2-in-1, 4-in-1, 6-in-1, 9-in-1). Returns the new file path.
   Future<String> generateNUp(
     String path, {
+    required String displayName,
     String? password,
     int gridCount = 4,
     String sheetSize = 'a4',
@@ -181,7 +221,7 @@ class PageOpsService {
     bool addBorders = true,
     double margin = 12.0,
   }) async {
-    final out = await _outputPath('nup');
+    final out = await _outputPath(displayName, '${gridCount}up');
     return _pdfBox.generateNUpPdf(
       path,
       out,
@@ -209,7 +249,10 @@ class PageOpsService {
       // Special case: combine all documents into one single merged PDF
       try {
         final paths = documents.map((d) => d.cachePath).toList();
-        final out = await merge(paths);
+        final out = await merge(
+          paths,
+          displayName: documents.first.displayName,
+        );
         items.add(
           BatchItemResult(
             inputPath: documents.first.cachePath,
@@ -248,22 +291,34 @@ class PageOpsService {
             if (userPassword != null && userPassword.isNotEmpty) {
               outPath = await protect(
                 doc.cachePath,
+                displayName: doc.displayName,
                 userPassword: userPassword,
                 ownerPassword: ownerPassword,
               );
             }
             break;
           case BatchOpType.trimMargins:
-            outPath = await trimMargins(doc.cachePath);
+            outPath = await trimMargins(
+              doc.cachePath,
+              displayName: doc.displayName,
+            );
             break;
           case BatchOpType.compress:
-            outPath = await compress(doc.cachePath);
+            outPath = await compress(
+              doc.cachePath,
+              displayName: doc.displayName,
+            );
             break;
           case BatchOpType.extractText:
             final text = await _pdfBox.extractText(doc.cachePath);
-            final ts = DateTime.now().millisecondsSinceEpoch;
             final txtFile = File(
-              '${dir.path}/extracted_${doc.displayName}_$ts.txt',
+              await OutputFileName.uniquePath(
+                dir,
+                doc.displayName,
+                DateTime.now(),
+                action: 'text',
+                extension: 'txt',
+              ),
             );
             await txtFile.writeAsString(text);
             outPath = txtFile.path;
