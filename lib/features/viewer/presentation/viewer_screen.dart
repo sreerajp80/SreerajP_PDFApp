@@ -315,7 +315,12 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     _scheduleSave();
   }
 
-  void _toggleInvert() => setState(() => _invert = !_invert);
+  void _toggleInvert() {
+    setState(() => _invert = !_invert);
+    // Search highlights pick their colours from the night-mode flag, so the
+    // pages must repaint to match.
+    if (_controller.isReady) _controller.invalidate();
+  }
 
   void _fitWidth() {
     if (_controller.isReady) {
@@ -1222,8 +1227,9 @@ class _ViewerScreenState extends ConsumerState<ViewerScreen> {
     SearchHighlightPainter(
       hits: state.hits,
       current: state.current,
-      matchColor: scheme.tertiary.withValues(alpha: 0.35),
-      currentMatchColor: scheme.primary.withValues(alpha: 0.5),
+      matchColor: scheme.tertiary,
+      currentMatchColor: scheme.primary,
+      nightMode: _invert,
     ).paint(canvas, pageRect, page);
   }
 

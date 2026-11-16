@@ -68,7 +68,7 @@ a feature, so you know what already exists.
 
 ### 2.2 Search, Indic Phonetic & Sandhi Engine, and Text-to-Speech (TTS)
 
-- **On-Page Full-Text Search**: Real-time keyword search with match counting, next/previous match navigation, and bright match highlighting on rendered pages. The view moves to each match itself (including the first one as soon as it is found) and keeps the reader's zoom; the keyboard is put away while stepping through matches.
+- **On-Page Full-Text Search**: Real-time keyword search with match counting, next/previous match navigation, and bright match highlighting on rendered pages. Highlights use the theme and accent colours, made darker or lighter when needed so they stand out on the page (also in night mode); the current match has a solid border. The view moves to each match itself (including the first one as soon as it is found) and keeps the reader's zoom; the keyboard is put away while stepping through matches.
 - **Select & Copy Text**: Native text selection on rendered pages wherever a real text layer exists, allowing users to select and copy passages. Automatically disabled when the page has no usable text layer, and disabled during active annotation drawing.
 - **Indic Phonetic & Sandhi-Aware Search (Malayalam & Devanagari/Sanskrit)**:
   - **Sandhi Compound Joining & Splitting Engine**: Rule-based Sandhi compound transformation supporting Vowel Sandhi (Savarna Deergha, Guna, Vriddhi, Yan, Ayadi, Poorvaroopa with Avagraha `ഽ`/`ऽ`), Consonant Sandhi (Jashthva, Anunasika, Schutva, Parasavarna), Visarga Sandhi (Ruthva, Sathva, Uthva, Lopa), and Malayalam Dravidian Sandhi (Agama, Dvitva, Lopa, Adesha). Multi-word queries automatically match joined compounds and vice versa.
